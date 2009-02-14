@@ -1,0 +1,9 @@
+#!/usr/bin/python
+
+from cli import CLI
+from core import Main
+
+(options, args) = CLI().start()
+
+Main().execute(options, args)
+    
