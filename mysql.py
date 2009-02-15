@@ -3,18 +3,18 @@ import MySQLdb
 import sys
 
 class MySQL(object):
-    
-    def __init__(self, db_config_file):
+      
+    def __init__(self, db_config_file="simple-db-migrate.conf", mysql_driver=MySQLdb):
         # read configurations
-        f = None
         try:
             f = open(db_config_file, "r")
+            exec(f.read())
         except IOError:
             Log().error_and_exit("%s: file not found" % db_config_file)
+        else:
+            f.close()
         
-        exec(f.read())
-        f.close()
-        
+        self.__mysql_driver = mysql_driver
         self.__mysql_host__ = HOST
         self.__mysql_user__ = USERNAME
         self.__mysql_passwd__ = PASSWORD
@@ -25,9 +25,9 @@ class MySQL(object):
 
     def __mysql_connect(self, connect_using_db_name=True):
         if connect_using_db_name:
-            return MySQLdb.connect(host=self.__mysql_host__, user=self.__mysql_user__, passwd=self.__mysql_passwd__, db=self.__mysql_db__)
+            return self.__mysql_driver.connect(host=self.__mysql_host__, user=self.__mysql_user__, passwd=self.__mysql_passwd__, db=self.__mysql_db__)
         
-        return MySQLdb.connect(host=self.__mysql_host__, user=self.__mysql_user__, passwd=self.__mysql_passwd__)
+        return self.__mysql_driver.connect(host=self.__mysql_host__, user=self.__mysql_user__, passwd=self.__mysql_passwd__)
     
     def __execute(self, sql):
         db = self.__mysql_connect()
@@ -41,19 +41,19 @@ class MySQL(object):
     
     def __create_version_table_if_not_exists(self):
         # create version table
-        sql = "create table if not exists __db_version__ ( version int(11) NOT NULL default 0 )"
+        sql = "create table if not exists __db_version__ ( version int(11) NOT NULL default 0 );"
         self.__execute(sql)
         
         # check if there is a register there
         db = self.__mysql_connect()
         cursor = db.cursor()
-        cursor.execute("select count(*) from __db_version__")
+        cursor.execute("select count(*) from __db_version__;")
         count = cursor.fetchone()[0]
         db.close()
 
         # if there is not a version register, insert one
         if count == 0:
-            sql = "insert into __db_version__ values (0)"
+            sql = "insert into __db_version__ values (0);"
             self.__execute(sql)
     
     def __set_new_db_version(self, version):

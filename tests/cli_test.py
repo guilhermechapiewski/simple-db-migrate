@@ -1,5 +1,5 @@
 from _test_env import *
-from cli import CLI
+from cli import *
 import unittest
 
 class CLITest(unittest.TestCase):
