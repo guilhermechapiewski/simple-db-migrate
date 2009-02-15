@@ -18,7 +18,7 @@ class Main(object):
             destination_version = db_migrate.latest_schema_version_available()
 
         if not db_migrate.check_if_version_exists(destination_version):
-            Log().error_and_exit("unknown version (%s)" % destination_version)
+            Log().error_and_exit("version not found (%s)" % destination_version)
 
         current_version = mysql.get_current_schema_version()
         if str(current_version) == str(destination_version):
@@ -51,7 +51,9 @@ class Main(object):
         print "\nDone.\n"
 
 class SimpleDBMigrate(object):
-
+    
+    __migration_files_extension = ".migration"
+    
     def __init__(self, migrations_dir):
         self.__migrations_dir = migrations_dir
 
@@ -60,7 +62,7 @@ class SimpleDBMigrate(object):
         
         files = []
         for dir_file in dir_list:
-            if dir_file.endswith(".sql"):
+            if dir_file.endswith(self.__migration_files_extension):
                 files.append(dir_file)
         
         files.sort()
