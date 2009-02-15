@@ -1,3 +1,4 @@
+from logging import *
 from mysql import MySQL
 import os
 import sys
@@ -17,13 +18,11 @@ class Main(object):
             destination_version = db_migrate.latest_schema_version_available()
 
         if not db_migrate.check_if_version_exists(destination_version):
-            print "[ERROR]: unknown version (%s)\n" % destination_version
-            sys.exit(1)
+            Log().error_and_exit("unknown version (%s)" % destination_version)
 
         current_version = mysql.get_current_db_version()
         if str(current_version) == str(destination_version):
-            print "[ERROR]: current and destination versions are the same (%s)\n" % current_version
-            sys.exit(1)
+            Log().error_and_exit("current and destination versions are the same (%s)" % current_version)
 
         print "- Current version is: %s" % current_version
         print "- Destination version is: %s" % destination_version

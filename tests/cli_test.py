@@ -17,6 +17,5 @@ class CLITest(unittest.TestCase):
         self.assertTrue(parser.has_option("-v"))
         self.assertTrue(parser.has_option("--version"))
 
-
 if __name__ == "__main__":
     unittest.main()

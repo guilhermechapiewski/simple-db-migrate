@@ -1,10 +1,17 @@
+from logging import *
 import MySQLdb
+import sys
 
 class MySQL(object):
     
     def __init__(self, db_config_file):
         # read configurations
-        f = open(db_config_file, "r")
+        f = None
+        try:
+            f = open(db_config_file, "r")
+        except IOError:
+            Log().error_and_exit("%s: file not found" % db_config_file)
+        
         exec(f.read())
         f.close()
         

@@ -27,4 +27,4 @@ class CLI(object):
         return self.__parser
 
     def parse(self):
-        self.__parser.parse_args()
+        return self.__parser.parse_args()

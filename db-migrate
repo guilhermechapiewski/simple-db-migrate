@@ -6,4 +6,3 @@ from core import Main
 (options, args) = CLI().parse()
 
 Main().execute(options, args)
-    
