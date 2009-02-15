@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-from cli import CLI
-from core import Main
+from simple_db_migrate.cli import CLI
+from simple_db_migrate.core import Main
 
 (options, args) = CLI().parse()
 
