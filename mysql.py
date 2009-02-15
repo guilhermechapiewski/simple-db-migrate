@@ -20,32 +20,32 @@ class MySQL(object):
         self.__mysql_passwd__ = PASSWORD
         self.__mysql_db__ = DATABASE
                 
-        self.__create_database_if_not_exists__()
-        self.__create_version_table_if_not_exists__()
+        self.__create_database_if_not_exists()
+        self.__create_version_table_if_not_exists()
 
-    def __mysql_connect__(self, connect_to_db=True):
-        if connect_to_db: 
+    def __mysql_connect(self, connect_using_db_name=True):
+        if connect_using_db_name:
             return MySQLdb.connect(host=self.__mysql_host__, user=self.__mysql_user__, passwd=self.__mysql_passwd__, db=self.__mysql_db__)
         
         return MySQLdb.connect(host=self.__mysql_host__, user=self.__mysql_user__, passwd=self.__mysql_passwd__)
     
-    def __execute__(self, sql):
-        db = self.__mysql_connect__()
+    def __execute(self, sql):
+        db = self.__mysql_connect()
         db.query(sql)
         db.close()
         
-    def __create_database_if_not_exists__(self):
-        db = self.__mysql_connect__(False)
+    def __create_database_if_not_exists(self):
+        db = self.__mysql_connect(False)
         db.query("create database if not exists %s;" % self.__mysql_db__)
         db.close()
     
-    def __create_version_table_if_not_exists__(self):
+    def __create_version_table_if_not_exists(self):
         # create version table
         sql = "create table if not exists __db_version__ ( version int(11) NOT NULL default 0 )"
-        self.__execute__(sql)
+        self.__execute(sql)
         
         # check if there is a register there
-        db = self.__mysql_connect__()
+        db = self.__mysql_connect()
         cursor = db.cursor()
         cursor.execute("select count(*) from __db_version__")
         count = cursor.fetchone()[0]
@@ -54,18 +54,18 @@ class MySQL(object):
         # if there is not a version register, insert one
         if count == 0:
             sql = "insert into __db_version__ values (0)"
-            self.__execute__(sql)
+            self.__execute(sql)
     
-    def __set_new_db_version__(self, version):
+    def __set_new_db_version(self, version):
         sql = "update __db_version__ set version = %s" % str(version)
-        self.__execute__(sql)
+        self.__execute(sql)
     
     def change(self, sql, new_db_version):
-        self.__execute__(sql)
-        self.__set_new_db_version__(new_db_version)
+        self.__execute(sql)
+        self.__set_new_db_version(new_db_version)
         
     def get_current_db_version(self):
-        db = self.__mysql_connect__()
+        db = self.__mysql_connect()
         cursor = db.cursor()
         cursor.execute("select * from __db_version__")
         version = cursor.fetchone()[0]
