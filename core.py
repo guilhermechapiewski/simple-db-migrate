@@ -4,7 +4,7 @@ import os
 import sys
 
 class Main(object):
-    
+
     def execute(self, options, args):
     
         print "\nStarting DB migration..."
@@ -40,7 +40,7 @@ class Main(object):
 
         for sql_file in migration_files_to_be_executed:    
 
-            file_version = db_migrate.get_sql_version(sql_file)
+            file_version = db_migrate.get_migration_version(sql_file)
             if not migration_up:
                 file_version = destination_version
             
@@ -50,13 +50,12 @@ class Main(object):
         
         print "\nDone.\n"
 
-            
 class SimpleDBMigrate(object):
 
     def __init__(self, migrations_dir):
         self.__migrations_dir = migrations_dir
 
-    def get_all_sql_files(self):
+    def get_all_migration_files(self):
         dir_list = os.listdir(self.__migrations_dir)
         
         files = []
@@ -78,28 +77,29 @@ class SimpleDBMigrate(object):
         else:
             return SQL_DOWN
     
-    def get_sql_version(self, sql_file):
+    def get_migration_version(self, sql_file):
         return sql_file[0:sql_file.find("_")]
         
     def check_if_version_exists(self, version):
-        files = self.get_all_sql_files()
+        files = self.get_all_migration_files()
         for f in files:
             if f.startswith(version):
                 return True
         return False       
     
     def get_migration_files_between_versions(self, current_version, destination_version):
+        #TODO: make it less idiot :)
         migration_up = True
         if int(current_version) > int(destination_version):
             migration_up = False
         
-        all_files = self.get_all_sql_files()
+        all_files = self.get_all_migration_files()
         if not migration_up:
             all_files.reverse()
             
         migration_files = []
         for f in all_files:
-            f_version = self.get_sql_version(f)
+            f_version = self.get_migration_version(f)
             if migration_up:
                 if int(f_version) > int(current_version) and int(f_version) <= int(destination_version):
                     migration_files.append(f)
@@ -110,10 +110,9 @@ class SimpleDBMigrate(object):
         return migration_files
         
     def latest_schema_version_available(self):
-        all_files = self.get_all_sql_files()
+        all_files = self.get_all_migration_files()
         
         all_files.sort()
         all_files.reverse()
         
-        return self.get_sql_version(all_files[0])
-
+        return self.get_migration_version(all_files[0])
