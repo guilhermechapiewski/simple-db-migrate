@@ -2,9 +2,9 @@ import os
 import sys
 import unittest
 
-sys.path.insert(0, os.path.abspath("."))
+sys.path.insert(0, os.path.abspath("./src/simple_db_migrate"))
 sys.path.insert(0, os.path.abspath("./tests"))
-sys.path.insert(0, os.path.abspath("../"))
+sys.path.insert(0, os.path.abspath("../src/simple_db_migrate"))
 sys.path.insert(0, os.path.abspath("../tests"))
 
 if __name__ == "__main__":
