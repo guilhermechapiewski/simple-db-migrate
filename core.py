@@ -20,7 +20,7 @@ class Main(object):
         if not db_migrate.check_if_version_exists(destination_version):
             Log().error_and_exit("unknown version (%s)" % destination_version)
 
-        current_version = mysql.get_current_db_version()
+        current_version = mysql.get_current_schema_version()
         if str(current_version) == str(destination_version):
             Log().error_and_exit("current and destination versions are the same (%s)" % current_version)
 
