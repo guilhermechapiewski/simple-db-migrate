@@ -3,7 +3,7 @@
 from cli import CLI
 from core import Main
 
-(options, args) = CLI().start()
+(options, args) = CLI().parse()
 
 Main().execute(options, args)
     
