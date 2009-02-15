@@ -41,7 +41,7 @@ class MySQL(object):
     
     def __create_version_table_if_not_exists(self):
         # create version table
-        sql = "create table if not exists __db_version__ ( version int(11) NOT NULL default 0 );"
+        sql = "create table if not exists __db_version__ ( version varchar(20) NOT NULL default \"0\" );"
         self.__execute(sql)
         
         # check if there is a register there
@@ -57,7 +57,7 @@ class MySQL(object):
             self.__execute(sql)
     
     def __set_new_db_version(self, version):
-        sql = "update __db_version__ set version = %s;" % str(version)
+        sql = "update __db_version__ set version = \"%s\";" % str(version)
         self.__execute(sql)
     
     def change(self, sql, new_db_version):
