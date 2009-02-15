@@ -1,0 +1,7 @@
+Depends on python-mysqldb 1.2.2-7.
+
+This will be improved in the future.
+
+To install this dependency, use:
+
+	sudo apt-get install python-mysqldb
