@@ -1,4 +1,4 @@
-from _test_env import *
+from test import *
 from cli import *
 import unittest
 
