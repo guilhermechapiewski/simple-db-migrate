@@ -65,6 +65,9 @@ class SimpleDBMigrate(object):
             if dir_file.endswith(self.__migration_files_extension):
                 files.append(dir_file)
         
+        if len(files) == 0:
+            Log().error_and_exit("no migration files found")
+        
         files.sort()
         
         return files
