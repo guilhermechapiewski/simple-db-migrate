@@ -10,7 +10,7 @@
 	<style type="text/css">
 		body {
   		margin-top: 1.0em;
-  		background-color: #e4c46c;
+  		background-color: #e5e5e5;
 		  font-family: "helvetica"; 
   		color: #000000;
     }
@@ -46,7 +46,7 @@
     </div>
       
     <h1><a href="http://github.com/guilhermechapiewski/simple-db-migrate">simple-db-migrate</a> 
-      <span class="small">by <a href="http://github.com/guilhermechapiewski">guilhermechapiewski</a></small></h1>
+      <span class="small">by <a href="http://github.com/guilhermechapiewski">Guilherme Chapiewski</a></small></h1>
 
     <div class="description">
         simple-db-migrate is a database versioning and migration tool inspired on <a href="http://wiki.rubyonrails.org/rails/pages/understandingmigrations).%3C/p">Rails Migrations</a>.
@@ -56,12 +56,9 @@
         The main difference is that Rails migrations are intended to be used on Ruby projects while simple-db-migrate makes it possible to have migrations with any kind project or language (Java, Python, Ruby, PHP, whatever).
         <br /><br />
         This is possible because simple-db-migrate uses database's DDL (Data Definition Language) to do the database operations, while Rails Migrations are written in a Ruby DSL.
+        <br /> <br />
+        For now simple-db-migrate only works on MySQL databases, but it will support other databases in a near future. Come back to check soon. You can also follow the project roadmap and changes at <a href="http://simple-db-migrate.lighthouseapp.com/projects/25437-simple-db-migrate/overview">Lighthouse</a>.
     </div>
-
-    <h2>Report bugs and request features</h2>
-    <p>
-        You can report bugs and request new features through <a href="http://simple-db-migrate.lighthouseapp.com/projects/25437-simple-db-migrate/overview">Lighthouse</a>. 
-    </p>
 
     <h2>Download</h2>
     <p>
@@ -73,7 +70,33 @@
       by running:
       <pre>$ git clone git://github.com/guilhermechapiewski/simple-db-migrate</pre>
     </p>
-      
+    
+    <h2>Installation</h2>
+    <p>
+        Download the project and then run:
+        <pre>$ sudo python setup.py install</pre>
+    </p>
+    <p>
+        simple-db-migrate depends on mysql-python module. To install it, you can <a href="http://sourceforge.net/projects/mysql-python">download the source from Sourceforge</a> or install via apt:
+        <pre>$ sudo apt-get install python-mysqldb</pre>
+    </p>
+    
+    <h2>Usage instructions</h2>
+    <p>
+        For usage instructions check the "DOCUMENTATION.txt" file and the "example" directory on the project root. For more instructions you can type on your shell:
+        <pre>$ db-migrate --help</pre>
+    </p>
+
+    <h2>Report bugs and request features</h2>
+    <p>
+        You can report bugs and request new features through the project's issue tracking system at <a href="http://simple-db-migrate.lighthouseapp.com/projects/25437-simple-db-migrate/overview">Lighthouse</a>. 
+    </p>
+
+    <h2>Developer</h2>
+    <p>
+        simple-db-migrate is an open-source project developed by <a href="http://gc.blog.br">Guilherme Chapiewski</a> under <a href="http://www.apache.org/licenses/LICENSE-2.0.html">Apache License 2.0</a>. 
+    </p>
+    
     <div class="footer">
       get the source code on GitHub : <a href="http://github.com/guilhermechapiewski/simple-db-migrate">guilhermechapiewski/simple-db-migrate</a>
     </div>
