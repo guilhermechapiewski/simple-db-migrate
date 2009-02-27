@@ -10,12 +10,17 @@ class CLITest(unittest.TestCase):
         
         self.assertTrue(parser.has_option("-h"))
         self.assertTrue(parser.has_option("--help"))
+        
         self.assertTrue(parser.has_option("-c"))
         self.assertTrue(parser.has_option("--config"))
+        
         self.assertTrue(parser.has_option("-d"))
         self.assertTrue(parser.has_option("--dir"))
+        
         self.assertTrue(parser.has_option("-v"))
         self.assertTrue(parser.has_option("--version"))
+        
+        self.assertTrue(parser.has_option("--showsql"))
 
 if __name__ == "__main__":
     unittest.main()

@@ -22,6 +22,12 @@ class CLI(object):
                 dest="migrations_dir", 
                 default=".", 
                 help="Find migration files in a specific directory. If not provided will search for files in the current directory.")
+                
+        self.__parser.add_option("--showsql", 
+                action="store_true", 
+                dest="show_sql", 
+                default=False, 
+                help="Show all SQL statements executed.")
 
     def get_parser(self):
         return self.__parser

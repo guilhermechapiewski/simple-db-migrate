@@ -37,7 +37,8 @@ class Main(object):
 
         # getting only the migration sql files to be executed
         migration_files_to_be_executed = db_migrate.get_migration_files_between_versions(current_version, destination_version)
-
+        
+        sql_statements_executed = ""
         for sql_file in migration_files_to_be_executed:    
 
             file_version = db_migrate.get_migration_version(sql_file)
@@ -47,8 +48,16 @@ class Main(object):
             print "===== executing %s (%s) =====" % (sql_file, migration)
             sql = db_migrate.get_sql_command(sql_file, migration_up)
             mysql.change(sql, file_version)
+            
+            #recording the last statement executed
+            sql_statements_executed += sql
         
         print "\nDone.\n"
+        
+        if options.show_sql:
+            print "__________ SQL statements executed __________"
+            print sql_statements_executed
+            print "_____________________________________________\n"
 
 class SimpleDBMigrate(object):
     

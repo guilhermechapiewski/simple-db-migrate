@@ -24,10 +24,13 @@ class MySQL(object):
         self.__create_version_table_if_not_exists()
 
     def __mysql_connect(self, connect_using_db_name=True):
-        if connect_using_db_name:
-            return self.__mysql_driver.connect(host=self.__mysql_host__, user=self.__mysql_user__, passwd=self.__mysql_passwd__, db=self.__mysql_db__)
+        try:
+            if connect_using_db_name:
+                return self.__mysql_driver.connect(host=self.__mysql_host__, user=self.__mysql_user__, passwd=self.__mysql_passwd__, db=self.__mysql_db__)
         
-        return self.__mysql_driver.connect(host=self.__mysql_host__, user=self.__mysql_user__, passwd=self.__mysql_passwd__)
+            return self.__mysql_driver.connect(host=self.__mysql_host__, user=self.__mysql_user__, passwd=self.__mysql_passwd__)
+        except Exception:
+            Log().error_and_exit("could not connect to database")
     
     def __execute(self, sql):
         db = self.__mysql_connect()
