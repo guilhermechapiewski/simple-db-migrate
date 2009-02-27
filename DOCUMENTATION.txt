@@ -1,0 +1,75 @@
+simple-db-migrate documentation
+-------------------------------
+
+QUICK START
+===========
+
+simple-db-migrate is damn simple. The best way to understand how it works is installing and using it.
+
+You can install it by typing:
+
+    $ sudo python setup.py install
+
+After installing, for usage tips type:
+
+    $ db-migrate --help
+
+
+UNDERSTANDING HOW IT WORKS
+==========================
+
+The first thing you'll need is a migration file. There are some example migration files on the "example" directory. The migration files have the following format:
+
+    SQL_UP = """
+    CREATE TABLE aleatory (
+      id int(11) NOT NULL auto_increment,
+      name varchar(255) default NULL,
+      PRIMARY KEY  (id)
+    );
+    """
+
+    SQL_DOWN = """
+    DROP TABLE aleatory;
+    """
+    
+... where SQL_UP and SQL_DOWN are two strings that contains respectively the SQL statements to upgrade and downgrade the database schema.
+
+The file names need to respect the format "YYYYMMDDHHMMSS_migration_description.migration". simple-db-migrate uses the YYYYMMDDHHMMSS information to track the database schema version and to decide the order of execution of the scripts. simple-db-migrate will go through all .migration files in your directory and execute all of them in their creation (date) order.
+
+Second, you have to configure access to your MySQL database so simple-db-migrate can execute DDL. Just create a file named "simple-db-migrate.conf" located in your migrations dir, with the following content (there is also an example on the "example" directory):
+
+    HOST = "localhost"
+    USERNAME = "root"
+    PASSWORD = ""
+    DATABASE = "migration_example"
+    
+You don't need to create the database. simple-db-migrate will create it for you.
+
+After this two things ou are ready to go. Just navigate to your migrations directory and type:
+
+    $ db-migrate
+    
+If you don't want to navigate to the directory, you can specify it path instead. In this case you will also need to specify the path to the config file. Note that this also makes it possible to use any name you like for the config file:
+
+    $ db-migrate --dir=path/to/migrations/dir --config=path/to/file.conf
+
+
+MIGRATING TO A SPECIFIC VERSION
+===============================
+
+If you want you can migrate your database schema to specific version by informing the --version parameter. The version id is the YYYYMMDDHHMMSS identifier used at the migration file:
+
+    $ db-migrate --version=20090227000129
+    
+If you don't specify any version, simple-db-migrate will migrate the schema to the latest version available on the migrations directory.
+
+
+ROADMAP, BUG REPORTING AND FEATURE REQUESTS
+===========================================
+
+Go to the project's ticket system at http://simple-db-migrate.lighthouseapp.com/projects/25437-simple-db-migrate/overview.
+
+
+OTHER QUESTIONS
+===============
+Mail me at "guilherme.chapiewski at gmail.com".
