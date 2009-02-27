@@ -33,9 +33,22 @@ class SimpleDBMigrateTest(unittest.TestCase):
         file_in_the_future = "21420101000000_example_migration_file.migration"
         self.__create_empty_file(file_in_the_future)
         self.__test_migration_files.append(file_in_the_future)
+        
+        # random migration files with bad names
+        self.__test_migration_files_with_bad_names = ["randomrandomrandom.migration", 
+                "21420101000000-wrong-separators.migration", 
+                "2009021401_old_file_name_style.migration"
+                "20090214120600_good_name_bad_extension.foo",
+                "spamspamspamspamspaam"]
+        
+        for each_file in self.__test_migration_files_with_bad_names:
+            self.__create_empty_file(each_file)
     
     def tearDown(self):
         for each_file in self.__test_migration_files:
+            os.remove(each_file)
+
+        for each_file in self.__test_migration_files_with_bad_names:
             os.remove(each_file)
 
     def test_it_should_get_all_migration_files_in_dir(self):
@@ -43,6 +56,16 @@ class SimpleDBMigrateTest(unittest.TestCase):
         migration_files = db_migrate.get_all_migration_files()
         for each_file in migration_files:
             self.assertTrue(each_file in self.__test_migration_files)
+            
+    def test_it_should_get_only_valid_migration_files_in_dir(self):
+        db_migrate = SimpleDBMigrate(".")
+        migration_files = db_migrate.get_all_migration_files()
+        
+        for file_name in self.__test_migration_files:
+            self.assertTrue(file_name in migration_files)
+            
+        for bad_file_name in self.__test_migration_files_with_bad_names:
+            self.assertFalse(bad_file_name in migration_files)
             
     def test_it_should_get_migration_up_command_in_file(self):
         db_migrate = SimpleDBMigrate(".")
@@ -102,6 +125,15 @@ class SimpleDBMigrateTest(unittest.TestCase):
         db_migrate = SimpleDBMigrate(".")
         latest_version = db_migrate.latest_schema_version_available()
         self.assertEquals(latest_version, "21420101000000")
-    
+        
+    def test_it_should_validate_file_name_format_mask(self):
+        db_migrate = SimpleDBMigrate(".")
+        
+        for file_name in self.__test_migration_files:
+            self.assertTrue(db_migrate.is_file_name_valid(file_name))
+        
+        for bad_file_name in self.__test_migration_files_with_bad_names:
+            self.assertFalse(db_migrate.is_file_name_valid(bad_file_name))
+            
 if __name__ == "__main__":
     unittest.main()

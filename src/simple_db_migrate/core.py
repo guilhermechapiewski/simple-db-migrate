@@ -1,10 +1,12 @@
 from logging import *
 from mysql import MySQL
 import os
+import re
 import sys
 
 class Main(object):
 
+    #TODO: too big, needs refactor
     def execute(self, options, args):
     
         print "\nStarting DB migration..."
@@ -71,7 +73,7 @@ class SimpleDBMigrate(object):
         
         files = []
         for dir_file in dir_list:
-            if dir_file.endswith(self.__migration_files_extension):
+            if self.is_file_name_valid(dir_file):
                 files.append(dir_file)
         
         if len(files) == 0:
@@ -130,3 +132,8 @@ class SimpleDBMigrate(object):
         all_files.reverse()
         
         return self.get_migration_version(all_files[0])
+    
+    def is_file_name_valid(self, file_name):
+        mask = r"[0-9]{14}\w+%s" % self.__migration_files_extension
+        match = re.match(mask, file_name, re.IGNORECASE)
+        return match != None
