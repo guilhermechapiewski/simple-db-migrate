@@ -18,4 +18,4 @@ coverage:
 	./scripts/run_coverage.sh
 
 install:
-	/usr/bin/env python ./scripts/setup.py install
+	/usr/bin/env python setup.py install
