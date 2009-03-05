@@ -1,68 +1,11 @@
 from logging import *
 from mysql import MySQL
+from time import strftime
 import os
+import shutil
 import re
-import sys
-
-class Main(object):
-
-    #TODO: too big, needs refactor
-    def execute(self, options, args):
-    
-        print "\nStarting DB migration..."
-
-        mysql = MySQL(options.db_config_file)
-        db_migrate = SimpleDBMigrate(options.migrations_dir)
-
-        destination_version = options.schema_version
-
-        if destination_version == None:
-            destination_version = db_migrate.latest_schema_version_available()
-
-        if not db_migrate.check_if_version_exists(destination_version):
-            Log().error_and_exit("version not found (%s)" % destination_version)
-
-        current_version = mysql.get_current_schema_version()
-        if str(current_version) == str(destination_version):
-            Log().error_and_exit("current and destination versions are the same (%s)" % current_version)
-
-        print "- Current version is: %s" % current_version
-        print "- Destination version is: %s" % destination_version
-
-        migration_up = True
-        migration = "up"
-        if int(current_version) > int(destination_version):
-            migration_up = False
-            migration = "down"
-
-        print "\nStarting migration %s!\n" % migration
-
-        # getting only the migration sql files to be executed
-        migration_files_to_be_executed = db_migrate.get_migration_files_between_versions(current_version, destination_version)
-        
-        sql_statements_executed = ""
-        for sql_file in migration_files_to_be_executed:    
-
-            file_version = db_migrate.get_migration_version(sql_file)
-            if not migration_up:
-                file_version = destination_version
-            
-            print "===== executing %s (%s) =====" % (sql_file, migration)
-            sql = db_migrate.get_sql_command(sql_file, migration_up)
-            mysql.change(sql, file_version)
-            
-            #recording the last statement executed
-            sql_statements_executed += sql
-        
-        print "\nDone.\n"
-        
-        if options.show_sql:
-            print "__________ SQL statements executed __________"
-            print sql_statements_executed
-            print "_____________________________________________\n"
 
 class SimpleDBMigrate(object):
-    
     __migration_files_extension = ".migration"
     
     def __init__(self, migrations_dir):
@@ -137,3 +80,29 @@ class SimpleDBMigrate(object):
         mask = r"[0-9]{14}\w+%s" % self.__migration_files_extension
         match = re.match(mask, file_name, re.IGNORECASE)
         return match != None
+        
+    def create_migration(self, migration_name):
+        timestamp = strftime("%Y%m%d%H%M%S")        
+        file_name = "%s_%s%s" % (timestamp, migration_name, self.__migration_files_extension)
+        
+        if not self.is_file_name_valid(file_name):
+            Log().error_and_exit("invalid migration name; it should contain only letters, numbers and/or underscores ('%s')" % migration_name)
+        
+        new_file = "%s/%s" % (self.__migrations_dir, file_name)
+        
+        try:
+            f = open(new_file, "w")
+            f.write(MigrationFile.template)
+            f.close()
+        except IOError:
+            Log().error_and_exit("could not create file ('%s')" % new_file)
+            
+        return file_name
+        
+class MigrationFile(object):
+    template = '''SQL_UP = """
+
+"""
+
+SQL_DOWN = """
+"""'''

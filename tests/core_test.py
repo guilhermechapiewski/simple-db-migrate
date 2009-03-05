@@ -1,6 +1,7 @@
 from test import *
 from core import *
 from pmock import *
+import os
 import unittest
 
 class SimpleDBMigrateTest(unittest.TestCase):
@@ -50,6 +51,15 @@ class SimpleDBMigrateTest(unittest.TestCase):
 
         for each_file in self.__test_migration_files_with_bad_names:
             os.remove(each_file)
+        
+        # eventually the tests that fail leave some garbage behind
+        # this is to clean up the mess
+        try:
+            db_migrate = SimpleDBMigrate(".")
+            for each_file in db_migrate.get_all_migration_files():
+                os.remove(each_file)
+        except:
+            pass
 
     def test_it_should_get_all_migration_files_in_dir(self):
         db_migrate = SimpleDBMigrate(".")
@@ -134,6 +144,24 @@ class SimpleDBMigrateTest(unittest.TestCase):
         
         for bad_file_name in self.__test_migration_files_with_bad_names:
             self.assertFalse(db_migrate.is_file_name_valid(bad_file_name))
+            
+    def test_it_should_create_migration_file(self):
+        db_migrate = SimpleDBMigrate(".")
+        new_migration_file_name = db_migrate.create_migration("create_a_migration_file")
+        
+        self.assertTrue(db_migrate.is_file_name_valid(new_migration_file_name))
+        self.assertTrue(os.path.exists(new_migration_file_name))
+        
+        # register file to be deleted
+        self.__test_migration_files.append(new_migration_file_name)
+        
+    def test_it_should_not_create_migration_file_with_bad_name(self):
+        db_migrate = SimpleDBMigrate(".")
+        try:
+            db_migrate.create_migration("INVALID FILE NAME")
+            self.fail("it should not pass here")
+        except:
+            pass
             
 if __name__ == "__main__":
     unittest.main()

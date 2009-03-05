@@ -1,8 +1,9 @@
 #!/usr/bin/python
 
 from simple_db_migrate.cli import CLI
-from simple_db_migrate.core import Main
+from simple_db_migrate.main import Main
 
 (options, args) = CLI().parse()
 
-Main().execute(options, args)
+# If CLI was correctly parsed, execute db-migrate.
+Main(options, args).execute()

@@ -2,6 +2,8 @@ import os
 import sys
 import unittest
 
+ENVIRONMENT = "TEST"
+
 sys.path.insert(0, os.path.abspath("./src/simple_db_migrate"))
 sys.path.insert(0, os.path.abspath("./tests"))
 sys.path.insert(0, os.path.abspath("../src/simple_db_migrate"))
