@@ -7,7 +7,7 @@ setup(
     package_dir = {"":"src"},
     scripts = ["src/db-migrate"],
     
-    #install_requires = ["mysql>=2.0"], #TODO: install mysql as dependency
+    #install_requires = ["mysql==1.2.2"], #TODO: install mysql as dependency
 
     author = "Guilherme Chapiewski",
     author_email = "guilherme.chapiewski@gmail.com",
