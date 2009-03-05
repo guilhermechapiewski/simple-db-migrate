@@ -2,12 +2,12 @@ from setuptools import setup, find_packages
 
 setup(
     name = "SimpleDBMigrate",
-    version = "1.0",
+    version = "1.1",
     packages = find_packages("src"),
     package_dir = {"":"src"},
     scripts = ["src/db-migrate"],
     
-    install_requires = ["mysql==1.2.2"], 
+    install_requires = ["mysql-python>=1.2.2"], 
 
     author = "Guilherme Chapiewski",
     author_email = "guilherme.chapiewski@gmail.com",
