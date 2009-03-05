@@ -1,3 +1,6 @@
 .coverage
 *.pyc
 *~
+build
+dist
+src/SimpleDBMigrate.egg-info
