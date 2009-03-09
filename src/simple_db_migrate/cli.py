@@ -32,7 +32,7 @@ class CLI(object):
         self.__parser.add_option("--create", 
                 dest="create_migration", 
                 default=None, 
-                help="Use specific config file. If not provided, will use simple-db-migrate.conf that is located in the current directory.")
+                help="Create migration file with given nickname.")
 
     def get_parser(self):
         return self.__parser
