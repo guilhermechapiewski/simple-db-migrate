@@ -42,6 +42,10 @@ class SimpleDBMigrate(object):
         for each_file in migration_files:
             versions.append(self.get_migration_version(each_file))
         return versions
+        
+    def get_all_migration_versions_up_to(self, limit_version):
+        all_versions = self.get_all_migration_versions()
+        return [version for version in all_versions if version < limit_version]
     
     def get_migration_version(self, sql_file):
         return sql_file[0:sql_file.find("_")]

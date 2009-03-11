@@ -87,7 +87,13 @@ class SimpleDBMigrateTest(unittest.TestCase):
         all_versions = db_migrate.get_all_migration_versions()
         for each_version_got in all_versions:
             self.assertTrue(each_version_got in expected_versions)
-    
+            
+    def test_it_should_get_all_migration_versions_up_to_a_version(self):
+        db_migrate = SimpleDBMigrate(".")
+        migration_files = db_migrate.get_all_migration_versions_up_to("20090214115200")
+        self.assertEquals(len(migration_files), 1)
+        self.assertEquals(migration_files[0], "20090214115100")    
+        
     def test_it_should_get_migration_up_command_in_file(self):
         db_migrate = SimpleDBMigrate(".")
         migration_file = "20090214120600_example_migration_file_with_commands.migration"
