@@ -59,13 +59,18 @@ class MySQL(object):
             sql = "insert into __db_version__ values (0);"
             self.__execute(sql)
     
-    def __insert_new_db_version(self, version):
-        sql = "insert into __db_version__ (version) values (\"%s\");" % str(version)
+    def __change_db_version(self, version, up=True):
+        if up:
+            # moving up and storing history
+            sql = "insert into __db_version__ (version) values (\"%s\");" % str(version)
+        else:
+            # moving down and deleting from history
+            sql = "delete from __db_version__ where version > \"%s\";" % str(version)
         self.__execute(sql)
     
-    def change(self, sql, new_db_version):
+    def change(self, sql, new_db_version, up=True):
         self.__execute(sql)
-        self.__insert_new_db_version(new_db_version)
+        self.__change_db_version(new_db_version, up)
         
     def get_current_schema_version(self):
         db = self.__mysql_connect()

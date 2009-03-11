@@ -58,7 +58,7 @@ class Main(object):
             
             print "===== executing %s (%s) =====" % (sql_file, migration)
             sql = self.__db_migrate.get_sql_command(sql_file, migration_up)
-            self.__mysql.change(sql, file_version)
+            self.__mysql.change(sql, file_version, migration_up)
             
             #recording the last statement executed
             sql_statements_executed += sql

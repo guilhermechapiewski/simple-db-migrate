@@ -47,21 +47,36 @@ class MySQLTest(unittest.TestCase):
         
         mysql = MySQL("test.conf", mysql_driver_mock)
         
-    def test_it_should_execute_changes_and_update_schema_version(self):
+    def test_it_should_execute_migration_up_and_remove_from_schema_version(self):
         mysql_driver_mock = Mock()
         db_mock = Mock()
         cursor_mock = Mock()
-        
+
         self.__create_init_expectations(mysql_driver_mock, db_mock, cursor_mock)
-                
+
         db_mock.expects(once()).method("query").query(eq("create table spam();"))
         db_mock.expects(once()).method("close")
         db_mock.expects(once()).method("query").query(eq("insert into __db_version__ (version) values (\"20090212112104\");"))
         db_mock.expects(once()).method("close")
-        
+
         mysql = MySQL("test.conf", mysql_driver_mock)
         mysql.change("create table spam();", "20090212112104")
-        
+
+    def test_it_should_execute_migration_down_and_update_schema_version(self):
+        mysql_driver_mock = Mock()
+        db_mock = Mock()
+        cursor_mock = Mock()
+
+        self.__create_init_expectations(mysql_driver_mock, db_mock, cursor_mock)
+
+        db_mock.expects(once()).method("query").query(eq("create table spam();"))
+        db_mock.expects(once()).method("close")
+        db_mock.expects(once()).method("query").query(eq("delete from __db_version__ where version > \"20090212112104\";"))
+        db_mock.expects(once()).method("close")
+
+        mysql = MySQL("test.conf", mysql_driver_mock)
+        mysql.change("create table spam();", "20090212112104", False)
+
     def test_it_should_get_current_schema_version(self):
         mysql_driver_mock = Mock()
         db_mock = Mock()
