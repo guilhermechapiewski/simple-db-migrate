@@ -2,8 +2,6 @@ import os
 import sys
 import unittest
 
-ENVIRONMENT = "TEST"
-
 sys.path.insert(0, os.path.abspath("./src/simple_db_migrate"))
 sys.path.insert(0, os.path.abspath("./tests"))
 sys.path.insert(0, os.path.abspath("../src/simple_db_migrate"))
@@ -28,7 +26,7 @@ if __name__ == "__main__":
     alltests.run(result)
        
     if result.wasSuccessful():
-        print "\nAll %d tests passed :)\n" % result.testsRun
+        print "\n*** All %d tests passed :) ***\n" % result.testsRun
     else:
         print "\nError in tests (%d runned, %d errors, %d failures)\n" % (result.testsRun, len(result.errors), len(result.failures))
 

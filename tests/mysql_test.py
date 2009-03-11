@@ -56,7 +56,7 @@ class MySQLTest(unittest.TestCase):
                 
         db_mock.expects(once()).method("query").query(eq("create table spam();"))
         db_mock.expects(once()).method("close")
-        db_mock.expects(once()).method("query").query(eq("update __db_version__ set version = \"20090212112104\";"))
+        db_mock.expects(once()).method("query").query(eq("insert into __db_version__ (version) values (\"20090212112104\");"))
         db_mock.expects(once()).method("close")
         
         mysql = MySQL("test.conf", mysql_driver_mock)
@@ -69,7 +69,7 @@ class MySQLTest(unittest.TestCase):
         
         self.__create_init_expectations(mysql_driver_mock, db_mock, cursor_mock)
         
-        cursor_mock.expects(once()).method("execute").execute(eq("select version from __db_version__;"))
+        cursor_mock.expects(once()).method("execute").execute(eq("select version from __db_version__ order by version desc limit 0,1;"))
         cursor_mock.expects(once()).method("fetchone").will(return_value("0"))
         db_mock.expects(once()).method("close")
         

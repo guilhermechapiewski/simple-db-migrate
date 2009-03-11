@@ -59,18 +59,18 @@ class MySQL(object):
             sql = "insert into __db_version__ values (0);"
             self.__execute(sql)
     
-    def __set_new_db_version(self, version):
-        sql = "update __db_version__ set version = \"%s\";" % str(version)
+    def __insert_new_db_version(self, version):
+        sql = "insert into __db_version__ (version) values (\"%s\");" % str(version)
         self.__execute(sql)
     
     def change(self, sql, new_db_version):
         self.__execute(sql)
-        self.__set_new_db_version(new_db_version)
+        self.__insert_new_db_version(new_db_version)
         
     def get_current_schema_version(self):
         db = self.__mysql_connect()
         cursor = db.cursor()
-        cursor.execute("select version from __db_version__;")
+        cursor.execute("select version from __db_version__ order by version desc limit 0,1;")
         version = cursor.fetchone()[0]
         db.close()
         return version
