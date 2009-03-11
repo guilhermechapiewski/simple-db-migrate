@@ -76,7 +76,18 @@ class SimpleDBMigrateTest(unittest.TestCase):
             
         for bad_file_name in self.__test_migration_files_with_bad_names:
             self.assertFalse(bad_file_name in migration_files)
-            
+    
+    def test_it_should_get_all_migration_versions_available(self):
+        db_migrate = SimpleDBMigrate(".")
+        migration_files = db_migrate.get_all_migration_files()
+        expected_versions = []
+        for each_file in migration_files:
+            expected_versions.append(db_migrate.get_migration_version(each_file))
+        
+        all_versions = db_migrate.get_all_migration_versions()
+        for each_version_got in all_versions:
+            self.assertTrue(each_version_got in expected_versions)
+    
     def test_it_should_get_migration_up_command_in_file(self):
         db_migrate = SimpleDBMigrate(".")
         migration_file = "20090214120600_example_migration_file_with_commands.migration"

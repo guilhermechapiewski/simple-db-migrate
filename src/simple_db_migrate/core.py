@@ -36,6 +36,13 @@ class SimpleDBMigrate(object):
         else:
             return SQL_DOWN
     
+    def get_all_migration_versions(self):
+        versions = []
+        migration_files = self.get_all_migration_files()
+        for each_file in migration_files:
+            versions.append(self.get_migration_version(each_file))
+        return versions
+    
     def get_migration_version(self, sql_file):
         return sql_file[0:sql_file.find("_")]
         
