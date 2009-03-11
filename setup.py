@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "SimpleDBMigrate",
-    version = "1.1",
+    version = "1.2",
     packages = find_packages("src"),
     package_dir = {"":"src"},
     scripts = ["src/db-migrate"],
