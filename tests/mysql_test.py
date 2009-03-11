@@ -91,7 +91,7 @@ class MySQLTest(unittest.TestCase):
         mysql = MySQL("test.conf", mysql_driver_mock)
         self.assertEquals("0", mysql.get_current_schema_version())
 
-    def test_it_should_get_all_db_versions(self):
+    def test_it_should_get_all_schema_versions(self):
         mysql_driver_mock = Mock()
         db_mock = Mock()
         cursor_mock = Mock()
