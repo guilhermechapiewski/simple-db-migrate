@@ -91,5 +91,30 @@ class MySQLTest(unittest.TestCase):
         mysql = MySQL("test.conf", mysql_driver_mock)
         self.assertEquals("0", mysql.get_current_schema_version())
 
+    def test_it_should_get_all_db_versions(self):
+        mysql_driver_mock = Mock()
+        db_mock = Mock()
+        cursor_mock = Mock()
+        
+        self.__create_init_expectations(mysql_driver_mock, db_mock, cursor_mock)
+        
+        expected_versions = []
+        expected_versions.append("0")
+        expected_versions.append("20090211120001")
+        expected_versions.append("20090211120002")
+        expected_versions.append("20090211120003")
+        
+        db_mock.expects(at_least_once()).method("cursor").will(return_value(cursor_mock))
+        cursor_mock.expects(once()).method("execute").execute(eq("select version from __db_version__ order by version;"))
+        cursor_mock.expects(once()).method("fetchall").will(return_value(tuple(zip(expected_versions))))
+        db_mock.expects(once()).method("close")
+        
+        mysql = MySQL("test.conf", mysql_driver_mock)
+        
+        schema_versions = mysql.get_all_schema_versions()
+        self.assertEquals(len(expected_versions), len(schema_versions))
+        for version in schema_versions:
+            self.assertTrue(version in expected_versions)
+
 if __name__ == "__main__":
     unittest.main()

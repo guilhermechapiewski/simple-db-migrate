@@ -79,4 +79,15 @@ class MySQL(object):
         version = cursor.fetchone()[0]
         db.close()
         return version
-
+    
+    def get_all_schema_versions(self):
+        versions = []
+        db = self.__mysql_connect()
+        cursor = db.cursor()
+        cursor.execute("select version from __db_version__ order by version;")
+        all_versions = cursor.fetchall()
+        for version in all_versions:
+            versions.append(version[0])
+        db.close()
+        versions.sort()
+        return versions
