@@ -12,17 +12,17 @@ class CLI(object):
         self.__parser.add_option("-v", "--version", 
                 dest="schema_version", 
                 default=None, 
-                help="Schema version to migrate to. If not provided will migrate to the last version available.")
+                help="Schema version to migrate to. If not provided will migrate to the last version available in the migrations directory.")
                 
         self.__parser.add_option("-c", "--config", 
                 dest="db_config_file", 
                 default="simple-db-migrate.conf", 
-                help="Use specific config file. If not provided, will use simple-db-migrate.conf that is located in the current directory.")
+                help="Use a specific config file. If not provided, will search for 'simple-db-migrate.conf' in the current directory.")
                 
         self.__parser.add_option("-d", "--dir", 
                 dest="migrations_dir", 
                 default=".", 
-                help="Find migration files in a specific directory. If not provided will search for files in the current directory.")
+                help="Try to find migration files in a specific directory. If not provided will search for files in the current directory.")
                 
         self.__parser.add_option("--showsql", 
                 action="store_true", 
@@ -30,10 +30,16 @@ class CLI(object):
                 default=False, 
                 help="Show all SQL statements executed.")
 
-        self.__parser.add_option("--create", 
+        self.__parser.add_option("--create", "--new", 
                 dest="create_migration", 
                 default=None, 
-                help="Create migration file with given nickname.")
+                help="Create migration file with the given nickname. The nickname should contain only lowercase characters and underscore '_'. Example: 'create_table_xyz'.")
+                
+        self.__parser.add_option("--drop", "--drop-database-first",
+                action="store_true", 
+                dest="drop_db_first", 
+                default=False, 
+                help="Drop database before running migrations to create everything from scratch. Useful when the database schema is corrupted and the migration scripts are not working.")
 
     def get_parser(self):
         return self.__parser
