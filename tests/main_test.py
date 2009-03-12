@@ -5,14 +5,17 @@ import unittest
 
 class MainTest(unittest.TestCase):
     
+    def __init__(self):
+        self.database_versions = []
+        self.database_versions.append("0")
+        self.database_versions.append("20090211120000")
+        self.database_versions.append("20090211120001")
+        self.database_versions.append("20090211120002")
+        self.database_versions.append("20090211120003")
+        self.database_versions.append("20090212120000")
+    
     def test_it_should_get_all_migration_files_that_must_be_executed_considering_database_version_when_migrating_up(self):
-        database_versions = []
-        database_versions.append("0")
-        database_versions.append("20090211120000")
-        database_versions.append("20090211120001")
-        database_versions.append("20090211120002")
-        database_versions.append("20090211120003")
-        database_versions.append("20090212120000")
+        database_versions = self.database_versions
         
         migration_files_versions = database_versions[:]
         migration_files_versions.append("20090211120005")
@@ -37,13 +40,7 @@ class MainTest(unittest.TestCase):
         self.assertEquals(migrations_to_be_executed[2], "20090212120005")
     
     def test_it_should_get_all_migration_files_that_must_be_executed_considering_database_version_when_migrating_up_and_current_destination_versions_are_the_same(self):
-        database_versions = []
-        database_versions.append("0")
-        database_versions.append("20090211120000")
-        database_versions.append("20090211120001")
-        database_versions.append("20090211120002")
-        database_versions.append("20090211120003")
-        database_versions.append("20090212120000")
+        database_versions = self.database_versions
 
         migration_files_versions = database_versions[:]
         migration_files_versions.append("20090211120005")
@@ -66,15 +63,8 @@ class MainTest(unittest.TestCase):
         self.assertEquals(migrations_to_be_executed[1], "20090211120006")
     
     def test_it_should_get_all_migration_files_that_must_be_executed_considering_database_version_when_migrating_down(self):
-        database_versions = []
-        database_versions.append("0")
-        database_versions.append("20090211120000")
-        database_versions.append("20090211120001")
-        database_versions.append("20090211120002")
-        database_versions.append("20090211120003")
-        database_versions.append("20090212120000")
-
-        migration_files_versions = database_versions[:]
+        database_versions = self.database_versions
+        migration_files_versions = self.database_versions[:] #copy
 
         # mocking stuff
         mysql_mock = Mock()
@@ -94,14 +84,7 @@ class MainTest(unittest.TestCase):
         self.assertEquals(migrations_to_be_executed[2], "20090211120002")
         
     def test_it_should_show_an_error_message_if_tries_to_migrate_down_and_migration_file_does_not_exists(self):
-        database_versions = []
-        database_versions.append("0")
-        database_versions.append("20090211120000")
-        database_versions.append("20090211120001")
-        database_versions.append("20090211120002")
-        database_versions.append("20090211120003")
-        database_versions.append("20090212120000")
-
+        database_versions = self.database_versions
         migration_files_versions = [] #empty
     
         # mocking stuff
