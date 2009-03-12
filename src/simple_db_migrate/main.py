@@ -32,9 +32,6 @@ class Main(object):
         destination_version = self._get_destination_version()
         current_version = self.__mysql.get_current_schema_version()
         
-        if str(current_version) == str(destination_version):
-            Log().error_and_exit("current and destination versions are the same (%s)" % current_version)
-
         print "- Current version is: %s" % current_version
         print "- Destination version is: %s" % destination_version
 
