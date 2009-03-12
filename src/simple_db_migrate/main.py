@@ -2,6 +2,7 @@ from core import SimpleDBMigrate
 from helpers import Lists
 from mysql import MySQL
 from logging import Log
+import sys
 
 class Main(object):
     def __init__(self, options=None, args=None, mysql=None, db_migrate=None):
@@ -41,8 +42,6 @@ class Main(object):
         if int(current_version) > int(destination_version):
             is_migration_up = False
 
-        print "\nStarting migration %s!\n" % "up" if is_migration_up else "down"
-
         # do it!
         self._execute_migrations(current_version, destination_version, is_migration_up)
 
@@ -75,18 +74,23 @@ class Main(object):
         
     def _execute_migrations(self, current_version, destination_version, is_migration_up):
         # getting only the migration sql files to be executed
-        migration_files_to_be_executed = self._get_migration_files_to_be_executed(current_version, destination_version)
+        versions_to_be_executed = self._get_migration_files_to_be_executed(current_version, destination_version)
+        
+        if versions_to_be_executed is None or len(versions_to_be_executed) == 0:
+            print "\nNothing to do.\n"
+            sys.exit(0)
+        
+        up_down_label = "up" if is_migration_up else "down"
+        print "\nStarting migration %s!" % up_down_label
+        print "*** will run %s\n" % versions_to_be_executed
         
         sql_statements_executed = ""
-        for sql_file in migration_files_to_be_executed:    
+        for migration_version in versions_to_be_executed:
+            sql_file = self.__db_migrate.get_migration_file_name_from_version_number(migration_version)
 
-            file_version = self.__db_migrate.get_migration_version(sql_file)
-            if not is_migration_up:
-                file_version = destination_version
-            
-            print "===== executing %s (%s) =====" % (sql_file, "up" if is_migration_up else "down")
+            print "===== executing %s (%s) =====" % (sql_file, up_down_label)
             sql = self.__db_migrate.get_sql_command(sql_file, is_migration_up)
-            self.__mysql.change(sql, file_version, is_migration_up)
+            self.__mysql.change(sql, migration_version, is_migration_up)
             
             #recording the last statement executed
             sql_statements_executed += sql

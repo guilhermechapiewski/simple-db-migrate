@@ -71,7 +71,7 @@ class MySQLTest(unittest.TestCase):
 
         db_mock.expects(once()).method("query").query(eq("create table spam();"))
         db_mock.expects(once()).method("close")
-        db_mock.expects(once()).method("query").query(eq("delete from __db_version__ where version > \"20090212112104\";"))
+        db_mock.expects(once()).method("query").query(eq("delete from __db_version__ where version >= \"20090212112104\";"))
         db_mock.expects(once()).method("close")
 
         mysql = MySQL("test.conf", mysql_driver_mock)

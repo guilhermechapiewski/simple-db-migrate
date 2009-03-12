@@ -20,9 +20,9 @@ if __name__ == "__main__":
     # TODO: this could be done automatically
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(CLITest))
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(ListsTest))
-    test_suites.append(unittest.TestLoader().loadTestsFromTestCase(SimpleDBMigrateTest))
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(MainTest))
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(MySQLTest))
+    test_suites.append(unittest.TestLoader().loadTestsFromTestCase(SimpleDBMigrateTest))
     
     alltests = unittest.TestSuite(test_suites)
     

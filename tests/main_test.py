@@ -5,7 +5,7 @@ import unittest
 
 class MainTest(unittest.TestCase):
     
-    def __init__(self):
+    def setUp(self):
         self.database_versions = []
         self.database_versions.append("0")
         self.database_versions.append("20090211120000")

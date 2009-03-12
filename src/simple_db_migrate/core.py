@@ -56,41 +56,7 @@ class SimpleDBMigrate(object):
         for f in files:
             if f.startswith(version):
                 return True
-        return False       
-    
-    # deprecated
-    def get_migration_files_between_versions(self, current_version, destination_version):
-        #TODO: make it less idiot :)
-        migration_up = True
-        if int(current_version) > int(destination_version):
-            migration_up = False
-        
-        all_files = self.get_all_migration_files()
-        if not migration_up:
-            all_files.reverse()
-            
-        migration_files = []
-        for f in all_files:
-            f_version = self.get_migration_version(f)
-            if migration_up:
-                if int(f_version) > int(current_version) and int(f_version) <= int(destination_version):
-                    migration_files.append(f)
-            else:
-                if int(f_version) > int(destination_version) and int(f_version) <= int(current_version):
-                    migration_files.append(f)
-            
-        return migration_files
-        
-    def get_migration_files_to_be_executed(self, current_version, destination_version):
-        #TODO
-        
-        # ver todas as migrations ate a disponivel
-        # ver todas as versoes do banco 
-        # executar as que faltam
-        
-        # depois ver como fazer no down
-        
-        pass
+        return False
         
     def latest_schema_version_available(self):
         all_files = self.get_all_migration_files()
@@ -122,6 +88,13 @@ class SimpleDBMigrate(object):
             Log().error_and_exit("could not create file ('%s')" % new_file)
             
         return file_name
+    
+    def get_migration_file_name_from_version_number(self, version):
+        all_files = self.get_all_migration_files()
+        for f in all_files:
+            if f.startswith(version):
+                return f
+        return None
         
 class MigrationFile(object):
     template = '''SQL_UP = """

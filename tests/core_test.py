@@ -121,32 +121,6 @@ class SimpleDBMigrateTest(unittest.TestCase):
         db_migrate = SimpleDBMigrate(".")
         exists = db_migrate.check_if_version_exists("20090214115100")
         self.assertTrue(exists)
-        
-    def test_it_should_get_all_migration_files_between_versions_when_migrating_up(self):
-        db_migrate = SimpleDBMigrate(".")
-        files = db_migrate.get_migration_files_between_versions("20090214115200", "20090214115500")
-        
-        expected_files = ["20090214115300_example_migration_file3.migration",
-                "20090214115400_example_migration_file4.migration",
-                "20090214115500_example_migration_file5.migration"]
-        
-        self.assertEquals(len(files), len(expected_files))
-        
-        for each_file in files:
-            self.assertTrue(each_file in expected_files)
-    
-    def test_it_should_get_all_migration_files_between_versions_when_migrating_down(self):
-        db_migrate = SimpleDBMigrate(".")
-        files = db_migrate.get_migration_files_between_versions("20090214115500", "20090214115200")
-        
-        expected_files = ["20090214115500_example_migration_file5.migration", 
-                "20090214115400_example_migration_file4.migration",
-                "20090214115300_example_migration_file3.migration"]
-        
-        self.assertEquals(len(files), len(expected_files))
-        
-        for each_file in files:
-            self.assertTrue(each_file in expected_files)
     
     def test_it_should_get_the_latest_schema_version_available(self):
         db_migrate = SimpleDBMigrate(".")
@@ -179,6 +153,16 @@ class SimpleDBMigrateTest(unittest.TestCase):
             self.fail("it should not pass here")
         except:
             pass
+    
+    def test_it_should_get_migration_file_from_version_number(self):
+        db_migrate = SimpleDBMigrate(".")
+        migration_file_name = db_migrate.get_migration_file_name_from_version_number("20090214115100")
+        self.assertEquals(migration_file_name, "20090214115100_example_migration_file1.migration")
+        
+    def test_it_should_get_none_migration_file_from_invalid_version_number(self):
+        db_migrate = SimpleDBMigrate(".")
+        migration_file_name = db_migrate.get_migration_file_name_from_version_number("***invalid***")
+        self.assertTrue(migration_file_name is None)
             
 if __name__ == "__main__":
     unittest.main()

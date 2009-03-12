@@ -65,7 +65,7 @@ class MySQL(object):
             sql = "insert into __db_version__ (version) values (\"%s\");" % str(version)
         else:
             # moving down and deleting from history
-            sql = "delete from __db_version__ where version > \"%s\";" % str(version)
+            sql = "delete from __db_version__ where version >= \"%s\";" % str(version)
         self.__execute(sql)
     
     def change(self, sql, new_db_version, up=True):
