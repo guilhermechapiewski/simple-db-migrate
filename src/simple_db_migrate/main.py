@@ -12,7 +12,7 @@ class Main(object):
         
         self.__mysql = mysql
         if self.__mysql is None:
-            self.__mysql = MySQL(self.__options.db_config_file)
+            self.__mysql = MySQL(db_config_file=self.__options.db_config_file, drop_db_first=self.__options.drop_db_first)
         
         self.__db_migrate = db_migrate
         if self.__db_migrate is None:

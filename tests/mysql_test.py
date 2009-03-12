@@ -47,7 +47,27 @@ class MySQLTest(unittest.TestCase):
         
         mysql = MySQL("test.conf", mysql_driver_mock)
         
-    def test_it_should_execute_migration_up_and_remove_from_schema_version(self):
+    def test_it_should_drop_database_on_init_if_its_asked(self):
+        mysql_driver_mock = Mock()
+        db_mock = Mock()
+        cursor_mock = Mock()
+
+        mysql_driver_mock.expects(at_least_once()).method("connect").will(return_value(db_mock))
+
+        db_mock.expects(at_least_once()).method("close")
+        db_mock.expects(once()).method("query").query(eq("drop database migration_test;"))
+        db_mock.expects(once()).method("query").query(eq("create database if not exists migration_test;"))
+        db_mock.expects(once()).method("query").query(eq("create table if not exists __db_version__ ( version varchar(20) NOT NULL default \"0\" );"))
+        db_mock.expects(once()).method("cursor").will(return_value(cursor_mock))
+
+        cursor_mock.expects(once()).method("execute").execute(eq("select count(*) from __db_version__;"))
+        cursor_mock.expects(once()).method("fetchone").will(return_value("0"))
+
+        db_mock.expects(once()).method("query").query(eq("insert into __db_version__ values (\"0\");"))
+
+        mysql = MySQL(db_config_file="test.conf", mysql_driver=mysql_driver_mock, drop_db_first=True)
+        
+    def test_it_should_execute_migration_up_and_update_schema_version(self):
         mysql_driver_mock = Mock()
         db_mock = Mock()
         cursor_mock = Mock()

@@ -4,7 +4,7 @@ import sys
 
 class MySQL(object):
       
-    def __init__(self, db_config_file="simple-db-migrate.conf", mysql_driver=MySQLdb):
+    def __init__(self, db_config_file="simple-db-migrate.conf", mysql_driver=MySQLdb, drop_db_first=False):
         self.__cli = CLI()
         
         # read configurations
@@ -21,9 +21,12 @@ class MySQL(object):
         self.__mysql_user__ = USERNAME
         self.__mysql_passwd__ = PASSWORD
         self.__mysql_db__ = DATABASE
-                
-        self.__create_database_if_not_exists()
-        self.__create_version_table_if_not_exists()
+        
+        if drop_db_first:
+            self._drop_database()
+            
+        self._create_database_if_not_exists()
+        self._create_version_table_if_not_exists()
 
     def __mysql_connect(self, connect_using_db_name=True):
         try:
@@ -38,13 +41,21 @@ class MySQL(object):
         db = self.__mysql_connect()
         db.query(sql)
         db.close()
+    
+    def _drop_database(self):
+        db = self.__mysql_connect(False)
+        try:
+            db.query("drop database %s;" % self.__mysql_db__)
+        except Exception, e:
+            self.__cli.error_and_exit("can't drop database '%s'; database doesn't exist" % self.__mysql_db__)
+        db.close()
         
-    def __create_database_if_not_exists(self):
+    def _create_database_if_not_exists(self):
         db = self.__mysql_connect(False)
         db.query("create database if not exists %s;" % self.__mysql_db__)
         db.close()
     
-    def __create_version_table_if_not_exists(self):
+    def _create_version_table_if_not_exists(self):
         # create version table
         sql = "create table if not exists __db_version__ ( version varchar(20) NOT NULL default \"0\" );"
         self.__execute(sql)
