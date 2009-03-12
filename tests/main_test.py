@@ -94,7 +94,31 @@ class MainTest(unittest.TestCase):
         self.assertEquals(migrations_to_be_executed[2], "20090211120002")
         
     def test_it_should_show_an_error_message_if_tries_to_migrate_down_and_migration_file_does_not_exists(self):
-        self.fail("Not implemented")
+        database_versions = []
+        database_versions.append("0")
+        database_versions.append("20090211120000")
+        database_versions.append("20090211120001")
+        database_versions.append("20090211120002")
+        database_versions.append("20090211120003")
+        database_versions.append("20090212120000")
+
+        migration_files_versions = [] #empty
+    
+        # mocking stuff
+        mysql_mock = Mock()
+        mysql_mock.expects(once()).method("get_all_schema_versions").will(return_value(database_versions))
+
+        db_migrate_mock = Mock()
+        db_migrate_mock.expects(once()).method("get_all_migration_versions").will(return_value(migration_files_versions))
+
+        main = Main(mysql=mysql_mock, db_migrate=db_migrate_mock)
+
+        # execute stuff
+        try:
+            migrations_to_be_executed = main._get_migration_files_to_be_executed("20090212120000", "20090211120001")
+            self.fail("it should not pass here")
+        except:
+            pass
     
 if __name__ == "__main__":
     unittest.main()
