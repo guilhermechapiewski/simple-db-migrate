@@ -1,11 +1,12 @@
 from logging import *
-from mysql import MySQL
 from time import strftime
 import os
 import shutil
 import re
 
+#TODO: Refactor: rename to "Migrations"
 class SimpleDBMigrate(object):
+    
     __migration_files_extension = ".migration"
     
     def __init__(self, migrations_dir):
@@ -42,7 +43,7 @@ class SimpleDBMigrate(object):
         for each_file in migration_files:
             versions.append(self.get_migration_version(each_file))
         return versions
-        
+    
     def get_all_migration_versions_up_to(self, limit_version):
         all_versions = self.get_all_migration_versions()
         return [version for version in all_versions if version < limit_version]
@@ -57,6 +58,7 @@ class SimpleDBMigrate(object):
                 return True
         return False       
     
+    # deprecated
     def get_migration_files_between_versions(self, current_version, destination_version):
         #TODO: make it less idiot :)
         migration_up = True
@@ -78,6 +80,17 @@ class SimpleDBMigrate(object):
                     migration_files.append(f)
             
         return migration_files
+        
+    def get_migration_files_to_be_executed(self, current_version, destination_version):
+        #TODO
+        
+        # ver todas as migrations ate a disponivel
+        # ver todas as versoes do banco 
+        # executar as que faltam
+        
+        # depois ver como fazer no down
+        
+        pass
         
     def latest_schema_version_available(self):
         all_files = self.get_all_migration_files()

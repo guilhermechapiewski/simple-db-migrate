@@ -10,6 +10,8 @@ sys.path.insert(0, os.path.abspath("../tests"))
 if __name__ == "__main__":
     from cli_test import *
     from core_test import *
+    from helpers_test import *
+    from main_test import *
     from mysql_test import *
 
     test_suites = []
@@ -17,7 +19,9 @@ if __name__ == "__main__":
     # add all tests to the test suite
     # TODO: this could be done automatically
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(CLITest))
+    test_suites.append(unittest.TestLoader().loadTestsFromTestCase(ListsTest))
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(SimpleDBMigrateTest))
+    test_suites.append(unittest.TestLoader().loadTestsFromTestCase(MainTest))
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(MySQLTest))
     
     alltests = unittest.TestSuite(test_suites)

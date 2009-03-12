@@ -5,7 +5,7 @@ import os
 import unittest
 
 class SimpleDBMigrateTest(unittest.TestCase):
-
+    
     def __create_empty_file(self, file_name):
         f = open(file_name, "w")
         f.close()
