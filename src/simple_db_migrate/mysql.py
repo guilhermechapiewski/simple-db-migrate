@@ -1,16 +1,18 @@
-from logging import *
+from cli import CLI
 import MySQLdb
 import sys
 
 class MySQL(object):
       
     def __init__(self, db_config_file="simple-db-migrate.conf", mysql_driver=MySQLdb):
+        self.__cli = CLI()
+        
         # read configurations
         try:
             f = open(db_config_file, "r")
             exec(f.read())
         except IOError:
-            Log().error_and_exit("%s: file not found" % db_config_file)
+            self.__cli.error_and_exit("%s: file not found" % db_config_file)
         else:
             f.close()
         
@@ -30,7 +32,7 @@ class MySQL(object):
         
             return self.__mysql_driver.connect(host=self.__mysql_host__, user=self.__mysql_user__, passwd=self.__mysql_passwd__)
         except Exception:
-            Log().error_and_exit("could not connect to database")
+            self.__cli.error_and_exit("could not connect to database")
     
     def __execute(self, sql):
         db = self.__mysql_connect()

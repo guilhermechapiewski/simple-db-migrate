@@ -23,6 +23,22 @@ class CLITest(unittest.TestCase):
         self.assertTrue(parser.has_option("--showsql"))
         
         self.assertTrue(parser.has_option("--create"))
+        
+    def test_it_should_show_error_message_and_exit(self):
+        cli = CLI()
+        try:
+            cli.error_and_exit("test message")
+            self.fail("it should not get here")
+        except:
+            pass
+
+    def test_it_should_show_info_message_and_exit(self):
+        cli = CLI()
+        try:
+            cli.info_and_exit("test message")
+            self.fail("it should not get here")
+        except:
+            pass
 
 if __name__ == "__main__":
     unittest.main()

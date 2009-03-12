@@ -1,4 +1,4 @@
-from logging import *
+from cli import CLI
 from time import strftime
 import os
 import shutil
@@ -11,6 +11,7 @@ class SimpleDBMigrate(object):
     
     def __init__(self, migrations_dir):
         self.__migrations_dir = migrations_dir
+        self.__cli = CLI()
 
     def get_all_migration_files(self):
         dir_list = os.listdir(self.__migrations_dir)
@@ -21,7 +22,7 @@ class SimpleDBMigrate(object):
                 files.append(dir_file)
         
         if len(files) == 0:
-            Log().error_and_exit("no migration files found")
+            self.__cli.error_and_exit("no migration files found")
         
         files.sort()
         
@@ -76,7 +77,7 @@ class SimpleDBMigrate(object):
         file_name = "%s_%s%s" % (timestamp, migration_name, self.__migration_files_extension)
         
         if not self.is_file_name_valid(file_name):
-            Log().error_and_exit("invalid migration name; it should contain only letters, numbers and/or underscores ('%s')" % migration_name)
+            self.__cli.error_and_exit("invalid migration name; it should contain only letters, numbers and/or underscores ('%s')" % migration_name)
         
         new_file = "%s/%s" % (self.__migrations_dir, file_name)
         
@@ -85,7 +86,7 @@ class SimpleDBMigrate(object):
             f.write(MigrationFile.template)
             f.close()
         except IOError:
-            Log().error_and_exit("could not create file ('%s')" % new_file)
+            self.__cli.error_and_exit("could not create file ('%s')" % new_file)
             
         return file_name
     
