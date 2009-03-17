@@ -16,7 +16,8 @@ class MySQLTest(unittest.TestCase):
     
     def __create_init_expectations(self, mysql_driver_mock, db_mock, cursor_mock):
         mysql_driver_mock.expects(at_least_once()).method("connect").will(return_value(db_mock))
-        
+        db_mock.expects(at_least_once()).method("autocommit")
+
         db_mock.expects(once()).method("query")
         db_mock.expects(once()).method("close")
         db_mock.expects(once()).method("query")
@@ -26,7 +27,6 @@ class MySQLTest(unittest.TestCase):
         cursor_mock.expects(once()).method("execute")
         cursor_mock.expects(once()).method("fetchone").will(return_value("0"))
         db_mock.expects(once()).method("close")
-        
     
     def test_it_should_create_database_and_version_table_on_init_if_not_exists(self):
         mysql_driver_mock = Mock()
@@ -34,6 +34,7 @@ class MySQLTest(unittest.TestCase):
         cursor_mock = Mock()
         
         mysql_driver_mock.expects(at_least_once()).method("connect").will(return_value(db_mock))
+        db_mock.expects(at_least_once()).method("autocommit")
         
         db_mock.expects(at_least_once()).method("close")
         db_mock.expects(once()).method("query").query(eq("create database if not exists migration_test;"))
@@ -46,14 +47,15 @@ class MySQLTest(unittest.TestCase):
         db_mock.expects(once()).method("query").query(eq("insert into __db_version__ values (\"0\");"))
         
         mysql = MySQL("test.conf", mysql_driver_mock)
-        
+   
     def test_it_should_drop_database_on_init_if_its_asked(self):
         mysql_driver_mock = Mock()
         db_mock = Mock()
         cursor_mock = Mock()
 
         mysql_driver_mock.expects(at_least_once()).method("connect").will(return_value(db_mock))
-
+        db_mock.expects(at_least_once()).method("autocommit")
+        
         db_mock.expects(at_least_once()).method("close")
         db_mock.expects(once()).method("query").query(eq("drop database migration_test;"))
         db_mock.expects(once()).method("query").query(eq("create database if not exists migration_test;"))
