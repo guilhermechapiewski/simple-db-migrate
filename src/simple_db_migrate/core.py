@@ -103,4 +103,5 @@ class MigrationFile(object):
 """
 
 SQL_DOWN = """
+
 """'''
