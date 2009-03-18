@@ -61,6 +61,27 @@ class MainTest(unittest.TestCase):
         self.assertEquals(len(migrations_to_be_executed), 2)
         self.assertEquals(migrations_to_be_executed[0], "20090211120005")
         self.assertEquals(migrations_to_be_executed[1], "20090211120006")
+
+    def test_it_should_get_all_migration_files_that_must_be_executed_considering_database_version_when_migrating_up_and_current_destination_versions_are_the_same_and_migration_versions_are_higher_than_database_versions(self):
+        database_versions = self.database_versions
+
+        migration_files_versions = database_versions[:]
+        migration_files_versions.append("20090212120001")
+        migration_files_versions.append("20090212120002")
+
+        # mocking stuff
+        mysql_mock = Mock()
+        mysql_mock.expects(once()).method("get_all_schema_versions").will(return_value(database_versions))
+
+        db_migrate_mock = Mock()
+        db_migrate_mock.expects(once()).method("get_all_migration_versions").will(return_value(migration_files_versions))
+
+        main = Main(mysql=mysql_mock, db_migrate=db_migrate_mock)
+
+        # execute stuff
+        migrations_to_be_executed = main._get_migration_files_to_be_executed("20090212120000", "20090212120000")
+
+        self.assertEquals(len(migrations_to_be_executed), 0)
     
     def test_it_should_get_all_migration_files_that_must_be_executed_considering_database_version_when_migrating_down(self):
         database_versions = self.database_versions

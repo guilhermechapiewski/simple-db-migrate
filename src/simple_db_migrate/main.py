@@ -48,8 +48,7 @@ class Main(object):
 
     def _get_destination_version(self):
         destination_version = self.__options.schema_version
-
-        if destination_version == None:
+        if destination_version is None:
             destination_version = self.__db_migrate.latest_schema_version_available()
 
         if not self.__db_migrate.check_if_version_exists(destination_version):
@@ -63,7 +62,9 @@ class Main(object):
         
         # migration up: the easy part
         if current_version <= destination_version:
-            return Lists.subtract(migration_versions, mysql_versions)
+            remaining_versions_to_execute = Lists.subtract(migration_versions, mysql_versions)
+            remaining_versions_to_execute = [version for version in remaining_versions_to_execute if version <= destination_version]
+            return remaining_versions_to_execute
         
         # migration down...
         down_versions = [version for version in mysql_versions if version <= current_version and version > destination_version]
