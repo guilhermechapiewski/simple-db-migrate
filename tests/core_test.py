@@ -135,6 +135,11 @@ class SimpleDBMigrateTest(unittest.TestCase):
         
         for bad_file_name in self.__test_migration_files_with_bad_names:
             self.assertFalse(db_migrate.is_file_name_valid(bad_file_name))
+    
+    def test_it_should_not_validate_gedit_swap_files(self):
+        db_migrate = SimpleDBMigrate(".")
+        invalid_file_name = "%s~" % self.__test_migration_files[0]
+        self.assertFalse(db_migrate.is_file_name_valid(invalid_file_name))
             
     def test_it_should_create_migration_file(self):
         db_migrate = SimpleDBMigrate(".")

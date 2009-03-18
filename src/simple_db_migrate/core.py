@@ -68,7 +68,7 @@ class SimpleDBMigrate(object):
         return self.get_migration_version(all_files[0])
     
     def is_file_name_valid(self, file_name):
-        mask = r"[0-9]{14}\w+%s" % self.__migration_files_extension
+        mask = r"[0-9]{14}\w+%s$" % self.__migration_files_extension
         match = re.match(mask, file_name, re.IGNORECASE)
         return match != None
         
