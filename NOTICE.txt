@@ -2,7 +2,8 @@ The simple-db-migrate is developed by:
 
    Guilherme Chapiewski (http://gc.blog.br)
    Contact: guilherme.chapiewski at gmail.com
-   Project Website: http://simple-db-migrate.lighthouseapp.com
+   Project Website: http://guilhermechapiewski.github.com/simple-db-migrate/
+   Issue tracker: http://simple-db-migrate.lighthouseapp.com
 
 This software is distributed for free, under Apache License version 2.0.
 See LICENSE.txt for more details.
