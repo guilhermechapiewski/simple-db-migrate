@@ -9,7 +9,7 @@ help:
 	@echo " "
 
 clean:
-	rm -rf build dist src/SimpleDBMigrate.egg-info *.pyc *~
+	rm -rf build dist src/simple-db-migrate.egg-info *.pyc *~
 
 test:
 	./scripts/run_tests.sh
