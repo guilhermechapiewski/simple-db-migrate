@@ -3,7 +3,7 @@ import MySQLdb
 import sys
 
 class MySQL(object):
-      
+    
     def __init__(self, db_config_file="simple-db-migrate.conf", mysql_driver=MySQLdb, drop_db_first=False):
         self.__cli = CLI()
         

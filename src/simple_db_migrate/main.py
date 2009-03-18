@@ -5,13 +5,14 @@ from mysql import MySQL
 import sys
 
 class Main(object):
+    
     def __init__(self, options=None, args=None, mysql=None, db_migrate=None):
         self.__cli = CLI()
         self.__options = options
         self.__args = args
         
         self.__mysql = mysql
-        if self.__mysql is None:
+        if self.__mysql is None and not self.__options.create_migration:
             self.__mysql = MySQL(db_config_file=self.__options.db_config_file, drop_db_first=self.__options.drop_db_first)
         
         self.__db_migrate = db_migrate
