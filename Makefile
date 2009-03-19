@@ -19,3 +19,6 @@ coverage:
 
 install:
 	/usr/bin/env python ./setup.py install
+
+publish:
+	python setup.py bdist_egg upload
