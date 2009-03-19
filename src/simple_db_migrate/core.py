@@ -29,14 +29,26 @@ class SimpleDBMigrate(object):
         return files
         
     def get_sql_command(self, sql_file, migration_up=True):
-        f = open(self.__migrations_dir + "/" + sql_file, "r")
-        exec(f.read())
-        f.close()
-        
-        if migration_up:
-            return SQL_UP
+        try:
+            f = open(self.__migrations_dir + "/" + sql_file, "r")
+            exec(f.read())
+        except IOError:
+            self.__cli.error_and_exit("%s: file not found" % self.__migrations_dir + "/" + sql_file)
         else:
-            return SQL_DOWN
+            f.close()
+        
+        try:
+            (SQL_UP, SQL_DOWN)
+        except NameError:
+            self.__cli.error_and_exit("migration file is incorrect; it does not define 'SQL_UP' or 'SQL_DOWN' ('%s')" % sql_file)
+        
+        sql = ""
+        sql = SQL_UP if migration_up else SQL_DOWN
+        
+        if sql is None or sql == "":
+            self.__cli.error_and_exit("migration command is empty ('%s')" % sql_file)
+        
+        return sql    
     
     def get_all_migration_versions(self):
         versions = []

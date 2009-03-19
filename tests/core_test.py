@@ -30,6 +30,14 @@ class SimpleDBMigrateTest(unittest.TestCase):
         f.close()
         self.__test_migration_files.append(file_with_commands)
         
+        # migration file without commands
+        file_without_commands = "20090214120700_example_migration_file_without_commands.migration"
+        f = open(file_without_commands, "w")
+        f.write("SQL_UP = ''\n")
+        f.write("SQL_DOWN = ''\n")
+        f.close()
+        self.__test_migration_files.append(file_without_commands)
+        
         # very very last schema version available
         file_in_the_future = "21420101000000_example_migration_file.migration"
         self.__create_empty_file(file_in_the_future)
@@ -105,6 +113,26 @@ class SimpleDBMigrateTest(unittest.TestCase):
         migration_file = "20090214120600_example_migration_file_with_commands.migration"
         sql = db_migrate.get_sql_command(migration_file, False)
         self.assertEquals(sql, "drop table test;")
+        
+    def test_it_should_not_get_migration_command_in_files_with_blank_commands(self):
+        db_migrate = SimpleDBMigrate(".")
+        migration_file = "20090214120700_example_migration_file_without_commands.migration"
+        try:
+            sql = db_migrate.get_sql_command(migration_file, True)
+            self.fail("it should not pass here")
+        except:
+            pass
+
+    def test_it_should_not_get_migration_command_in_empty_file(self):
+        db_migrate = SimpleDBMigrate(".")
+        migration_file = self.__test_migration_files[0]
+        try:
+            sql = db_migrate.get_sql_command(migration_file, True)
+            self.fail("it should not pass here")
+        except NameError:
+            self.fail("it should not pass here")
+        except:
+            pass
         
     def test_it_should_get_migration_version_from_file(self):
         db_migrate = SimpleDBMigrate(".")
