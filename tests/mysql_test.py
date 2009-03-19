@@ -14,18 +14,33 @@ class MySQLTest(unittest.TestCase):
     def tearDown(self):
         os.remove("test.conf")
     
-    def __create_init_expectations(self, mysql_driver_mock, db_mock, cursor_mock):
+    def __mock_db_init(self, mysql_driver_mock, db_mock, cursor_mock):
         mysql_driver_mock.expects(at_least_once()).method("connect").will(return_value(db_mock))
-        db_mock.expects(at_least_once()).method("autocommit")
-
-        db_mock.expects(once()).method("query")
-        db_mock.expects(once()).method("close")
-        db_mock.expects(once()).method("query")
+        
+        # create db if not exists
+        db_mock.expects(once()).method("query").query(eq("create database if not exists migration_test;"))
         db_mock.expects(once()).method("close")
         
-        db_mock.expects(at_least_once()).method("cursor").will(return_value(cursor_mock))
-        cursor_mock.expects(once()).method("execute")
+        # create version table if not exists
+        create_version_table = "create table if not exists __db_version__ ( version varchar(20) NOT NULL default \"0\" );"
+        db_mock.expects(once()).method("cursor").will(return_value(cursor_mock))
+        cursor_mock.expects(once()).method("execute").execute(eq(create_version_table))
+        cursor_mock.expects(once()).method("close")
+        db_mock.expects(once()).method("commit")
+        db_mock.expects(once()).method("close")
+        
+        # check if exists any version
+        db_mock.expects(once()).method("cursor").will(return_value(cursor_mock))
+        cursor_mock.expects(once()).method("execute").execute(eq("select count(*) from __db_version__;"))
         cursor_mock.expects(once()).method("fetchone").will(return_value("0"))
+        db_mock.expects(once()).method("close")
+    
+    def __mock_db_execute(self, db_mock, cursor_mock, query):
+        # mock a call to __execute
+        db_mock.expects(once()).method("cursor").will(return_value(cursor_mock))
+        cursor_mock.expects(once()).method("execute").execute(eq(query))
+        cursor_mock.expects(once()).method("close")
+        db_mock.expects(once()).method("commit")
         db_mock.expects(once()).method("close")
     
     def test_it_should_create_database_and_version_table_on_init_if_not_exists(self):
@@ -33,68 +48,42 @@ class MySQLTest(unittest.TestCase):
         db_mock = Mock()
         cursor_mock = Mock()
         
-        mysql_driver_mock.expects(at_least_once()).method("connect").will(return_value(db_mock))
-        db_mock.expects(at_least_once()).method("autocommit")
-        
-        db_mock.expects(at_least_once()).method("close")
-        db_mock.expects(once()).method("query").query(eq("create database if not exists migration_test;"))
-        db_mock.expects(once()).method("query").query(eq("create table if not exists __db_version__ ( version varchar(20) NOT NULL default \"0\" );"))
-        db_mock.expects(once()).method("cursor").will(return_value(cursor_mock))
-        
-        cursor_mock.expects(once()).method("execute").execute(eq("select count(*) from __db_version__;"))
-        cursor_mock.expects(once()).method("fetchone").will(return_value("0"))
-    
-        db_mock.expects(once()).method("query").query(eq("insert into __db_version__ values (\"0\");"))
+        self.__mock_db_init(mysql_driver_mock, db_mock, cursor_mock)
         
         mysql = MySQL("test.conf", mysql_driver_mock)
-   
+    
     def test_it_should_drop_database_on_init_if_its_asked(self):
         mysql_driver_mock = Mock()
         db_mock = Mock()
         cursor_mock = Mock()
-
-        mysql_driver_mock.expects(at_least_once()).method("connect").will(return_value(db_mock))
-        db_mock.expects(at_least_once()).method("autocommit")
         
-        db_mock.expects(at_least_once()).method("close")
+        self.__mock_db_init(mysql_driver_mock, db_mock, cursor_mock)
+        
         db_mock.expects(once()).method("query").query(eq("drop database migration_test;"))
-        db_mock.expects(once()).method("query").query(eq("create database if not exists migration_test;"))
-        db_mock.expects(once()).method("query").query(eq("create table if not exists __db_version__ ( version varchar(20) NOT NULL default \"0\" );"))
-        db_mock.expects(once()).method("cursor").will(return_value(cursor_mock))
-
-        cursor_mock.expects(once()).method("execute").execute(eq("select count(*) from __db_version__;"))
-        cursor_mock.expects(once()).method("fetchone").will(return_value("0"))
-
-        db_mock.expects(once()).method("query").query(eq("insert into __db_version__ values (\"0\");"))
+        db_mock.expects(once()).method("close")
 
         mysql = MySQL(db_config_file="test.conf", mysql_driver=mysql_driver_mock, drop_db_first=True)
-        
+    
     def test_it_should_execute_migration_up_and_update_schema_version(self):
         mysql_driver_mock = Mock()
         db_mock = Mock()
         cursor_mock = Mock()
 
-        self.__create_init_expectations(mysql_driver_mock, db_mock, cursor_mock)
-
-        db_mock.expects(once()).method("query").query(eq("create table spam();"))
-        db_mock.expects(once()).method("close")
-        db_mock.expects(once()).method("query").query(eq("insert into __db_version__ (version) values (\"20090212112104\");"))
-        db_mock.expects(once()).method("close")
+        self.__mock_db_init(mysql_driver_mock, db_mock, cursor_mock)
+        self.__mock_db_execute(db_mock, cursor_mock, "create table spam();")
+        self.__mock_db_execute(db_mock, cursor_mock, "insert into __db_version__ (version) values (\"20090212112104\");")
 
         mysql = MySQL("test.conf", mysql_driver_mock)
         mysql.change("create table spam();", "20090212112104")
-
+        
     def test_it_should_execute_migration_down_and_update_schema_version(self):
         mysql_driver_mock = Mock()
         db_mock = Mock()
         cursor_mock = Mock()
 
-        self.__create_init_expectations(mysql_driver_mock, db_mock, cursor_mock)
-
-        db_mock.expects(once()).method("query").query(eq("create table spam();"))
-        db_mock.expects(once()).method("close")
-        db_mock.expects(once()).method("query").query(eq("delete from __db_version__ where version >= \"20090212112104\";"))
-        db_mock.expects(once()).method("close")
+        self.__mock_db_init(mysql_driver_mock, db_mock, cursor_mock)
+        self.__mock_db_execute(db_mock, cursor_mock, "create table spam();")
+        self.__mock_db_execute(db_mock, cursor_mock, "delete from __db_version__ where version >= \"20090212112104\";")
 
         mysql = MySQL("test.conf", mysql_driver_mock)
         mysql.change("create table spam();", "20090212112104", False)
@@ -104,8 +93,9 @@ class MySQLTest(unittest.TestCase):
         db_mock = Mock()
         cursor_mock = Mock()
         
-        self.__create_init_expectations(mysql_driver_mock, db_mock, cursor_mock)
+        self.__mock_db_init(mysql_driver_mock, db_mock, cursor_mock)
         
+        db_mock.expects(once()).method("cursor").will(return_value(cursor_mock))
         cursor_mock.expects(once()).method("execute").execute(eq("select version from __db_version__ order by version desc limit 0,1;"))
         cursor_mock.expects(once()).method("fetchone").will(return_value("0"))
         db_mock.expects(once()).method("close")
@@ -118,7 +108,7 @@ class MySQLTest(unittest.TestCase):
         db_mock = Mock()
         cursor_mock = Mock()
         
-        self.__create_init_expectations(mysql_driver_mock, db_mock, cursor_mock)
+        self.__mock_db_init(mysql_driver_mock, db_mock, cursor_mock)
         
         expected_versions = []
         expected_versions.append("0")
@@ -137,6 +127,6 @@ class MySQLTest(unittest.TestCase):
         self.assertEquals(len(expected_versions), len(schema_versions))
         for version in schema_versions:
             self.assertTrue(version in expected_versions)
-
+        
 if __name__ == "__main__":
     unittest.main()

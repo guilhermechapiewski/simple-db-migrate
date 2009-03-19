@@ -32,9 +32,7 @@ class MySQL(object):
     def __mysql_connect(self, connect_using_db_name=True):
         try:
             if connect_using_db_name:
-                conn = self.__mysql_driver.connect(host=self.__mysql_host__, user=self.__mysql_user__, passwd=self.__mysql_passwd__, db=self.__mysql_db__)
-                conn.autocommit(True)
-                return conn
+                return self.__mysql_driver.connect(host=self.__mysql_host__, user=self.__mysql_user__, passwd=self.__mysql_passwd__, db=self.__mysql_db__)
         
             return self.__mysql_driver.connect(host=self.__mysql_host__, user=self.__mysql_user__, passwd=self.__mysql_passwd__)
         except Exception, e:
@@ -42,8 +40,16 @@ class MySQL(object):
     
     def __execute(self, sql):
         db = self.__mysql_connect()
-        db.query(sql)
-        db.close()
+        cursor = db.cursor()
+        try:
+            cursor.execute(sql)
+            cursor.close()        
+            db.commit()
+            db.close()
+        except Exception, e:
+            db.rollback()
+            db.close()
+            self.__cli.error_and_exit("error executing migration (%s)" % e)
     
     def _drop_database(self):
         db = self.__mysql_connect(False)
