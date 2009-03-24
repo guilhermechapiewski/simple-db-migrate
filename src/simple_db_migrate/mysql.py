@@ -41,7 +41,7 @@ class MySQL(object):
     def __execute(self, sql):
         db = self.__mysql_connect()        
         cursor = db.cursor()
-        #cursor._defer_warnings = True
+        cursor._defer_warnings = True
         try:
             sql_statements = sql.split(";")
             sql_statements = [s.strip() for s in sql_statements if s.strip() != ""]
