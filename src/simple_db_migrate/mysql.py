@@ -17,10 +17,10 @@ class MySQL(object):
             f.close()
         
         self.__mysql_driver = mysql_driver
-        self.__mysql_host__ = HOST
-        self.__mysql_user__ = USERNAME
-        self.__mysql_passwd__ = PASSWORD
-        self.__mysql_db__ = DATABASE
+        self.__mysql_host = HOST
+        self.__mysql_user = USERNAME
+        self.__mysql_passwd = PASSWORD
+        self.__mysql_db = DATABASE
         self.__version_table = "__db_version__"
         
         if drop_db_first:
@@ -31,37 +31,39 @@ class MySQL(object):
 
     def __mysql_connect(self, connect_using_db_name=True):
         try:
+            conn = self.__mysql_driver.connect(host=self.__mysql_host, user=self.__mysql_user, passwd=self.__mysql_passwd)
             if connect_using_db_name:
-                return self.__mysql_driver.connect(host=self.__mysql_host__, user=self.__mysql_user__, passwd=self.__mysql_passwd__, db=self.__mysql_db__)
-        
-            return self.__mysql_driver.connect(host=self.__mysql_host__, user=self.__mysql_user__, passwd=self.__mysql_passwd__)
+                conn.select_db(self.__mysql_db)
+            return conn
         except Exception, e:
             self.__cli.error_and_exit("could not connect to database (%s)" % e)
     
     def __execute(self, sql):
-        db = self.__mysql_connect()
+        db = self.__mysql_connect()        
         cursor = db.cursor()
+        #cursor._defer_warnings = True
         try:
-            cursor.execute(sql)
+            sql_statements = sql.split(";")
+            sql_statements = [s.strip() for s in sql_statements if s.strip() != ""]
+            for statement in sql_statements:
+                cursor.execute(statement)
             cursor.close()        
             db.commit()
             db.close()
         except Exception, e:
-            db.rollback()
-            db.close()
             self.__cli.error_and_exit("error executing migration (%s)" % e)
-    
+        
     def _drop_database(self):
         db = self.__mysql_connect(False)
         try:
-            db.query("drop database %s;" % self.__mysql_db__)
+            db.query("drop database %s;" % self.__mysql_db)
         except Exception, e:
-            self.__cli.error_and_exit("can't drop database '%s'; database doesn't exist" % self.__mysql_db__)
+            self.__cli.error_and_exit("can't drop database '%s'; database doesn't exist" % self.__mysql_db)
         db.close()
         
     def _create_database_if_not_exists(self):
         db = self.__mysql_connect(False)
-        db.query("create database if not exists %s;" % self.__mysql_db__)
+        db.query("create database if not exists %s;" % self.__mysql_db)
         db.close()
     
     def _create_version_table_if_not_exists(self):

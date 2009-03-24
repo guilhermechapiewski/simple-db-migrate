@@ -16,6 +16,7 @@ class MySQLTest(unittest.TestCase):
     
     def __mock_db_init(self, mysql_driver_mock, db_mock, cursor_mock):
         mysql_driver_mock.expects(at_least_once()).method("connect").will(return_value(db_mock))
+        db_mock.expects(at_least_once()).method("select_db")
         
         # create db if not exists
         db_mock.expects(once()).method("query").query(eq("create database if not exists migration_test;"))
@@ -23,11 +24,7 @@ class MySQLTest(unittest.TestCase):
         
         # create version table if not exists
         create_version_table = "create table if not exists __db_version__ ( version varchar(20) NOT NULL default \"0\" );"
-        db_mock.expects(once()).method("cursor").will(return_value(cursor_mock))
-        cursor_mock.expects(once()).method("execute").execute(eq(create_version_table))
-        cursor_mock.expects(once()).method("close")
-        db_mock.expects(once()).method("commit")
-        db_mock.expects(once()).method("close")
+        self.__mock_db_execute(db_mock, cursor_mock, create_version_table)
         
         # check if exists any version
         db_mock.expects(once()).method("cursor").will(return_value(cursor_mock))
@@ -38,7 +35,12 @@ class MySQLTest(unittest.TestCase):
     def __mock_db_execute(self, db_mock, cursor_mock, query):
         # mock a call to __execute
         db_mock.expects(once()).method("cursor").will(return_value(cursor_mock))
-        cursor_mock.expects(once()).method("execute").execute(eq(query))
+        
+        sql_statements = query.split(";")
+        sql_statements = [s.strip() for s in sql_statements if s.strip() != ""]
+        for statement in sql_statements:
+            cursor_mock.expects(once()).method("execute").execute(eq(statement))
+            
         cursor_mock.expects(once()).method("close")
         db_mock.expects(once()).method("commit")
         db_mock.expects(once()).method("close")
@@ -87,7 +89,7 @@ class MySQLTest(unittest.TestCase):
 
         mysql = MySQL("test.conf", mysql_driver_mock)
         mysql.change("create table spam();", "20090212112104", False)
-
+    
     def test_it_should_get_current_schema_version(self):
         mysql_driver_mock = Mock()
         db_mock = Mock()
@@ -102,7 +104,7 @@ class MySQLTest(unittest.TestCase):
         
         mysql = MySQL("test.conf", mysql_driver_mock)
         self.assertEquals("0", mysql.get_current_schema_version())
-
+    
     def test_it_should_get_all_schema_versions(self):
         mysql_driver_mock = Mock()
         db_mock = Mock()
@@ -127,6 +129,6 @@ class MySQLTest(unittest.TestCase):
         self.assertEquals(len(expected_versions), len(schema_versions))
         for version in schema_versions:
             self.assertTrue(version in expected_versions)
-        
+    
 if __name__ == "__main__":
     unittest.main()
