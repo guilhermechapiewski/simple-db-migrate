@@ -14,7 +14,12 @@ class SimpleDBMigrate(object):
         self.__cli = CLI()
 
     def get_all_migration_files(self):
-        dir_list = os.listdir(self.__migrations_dir)
+        path = os.path.abspath(self.__migrations_dir)
+        dir_list = None
+        try:
+            dir_list = os.listdir(path)
+        except OSError:
+            self.__cli.error_and_exit("directory not found (%s)" % path)
         
         files = []
         for dir_file in dir_list:
