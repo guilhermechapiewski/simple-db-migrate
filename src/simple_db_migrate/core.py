@@ -19,7 +19,7 @@ class SimpleDBMigrate(object):
         try:
             dir_list = os.listdir(path)
         except OSError:
-            self.__cli.error_and_exit("directory not found (%s)" % path)
+            self.__cli.error_and_exit("directory not found ('%s')" % path)
         
         files = []
         for dir_file in dir_list:
