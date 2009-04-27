@@ -22,7 +22,7 @@ if __name__ == "__main__":
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(ListsTest))
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(MainTest))
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(MySQLTest))
-    test_suites.append(unittest.TestLoader().loadTestsFromTestCase(SimpleDBMigrateTest))
+    test_suites.append(unittest.TestLoader().loadTestsFromTestCase(MigrationsTest))
     
     alltests = unittest.TestSuite(test_suites)
     

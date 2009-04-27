@@ -5,7 +5,7 @@ import shutil
 import re
 
 #TODO: Refactor: rename to "Migrations"
-class SimpleDBMigrate(object):
+class Migrations(object):
     
     __migration_files_extension = ".migration"
     
