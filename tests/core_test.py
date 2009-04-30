@@ -39,6 +39,25 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "example"
             self.fail("it should not pass here")
         except:
             pass
+    
+    def test_it_should_create_new_configs(self):
+        config_path = os.path.abspath("sample.conf")
+        config = Config(config_path)
+        
+        # ensure that the config does not exist
+        self.assertRaises(Exception, config.get, "sample_config", "TEST")
+        
+        # create the config
+        config.put("sample_config", "TEST")
+        
+        # read the config
+        self.assertEquals(config.get("sample_config"), "TEST")
+        
+    def test_it_should_not_override_existing_configs(self):
+        config_path = os.path.abspath("sample.conf")
+        config = Config(config_path)
+        config.put("sample_config", "TEST")
+        self.assertRaises(Exception, config.put, "sample_config", "TEST")
 
 class MigrationsTest(unittest.TestCase):
     

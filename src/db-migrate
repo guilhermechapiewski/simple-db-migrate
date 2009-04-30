@@ -1,9 +1,13 @@
 #!/usr/bin/python
 
 from simple_db_migrate.cli import CLI
+from simple_db_migrate.core import Config
 from simple_db_migrate.main import Main
 
 (options, args) = CLI().parse()
+
+# Create config
+config = Config(options.db_config_file)
 
 # If CLI was correctly parsed, execute db-migrate.
 Main(options, args).execute()

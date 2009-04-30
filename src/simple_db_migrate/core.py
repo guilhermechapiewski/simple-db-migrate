@@ -8,6 +8,7 @@ class Config(object):
     
     def __init__(self, config_file="simple-db-migrate.conf"):
         self.__cli = CLI()
+        self.__config = {}
         
         # read configurations
         try:
@@ -18,20 +19,23 @@ class Config(object):
         else:
             f.close()
         
-        self.config = {}
-        self.config["database_host"] = HOST
-        self.config["database_user"] = USERNAME
-        self.config["database_password"] = PASSWORD
-        self.config["database_name"] = DATABASE
-        self.config["database_version_table"] = "__db_version__"
-        self.config["migrations_dir"] = MIGRATIONS_DIR
+        self.put("database_host", HOST)
+        self.put("database_user", USERNAME)
+        self.put("database_password", PASSWORD)
+        self.put("database_name", DATABASE)
+        self.put("database_version_table", "__db_version__")
+        self.put("migrations_dir", MIGRATIONS_DIR)
         
     def get(self, config_key):
         try:
-            return self.config[config_key]
+            return self.__config[config_key]
         except KeyError, e:
-            self.__cli.error_and_exit("invalid configuration key")
+            raise Exception("invalid configuration key ('%s')" % config_key)
             
+    def put(self, config_key, config_value):
+        if config_key in self.__config:
+            raise Exception("the configuration key '%s' already exists and you cannot override any configuration" % config_key)
+        self.__config[config_key] = config_value
 
 class Migrations(object):
     
