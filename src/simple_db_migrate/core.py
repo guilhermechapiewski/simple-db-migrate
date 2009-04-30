@@ -4,6 +4,35 @@ import os
 import shutil
 import re
 
+class Config(object):
+    
+    def __init__(self, config_file="simple-db-migrate.conf"):
+        self.__cli = CLI()
+        
+        # read configurations
+        try:
+            f = open(config_file, "r")
+            exec(f.read())
+        except IOError:
+            self.__cli.error_and_exit("%s: file not found" % config_file)
+        else:
+            f.close()
+        
+        self.config = {}
+        self.config["database_host"] = HOST
+        self.config["database_user"] = USERNAME
+        self.config["database_password"] = PASSWORD
+        self.config["database_name"] = DATABASE
+        self.config["database_version_table"] = "__db_version__"
+        self.config["migrations_dir"] = MIGRATIONS_DIR
+        
+    def get(self, config_key):
+        try:
+            return self.config[config_key]
+        except KeyError, e:
+            self.__cli.error_and_exit("invalid configuration key")
+            
+
 class Migrations(object):
     
     __migration_files_extension = ".migration"

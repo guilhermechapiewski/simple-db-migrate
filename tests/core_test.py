@@ -4,6 +4,42 @@ from pmock import *
 import os
 import unittest
 
+class ConfigTest(unittest.TestCase):
+    
+    def setUp(self):
+        config_file = """
+HOST = os.getenv("DB_HOST") or "localhost"
+USERNAME = os.getenv("DB_USERNAME") or "root"
+PASSWORD = os.getenv("DB_PASSWORD") or ""
+DATABASE = os.getenv("DB_DATABASE") or "migration_example"
+MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "example"
+"""
+        f = open("sample.conf", "w")
+        f.write(config_file)
+        f.close()
+        
+    def tearDown(self):
+        os.remove("sample.conf")
+    
+    def test_it_should_read_config_file(self):
+        config_path = os.path.abspath("sample.conf")
+        config = Config(config_path)
+        self.assertEquals(config.get("database_host"), "localhost")
+        self.assertEquals(config.get("database_user"), "root")
+        self.assertEquals(config.get("database_password"), "")
+        self.assertEquals(config.get("database_name"), "migration_example")
+        self.assertEquals(config.get("database_version_table"), "__db_version__")
+        self.assertEquals(config.get("migrations_dir"), "example")
+
+    def test_it_should_stop_execution_when_an_invalid_key_is_requested(self):
+        config_path = os.path.abspath("sample.conf")
+        config = Config(config_path)
+        try:
+            config.get("invalid_config")
+            self.fail("it should not pass here")
+        except:
+            pass
+
 class MigrationsTest(unittest.TestCase):
     
     def __create_empty_file(self, file_name):
@@ -196,6 +232,6 @@ class MigrationsTest(unittest.TestCase):
         db_migrate = Migrations(".")
         migration_file_name = db_migrate.get_migration_file_name_from_version_number("***invalid***")
         self.assertTrue(migration_file_name is None)
-            
+          
 if __name__ == "__main__":
     unittest.main()

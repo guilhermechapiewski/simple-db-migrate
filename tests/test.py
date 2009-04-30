@@ -17,8 +17,12 @@ if __name__ == "__main__":
     test_suites = []
     
     # add all tests to the test suite
-    # TODO: this could be done automatically
+    # TODO: eeek!!!! this MUST be done automatically
+    # crap
+    # crap
+    # crap
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(CLITest))
+    test_suites.append(unittest.TestLoader().loadTestsFromTestCase(ConfigTest))
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(ListsTest))
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(MainTest))
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(MySQLTest))
