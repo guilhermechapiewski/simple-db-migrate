@@ -61,7 +61,7 @@ class MySQLTest(unittest.TestCase):
         
         self.__mock_db_init(mysql_driver_mock, db_mock, cursor_mock)
         
-        db_mock.expects(once()).method("query").query(eq("drop database migration_test;"))
+        db_mock.expects(once()).method("query").query(eq("drop database if exists migration_test;"))
         db_mock.expects(once()).method("close")
 
         mysql = MySQL(db_config_file="test.conf", mysql_driver=mysql_driver_mock, drop_db_first=True)
