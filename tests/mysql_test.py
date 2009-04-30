@@ -1,4 +1,5 @@
 from test import *
+from core import *
 from mysql import *
 from pmock import *
 import os
@@ -7,9 +8,19 @@ import unittest
 class MySQLTest(unittest.TestCase):
 
     def setUp(self):
+        config_file = """
+HOST = os.getenv("DB_HOST") or "localhost"
+USERNAME = os.getenv("DB_USERNAME") or "root"
+PASSWORD = os.getenv("DB_PASSWORD") or ""
+DATABASE = os.getenv("DB_DATABASE") or "migration_test"
+MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
+"""
         f = open("test.conf", "w")
-        f.write("HOST = 'localhost'\nUSERNAME = 'root'\nPASSWORD = ''\nDATABASE = 'migration_test'")
+        f.write(config_file)
         f.close()
+
+        self.__config = Config("test.conf")
+        self.__config.put("drop_db_first", False)
         
     def tearDown(self):
         os.remove("test.conf")
@@ -52,7 +63,7 @@ class MySQLTest(unittest.TestCase):
         
         self.__mock_db_init(mysql_driver_mock, db_mock, cursor_mock)
         
-        mysql = MySQL("test.conf", mysql_driver_mock)
+        mysql = MySQL(self.__config, mysql_driver_mock)
     
     def test_it_should_drop_database_on_init_if_its_asked(self):
         mysql_driver_mock = Mock()
@@ -64,7 +75,7 @@ class MySQLTest(unittest.TestCase):
         db_mock.expects(once()).method("query").query(eq("drop database if exists migration_test;"))
         db_mock.expects(once()).method("close")
 
-        mysql = MySQL(db_config_file="test.conf", mysql_driver=mysql_driver_mock, drop_db_first=True)
+        mysql = MySQL(self.__config, mysql_driver=mysql_driver_mock)
     
     def test_it_should_execute_migration_up_and_update_schema_version(self):
         mysql_driver_mock = Mock()
@@ -75,7 +86,7 @@ class MySQLTest(unittest.TestCase):
         self.__mock_db_execute(db_mock, cursor_mock, "create table spam();")
         self.__mock_db_execute(db_mock, cursor_mock, "insert into __db_version__ (version) values (\"20090212112104\");")
 
-        mysql = MySQL("test.conf", mysql_driver_mock)
+        mysql = MySQL(self.__config, mysql_driver_mock)
         mysql.change("create table spam();", "20090212112104")
         
     def test_it_should_execute_migration_down_and_update_schema_version(self):
@@ -87,7 +98,7 @@ class MySQLTest(unittest.TestCase):
         self.__mock_db_execute(db_mock, cursor_mock, "create table spam();")
         self.__mock_db_execute(db_mock, cursor_mock, "delete from __db_version__ where version >= \"20090212112104\";")
 
-        mysql = MySQL("test.conf", mysql_driver_mock)
+        mysql = MySQL(self.__config, mysql_driver_mock)
         mysql.change("create table spam();", "20090212112104", False)
     
     def test_it_should_get_current_schema_version(self):
@@ -102,7 +113,7 @@ class MySQLTest(unittest.TestCase):
         cursor_mock.expects(once()).method("fetchone").will(return_value("0"))
         db_mock.expects(once()).method("close")
         
-        mysql = MySQL("test.conf", mysql_driver_mock)
+        mysql = MySQL(self.__config, mysql_driver_mock)
         self.assertEquals("0", mysql.get_current_schema_version())
     
     def test_it_should_get_all_schema_versions(self):
@@ -123,7 +134,7 @@ class MySQLTest(unittest.TestCase):
         cursor_mock.expects(once()).method("fetchall").will(return_value(tuple(zip(expected_versions))))
         db_mock.expects(once()).method("close")
         
-        mysql = MySQL("test.conf", mysql_driver_mock)
+        mysql = MySQL(self.__config, mysql_driver_mock)
         
         schema_versions = mysql.get_all_schema_versions()
         self.assertEquals(len(expected_versions), len(schema_versions))

@@ -13,17 +13,12 @@ class CLI(object):
                 dest="schema_version", 
                 default=None, 
                 help="Schema version to migrate to. If not provided will migrate to the last version available in the migrations directory.")
-                
+        
         self.__parser.add_option("-c", "--config", 
-                dest="db_config_file", 
+                dest="config_file", 
                 default="simple-db-migrate.conf", 
                 help="Use a specific config file. If not provided, will search for 'simple-db-migrate.conf' in the current directory.")
-                
-        self.__parser.add_option("-d", "--dir", 
-                dest="migrations_dir", 
-                default=".", 
-                help="Try to find migration files in a specific directory. If not provided will search for files in the current directory.")
-                
+                        
         self.__parser.add_option("--showsql", 
                 action="store_true", 
                 dest="show_sql", 
@@ -37,7 +32,7 @@ class CLI(object):
                 help="Show all SQL statements that would be executed but DON'T execute them in the database.")
 
         self.__parser.add_option("--create", "--new", 
-                dest="create_migration", 
+                dest="new_migration", 
                 default=None, 
                 help="Create migration file with the given nickname. The nickname should contain only lowercase characters and underscore '_'. Example: 'create_table_xyz'.")
                 

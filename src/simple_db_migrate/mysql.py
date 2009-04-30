@@ -4,26 +4,16 @@ import sys
 
 class MySQL(object):
     
-    def __init__(self, db_config_file="simple-db-migrate.conf", mysql_driver=MySQLdb, drop_db_first=False):
+    def __init__(self, config=None, mysql_driver=MySQLdb):
         self.__cli = CLI()
-        
-        # read configurations
-        try:
-            f = open(db_config_file, "r")
-            exec(f.read())
-        except IOError:
-            self.__cli.error_and_exit("%s: file not found" % db_config_file)
-        else:
-            f.close()
-        
         self.__mysql_driver = mysql_driver
-        self.__mysql_host = HOST
-        self.__mysql_user = USERNAME
-        self.__mysql_passwd = PASSWORD
-        self.__mysql_db = DATABASE
-        self.__version_table = "__db_version__"
-        
-        if drop_db_first:
+        self.__mysql_host = config.get("db_host")
+        self.__mysql_user = config.get("db_user")
+        self.__mysql_passwd = config.get("db_password")
+        self.__mysql_db = config.get("db_name")
+        self.__version_table = config.get("db_version_table")
+
+        if config.get("drop_db_first"):
             self._drop_database()
             
         self._create_database_if_not_exists()

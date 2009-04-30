@@ -14,9 +14,6 @@ class CLITest(unittest.TestCase):
         self.assertTrue(parser.has_option("-c"))
         self.assertTrue(parser.has_option("--config"))
         
-        self.assertTrue(parser.has_option("-d"))
-        self.assertTrue(parser.has_option("--dir"))
-        
         self.assertTrue(parser.has_option("-v"))
         self.assertTrue(parser.has_option("--version"))
         
@@ -24,6 +21,7 @@ class CLITest(unittest.TestCase):
         self.assertTrue(parser.has_option("--showsqlonly"))
         
         self.assertTrue(parser.has_option("--create"))
+        self.assertTrue(parser.has_option("--new"))
         
         self.assertTrue(parser.has_option("--drop"))
         self.assertTrue(parser.has_option("--drop-database-first"))

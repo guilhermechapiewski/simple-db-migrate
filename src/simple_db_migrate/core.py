@@ -1,10 +1,14 @@
 from cli import CLI
 from time import strftime
+from helpers import Utils
 import os
 import shutil
 import re
 
 class Config(object):
+    
+    def __repr__(self):
+        return str(self.__config)
     
     def __init__(self, config_file="simple-db-migrate.conf"):
         self.__cli = CLI()
@@ -19,12 +23,17 @@ class Config(object):
         else:
             f.close()
         
-        self.put("database_host", HOST)
-        self.put("database_user", USERNAME)
-        self.put("database_password", PASSWORD)
-        self.put("database_name", DATABASE)
-        self.put("database_version_table", "__db_version__")
-        self.put("migrations_dir", MIGRATIONS_DIR)
+        self.put("db_host", HOST)
+        self.put("db_user", USERNAME)
+        self.put("db_password", PASSWORD)
+        self.put("db_name", DATABASE)
+        self.put("db_version_table", "__db_version__")
+        
+        migrations_dir = self.__get_migrations_absolute_dir(config_file, MIGRATIONS_DIR)
+        self.put("migrations_dir", migrations_dir)
+    
+    def __get_migrations_absolute_dir(self, config_file_path, migrations_dir):
+        return os.path.abspath(Utils.get_path_without_config_file_name(config_file_path) + "/" + migrations_dir)
         
     def get(self, config_key):
         try:
@@ -41,8 +50,8 @@ class Migrations(object):
     
     __migration_files_extension = ".migration"
     
-    def __init__(self, migrations_dir):
-        self.__migrations_dir = migrations_dir
+    def __init__(self, config=None):
+        self.__migrations_dir = config.get("migrations_dir")
         self.__cli = CLI()
 
     def get_all_migration_files(self):

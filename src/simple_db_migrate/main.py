@@ -6,29 +6,28 @@ import sys
 
 class Main(object):
     
-    def __init__(self, options=None, args=None, mysql=None, db_migrate=None):
+    def __init__(self, config=None, mysql=None, db_migrate=None):
         self.__cli = CLI()
-        self.__options = options
-        self.__args = args
+        self.__config = config
         
         self.__mysql = mysql
-        if self.__mysql is None and not self.__options.create_migration:
-            self.__mysql = MySQL(db_config_file=self.__options.db_config_file, drop_db_first=self.__options.drop_db_first)
+        if self.__mysql is None and not self.__config.get("new_migration"):
+            self.__mysql = MySQL(config)
         
         self.__db_migrate = db_migrate
         if self.__db_migrate is None:
-            self.__db_migrate = Migrations(self.__options.migrations_dir)
+            self.__db_migrate = Migrations(config)
     
     def execute(self):
         self.__cli.msg("\nStarting DB migration...")
-        if self.__options.create_migration:
+        if self.__config.get("new_migration"):
             self._create_migration()
         else:
             self._migrate()
         self.__cli.msg("\nDone.\n")
             
     def _create_migration(self):
-        new_file = self.__db_migrate.create_migration(self.__options.create_migration)
+        new_file = self.__db_migrate.create_migration(self.__config.get("new_migration"))
         self.__cli.msg("- Created file '%s'" % (new_file))
     
     def _migrate(self):
@@ -48,7 +47,7 @@ class Main(object):
         self._execute_migrations(current_version, destination_version, is_migration_up)
 
     def _get_destination_version(self):
-        destination_version = self.__options.schema_version
+        destination_version = self.__config.get("schema_version")
         if destination_version is None:
             destination_version = self.__db_migrate.latest_schema_version_available()
 
@@ -84,7 +83,7 @@ class Main(object):
             sys.exit(0)
         
         up_down_label = "up" if is_migration_up else "down"
-        if self.__options.show_sql_only:
+        if self.__config.get("show_sql_only"):
             self.__cli.msg("\nWARNING: database migrations are not being executed ('--showsqlonly' activated)")    
         else:
             self.__cli.msg("\nStarting migration %s!" % up_down_label)
@@ -96,14 +95,15 @@ class Main(object):
             sql_file = self.__db_migrate.get_migration_file_name_from_version_number(migration_version)
             sql = self.__db_migrate.get_sql_command(sql_file, is_migration_up)
             
-            if not self.__options.show_sql_only:
+            if not self.__config.get("show_sql_only"):
                 self.__cli.msg("===== executing %s (%s) =====" % (sql_file, up_down_label))
                 self.__mysql.change(sql, migration_version, is_migration_up)
             
             #recording the last statement executed
             sql_statements_executed += sql
         
-        if self.__options.show_sql or self.__options.show_sql_only:
+        if self.__config.get("show_sql") or self.__config.get("show_sql_only"):
             self.__cli.msg("__________ SQL statements executed __________")
             self.__cli.msg(sql_statements_executed)
             self.__cli.msg("_____________________________________________")
+        
