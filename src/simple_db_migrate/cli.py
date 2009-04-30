@@ -30,6 +30,12 @@ class CLI(object):
                 default=False, 
                 help="Show all SQL statements executed.")
 
+        self.__parser.add_option("--showsqlonly", 
+                action="store_true", 
+                dest="show_sql_only", 
+                default=False, 
+                help="Show all SQL statements that would be executed but DON'T execute them in the database.")
+
         self.__parser.add_option("--create", "--new", 
                 dest="create_migration", 
                 default=None, 

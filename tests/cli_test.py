@@ -21,6 +21,7 @@ class CLITest(unittest.TestCase):
         self.assertTrue(parser.has_option("--version"))
         
         self.assertTrue(parser.has_option("--showsql"))
+        self.assertTrue(parser.has_option("--showsqlonly"))
         
         self.assertTrue(parser.has_option("--create"))
         

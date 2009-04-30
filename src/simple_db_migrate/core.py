@@ -4,7 +4,6 @@ import os
 import shutil
 import re
 
-#TODO: Refactor: rename to "Migrations"
 class Migrations(object):
     
     __migration_files_extension = ".migration"
@@ -115,10 +114,10 @@ class Migrations(object):
         return None
         
 class MigrationFile(object):
-    template = '''SQL_UP = """
+    template = '''SQL_UP = u"""
 
 """
 
-SQL_DOWN = """
+SQL_DOWN = u"""
 
 """'''

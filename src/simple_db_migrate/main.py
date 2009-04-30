@@ -84,21 +84,26 @@ class Main(object):
             sys.exit(0)
         
         up_down_label = "up" if is_migration_up else "down"
-        self.__cli.msg("\nStarting migration %s!" % up_down_label)
-        self.__cli.msg("*** will run %s\n" % versions_to_be_executed)
+        if self.__options.show_sql_only:
+            self.__cli.msg("\nWARNING: database migrations are not being executed ('--showsqlonly' activated)")    
+        else:
+            self.__cli.msg("\nStarting migration %s!" % up_down_label)
+        
+        self.__cli.msg("*** versions: %s\n" % versions_to_be_executed)
         
         sql_statements_executed = ""
         for migration_version in versions_to_be_executed:
             sql_file = self.__db_migrate.get_migration_file_name_from_version_number(migration_version)
-
-            self.__cli.msg("===== executing %s (%s) =====" % (sql_file, up_down_label))
             sql = self.__db_migrate.get_sql_command(sql_file, is_migration_up)
-            self.__mysql.change(sql, migration_version, is_migration_up)
+            
+            if not self.__options.show_sql_only:
+                self.__cli.msg("===== executing %s (%s) =====" % (sql_file, up_down_label))
+                self.__mysql.change(sql, migration_version, is_migration_up)
             
             #recording the last statement executed
             sql_statements_executed += sql
         
-        if self.__options.show_sql:
+        if self.__options.show_sql or self.__options.show_sql_only:
             self.__cli.msg("__________ SQL statements executed __________")
             self.__cli.msg(sql_statements_executed)
-            self.__cli.msg("_____________________________________________\n")
+            self.__cli.msg("_____________________________________________")
