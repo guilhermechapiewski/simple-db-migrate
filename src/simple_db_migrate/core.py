@@ -23,14 +23,17 @@ class Config(object):
         else:
             f.close()
         
-        self.put("db_host", HOST)
-        self.put("db_user", USERNAME)
-        self.put("db_password", PASSWORD)
-        self.put("db_name", DATABASE)
-        self.put("db_version_table", "__db_version__")
+        try:
+            self.put("db_host", HOST)
+            self.put("db_user", USERNAME)
+            self.put("db_password", PASSWORD)
+            self.put("db_name", DATABASE)
+            self.put("db_version_table", "__db_version__")
         
-        migrations_dir = self.__get_migrations_absolute_dir(config_file, MIGRATIONS_DIR)
-        self.put("migrations_dir", migrations_dir)
+            migrations_dir = self.__get_migrations_absolute_dir(config_file, MIGRATIONS_DIR)
+            self.put("migrations_dir", migrations_dir)
+        except NameError, e:
+            self.__cli.error_and_exit("config file error: " + str(e))
     
     def __get_migrations_absolute_dir(self, config_file_path, migrations_dir):
         return os.path.abspath(Utils.get_path_without_config_file_name(config_file_path) + "/" + migrations_dir)
