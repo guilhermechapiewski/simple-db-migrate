@@ -222,6 +222,11 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         db_migrate = Migrations(self.__config)
         exists = db_migrate.check_if_version_exists("20090214115100")
         self.assertTrue(exists)
+        
+    def test_it_should_not_inform_that_schema_version_exists_just_matching_the_beggining_of_version_number(self):
+        db_migrate = Migrations(self.__config)
+        exists = db_migrate.check_if_version_exists("2009")
+        self.assertFalse(exists)
     
     def test_it_should_get_the_latest_schema_version_available(self):
         db_migrate = Migrations(self.__config)
