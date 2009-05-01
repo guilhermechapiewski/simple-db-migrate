@@ -3,6 +3,17 @@ import sys
 
 class CLI(object):
 
+    color = {
+        "PINK": "\033[95m", 
+        "BLUE": "\033[94m", 
+        "CYAN": "\033[96m",
+        "GREEN": "\033[92m", 
+        "YELLOW": "\033[93m", 
+        "RED": "\033[91m",
+        "GRAY": "\033[90m",
+        "END": "\033[0m", 
+    }
+
     def __init__(self):
         self.__config_parser()
 
@@ -49,12 +60,12 @@ class CLI(object):
         return self.__parser.parse_args()
         
     def error_and_exit(self, msg):
-        print "[ERROR] %s\n" % (msg)
+        self.msg("[ERROR] %s\n" % msg, "RED")
         sys.exit(1)
         
     def info_and_exit(self, msg):
-        print "%s\n" % (msg)
+        self.msg("%s\n" % msg, "BLUE")
         sys.exit(0)
-        
-    def msg(self, msg):
-        print msg
+    
+    def msg(self, msg, color="CYAN"):
+        print "%s%s%s" % (self.color[color], msg, self.color["END"])

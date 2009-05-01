@@ -19,12 +19,12 @@ class Main(object):
             self.__db_migrate = Migrations(config)
     
     def execute(self):
-        self.__cli.msg("\nStarting DB migration...")
+        self.__cli.msg("\nStarting DB migration...", "PINK")
         if self.__config.get("new_migration"):
             self._create_migration()
         else:
             self._migrate()
-        self.__cli.msg("\nDone.\n")
+        self.__cli.msg("\nDone.\n", "PINK")
             
     def _create_migration(self):
         new_file = self.__db_migrate.create_migration(self.__config.get("new_migration"))
@@ -34,8 +34,8 @@ class Main(object):
         destination_version = self._get_destination_version()
         current_version = self.__mysql.get_current_schema_version()
         
-        self.__cli.msg("- Current version is: %s" % current_version)
-        self.__cli.msg("- Destination version is: %s" % destination_version)
+        self.__cli.msg("- Current version is: %s" % current_version, "GREEN")
+        self.__cli.msg("- Destination version is: %s" % destination_version, "GREEN")
 
         # if current and destination versions are the same, 
         # will consider a migration up to execute remaining files
@@ -79,16 +79,16 @@ class Main(object):
         versions_to_be_executed = self._get_migration_files_to_be_executed(current_version, destination_version)
         
         if versions_to_be_executed is None or len(versions_to_be_executed) == 0:
-            self.__cli.msg("\nNothing to do.\n")
+            self.__cli.msg("\nNothing to do.\n", "PINK")
             sys.exit(0)
         
         up_down_label = "up" if is_migration_up else "down"
         if self.__config.get("show_sql_only"):
-            self.__cli.msg("\nWARNING: database migrations are not being executed ('--showsqlonly' activated)")    
+            self.__cli.msg("WARNING: database migrations are not being executed ('--showsqlonly' activated)", "YELLOW")
         else:
             self.__cli.msg("\nStarting migration %s!" % up_down_label)
         
-        self.__cli.msg("*** versions: %s\n" % versions_to_be_executed)
+        self.__cli.msg("*** versions: %s\n" % versions_to_be_executed, "GRAY")
         
         sql_statements_executed = ""
         for migration_version in versions_to_be_executed:
@@ -103,7 +103,7 @@ class Main(object):
             sql_statements_executed += sql
         
         if self.__config.get("show_sql") or self.__config.get("show_sql_only"):
-            self.__cli.msg("__________ SQL statements executed __________")
-            self.__cli.msg(sql_statements_executed)
-            self.__cli.msg("_____________________________________________")
+            self.__cli.msg("__________ SQL statements executed __________", "YELLOW")
+            self.__cli.msg(sql_statements_executed, "YELLOW")
+            self.__cli.msg("_____________________________________________", "YELLOW")
         

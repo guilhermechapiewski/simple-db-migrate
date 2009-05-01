@@ -115,8 +115,8 @@ class Migrations(object):
         
     def check_if_version_exists(self, version):
         files = self.get_all_migration_files()
-        for f in files:
-            if f.startswith(version):
+        for file_name in files:
+            if file_name[0:14] == version:
                 return True
         return False
         
