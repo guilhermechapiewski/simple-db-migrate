@@ -1,0 +1,18 @@
+Source: python-simple-db-migrate
+Section: python
+Priority: optional
+Maintainer: Gabriel Falcao <gabriel.falcao@corp.globo.com>
+Uploaders: Gabriel Falcao <gabriel.falcao@corp.globo.com>
+Standards-Version: 3.8.0
+Build-Depends: debhelper (>= 5.0.37.2), python-dev, cdbs (>= 0.4.42), python-setuptools (>= 0.6b3), python-support (>= 0.3)
+Homepage: http://github.com/guilhermechapiewski/simple-db-migrate/tree/master
+Vcs-Git: git://github.com/guilhermechapiewski/simple-db-migrate.git
+Vcs-Browser: http://github.com/guilhermechapiewski/simple-db-migrate/tree/master
+
+Package: python-simple-db-migrate
+Architecture: all
+Depends: ${python:Depends}
+Recommends:
+Suggests:
+Priority: optional
+Description: 
