@@ -1,3 +1,4 @@
+# coding: utf-8
 from test import *
 from core import *
 from pmock import *
@@ -98,6 +99,14 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         f = open(file_with_commands, "w")
         f.write("SQL_UP = 'create table test;'\n")
         f.write("SQL_DOWN = 'drop table test;'\n")
+        f.close()
+        self.__test_migration_files.append(file_with_commands)
+        
+        # migration file with commands having unicode characters
+        file_with_commands = "20090508155742_example_migration_file_with_unicode_commands.migration"
+        f = open(file_with_commands, "w")
+        f.write("SQL_UP = u\"create table test (name varchar(255) null); insert into test (name) values ('Cocoricó');\"\n")
+        f.write("SQL_DOWN = u\"delete from test where name = 'Cocoricó'; drop table test;\"\n")
         f.close()
         self.__test_migration_files.append(file_with_commands)
         
@@ -274,6 +283,16 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         db_migrate = Migrations(self.__config)
         migration_file_name = db_migrate.get_migration_file_name_from_version_number("***invalid***")
         self.assertTrue(migration_file_name is None)
-          
+        
+    def test_it_should_get_sql_command_containing_unicode_characters(self):
+        db_migrate = Migrations(self.__config)
+        migration_file_name = "20090508155742_example_migration_file_with_unicode_commands.migration"
+        
+        sql_up = db_migrate.get_sql_command(migration_file_name, True)
+        self.assertEquals(sql_up, u"create table test (name varchar(255) null); insert into test (name) values ('Cocoricó');")
+        
+        sql_down = db_migrate.get_sql_command(migration_file_name, False)
+        self.assertEquals(sql_down, u"delete from test where name = 'Cocoricó'; drop table test;")
+        
 if __name__ == "__main__":
     unittest.main()

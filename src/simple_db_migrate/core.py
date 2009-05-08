@@ -1,6 +1,7 @@
 from cli import CLI
 from time import strftime
 from helpers import Utils
+import codecs
 import os
 import shutil
 import re
@@ -16,7 +17,7 @@ class Config(object):
         
         # read configurations
         try:
-            f = open(config_file, "r")
+            f = codecs.open(config_file, "r", "utf-8")
             exec(f.read())
         except IOError:
             self.__cli.error_and_exit("%s: file not found" % config_file)
@@ -79,7 +80,7 @@ class Migrations(object):
         
     def get_sql_command(self, sql_file, migration_up=True):
         try:
-            f = open(self.__migrations_dir + "/" + sql_file, "r")
+            f = codecs.open(self.__migrations_dir + "/" + sql_file, "r", "utf-8")
             exec(f.read())
         except IOError:
             self.__cli.error_and_exit("%s: file not found" % self.__migrations_dir + "/" + sql_file)
@@ -143,7 +144,7 @@ class Migrations(object):
         new_file = "%s/%s" % (self.__migrations_dir, file_name)
         
         try:
-            f = open(new_file, "w")
+            f = codecs.open(new_file, "w", "utf-8")
             f.write(MigrationFile.template)
             f.close()
         except IOError:
