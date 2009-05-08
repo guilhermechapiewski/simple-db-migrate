@@ -19,6 +19,8 @@ class Main(object):
             self.__db_migrate = Migrations(config)
     
     def execute(self):
+        sys.setdefaultencoding("utf-8")
+        
         self.__cli.msg("\nStarting DB migration...", "PINK")
         if self.__config.get("new_migration"):
             self._create_migration()
