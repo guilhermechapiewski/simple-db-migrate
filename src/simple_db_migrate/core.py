@@ -92,13 +92,13 @@ class Migrations(object):
         except NameError:
             self.__cli.error_and_exit("migration file is incorrect; it does not define 'SQL_UP' or 'SQL_DOWN' ('%s')" % sql_file)
         
-        sql = ""
+        sql = u""
         sql = SQL_UP if migration_up else SQL_DOWN
         
         if sql is None or sql == "":
             self.__cli.error_and_exit("migration command is empty ('%s')" % sql_file)
         
-        return sql    
+        return sql
     
     def get_all_migration_versions(self):
         versions = []

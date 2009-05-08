@@ -90,7 +90,7 @@ class Main(object):
         
         self.__cli.msg("*** versions: %s\n" % versions_to_be_executed, "GRAY")
         
-        sql_statements_executed = ""
+        sql_statements_executed = []
         for migration_version in versions_to_be_executed:
             sql_file = self.__db_migrate.get_migration_file_name_from_version_number(migration_version)
             sql = self.__db_migrate.get_sql_command(sql_file, is_migration_up)
@@ -100,10 +100,11 @@ class Main(object):
                 self.__mysql.change(sql, migration_version, is_migration_up)
             
             #recording the last statement executed
-            sql_statements_executed += sql
+            sql_statements_executed.append(sql)
         
         if self.__config.get("show_sql") or self.__config.get("show_sql_only"):
             self.__cli.msg("__________ SQL statements executed __________", "YELLOW")
-            self.__cli.msg(sql_statements_executed, "YELLOW")
+            for sql in sql_statements_executed:
+                self.__cli.msg(sql, "YELLOW")
             self.__cli.msg("_____________________________________________", "YELLOW")
         
