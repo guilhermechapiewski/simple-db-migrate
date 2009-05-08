@@ -289,11 +289,6 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         db_migrate = Migrations(self.__config)
         migration_file_name = "20090508155742_example_migration_file_with_unicode_commands.migration"
         exec(stubs.utf8_migration)
-        
-        print SQL_UP
-        print "---"
-        print db_migrate.get_sql_command(migration_file_name, True)
-        
         self.assertEquals(SQL_UP, db_migrate.get_sql_command(migration_file_name, True))
         self.assertEquals(SQL_DOWN, db_migrate.get_sql_command(migration_file_name, False))
 
