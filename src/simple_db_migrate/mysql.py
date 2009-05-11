@@ -22,7 +22,10 @@ class MySQL(object):
     def __mysql_connect(self, connect_using_db_name=True):
         try:
             conn = self.__mysql_driver.connect(host=self.__mysql_host, user=self.__mysql_user, passwd=self.__mysql_passwd)
+            
+            # this should be configured in the config file, not hardcoded
             conn.set_character_set('utf8')
+            
             if connect_using_db_name:
                 conn.select_db(self.__mysql_db)
             return conn

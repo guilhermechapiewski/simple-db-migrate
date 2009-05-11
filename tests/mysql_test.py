@@ -27,6 +27,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
     
     def __mock_db_init(self, mysql_driver_mock, db_mock, cursor_mock):
         mysql_driver_mock.expects(at_least_once()).method("connect").will(return_value(db_mock))
+        db_mock.expects(at_least_once()).method("set_character_set")
         db_mock.expects(at_least_once()).method("select_db")
         
         # create db if not exists
