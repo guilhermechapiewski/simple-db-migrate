@@ -88,7 +88,7 @@ class Main(object):
         else:
             self.__cli.msg("\nStarting migration %s!" % up_down_label)
         
-        self.__cli.msg("*** versions: %s\n" % versions_to_be_executed, "GRAY")
+        self.__cli.msg("*** versions: %s\n" % versions_to_be_executed, "CYAN")
         
         sql_statements_executed = []
         for migration_version in versions_to_be_executed:

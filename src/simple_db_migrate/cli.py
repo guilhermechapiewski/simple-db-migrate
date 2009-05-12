@@ -10,20 +10,18 @@ class CLI(object):
         "GREEN": "", 
         "YELLOW": "", 
         "RED": "",
-        "GRAY": "",
         "END": "", 
     }
     
     @staticmethod
     def show_colors():
         CLI.color = {
-            "PINK": "\033[95m", 
-            "BLUE": "\033[94m", 
-            "CYAN": "\033[96m",
-            "GREEN": "\033[92m", 
-            "YELLOW": "\033[93m", 
-            "RED": "\033[91m",
-            "GRAY": "\033[90m",
+            "PINK": "\033[35m", 
+            "BLUE": "\033[34m", 
+            "CYAN": "\033[36m",
+            "GREEN": "\033[32m", 
+            "YELLOW": "\033[33m", 
+            "RED": "\033[31m",
             "END": "\033[0m", 
         }   
 
