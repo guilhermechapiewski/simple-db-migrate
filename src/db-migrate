@@ -4,7 +4,13 @@ from simple_db_migrate.cli import CLI
 from simple_db_migrate.core import Config
 from simple_db_migrate.main import Main
 
+SIMPLE_DB_MIGRATE_VERSION = "1.2.7"
+
 (options, args) = CLI().parse()
+
+if options.simple_db_migrate_version:
+    msg = "simple-db-migrate v%s" % SIMPLE_DB_MIGRATE_VERSION
+    CLI().info_and_exit(msg)
 
 # Create config
 config = Config(options.config_file)

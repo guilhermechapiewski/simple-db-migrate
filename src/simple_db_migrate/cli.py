@@ -27,28 +27,22 @@ class CLI(object):
 
     def __config_parser(self):
         self.__parser = OptionParser()
-
-        self.__parser.add_option("-v", "--version", 
-                dest="schema_version", 
-                default=None, 
-                help="Schema version to migrate to. If not provided will migrate to the last version available in the migrations directory.")
         
         self.__parser.add_option("-c", "--config", 
                 dest="config_file", 
                 default="simple-db-migrate.conf", 
                 help="Use a specific config file. If not provided, will search for 'simple-db-migrate.conf' in the current directory.")
-                        
-        self.__parser.add_option("--showsql", 
-                action="store_true", 
-                dest="show_sql", 
-                default=False, 
-                help="Show all SQL statements executed.")
 
-        self.__parser.add_option("--showsqlonly", 
-                action="store_true", 
-                dest="show_sql_only", 
+        self.__parser.add_option("-m", "--migration", 
+                dest="schema_version", 
+                default=None, 
+                help="Schema version to migrate to. If not provided will migrate to the last version available in the migrations directory.")        
+        
+        self.__parser.add_option("-v", "--version", 
+                action="store_true",
+                dest="simple_db_migrate_version", 
                 default=False, 
-                help="Show all SQL statements that would be executed but DON'T execute them in the database.")
+                help="Displays simple-db-migrate's version and exit.")
 
         self.__parser.add_option("--create", "--new", 
                 dest="new_migration", 
@@ -60,6 +54,18 @@ class CLI(object):
                 dest="drop_db_first", 
                 default=False, 
                 help="Drop database before running migrations to create everything from scratch. Useful when the database schema is corrupted and the migration scripts are not working.")
+
+        self.__parser.add_option("--showsql", 
+                action="store_true", 
+                dest="show_sql", 
+                default=False, 
+                help="Show all SQL statements executed.")
+
+        self.__parser.add_option("--showsqlonly", 
+                action="store_true", 
+                dest="show_sql_only", 
+                default=False, 
+                help="Show all SQL statements that would be executed but DON'T execute them in the database.")
 
     def get_parser(self):
         return self.__parser

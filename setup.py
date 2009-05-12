@@ -1,8 +1,14 @@
 from setuptools import setup, find_packages
+import re
+
+f = open("src/db-migrate")
+content = f.read()
+f.close()
+simple_db_migrate_version = re.match(r".*SIMPLE_DB_MIGRATE_VERSION = \"(.*)\"\n.*", content, re.S).group(1)
 
 setup(
     name = "simple-db-migrate",
-    version = "1.2.7",
+    version = simple_db_migrate_version,
     packages = find_packages("src"),
     package_dir = {"":"src"},
     scripts = ["src/db-migrate"],
