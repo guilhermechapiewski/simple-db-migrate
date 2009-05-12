@@ -12,6 +12,9 @@ if options.simple_db_migrate_version:
     msg = "simple-db-migrate v%s" % SIMPLE_DB_MIGRATE_VERSION
     CLI().info_and_exit(msg)
 
+if options.show_colors:
+    CLI.show_colors()
+
 # Create config
 config = Config(options.config_file)
 config.put("schema_version", options.schema_version)

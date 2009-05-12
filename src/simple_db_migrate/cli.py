@@ -4,14 +4,6 @@ import sys
 class CLI(object):
 
     color = {
-        #"PINK": "\033[95m", 
-        #"BLUE": "\033[94m", 
-        #"CYAN": "\033[96m",
-        #"GREEN": "\033[92m", 
-        #"YELLOW": "\033[93m", 
-        #"RED": "\033[91m",
-        #"GRAY": "\033[90m",
-        #"END": "\033[0m", 
         "PINK": "", 
         "BLUE": "", 
         "CYAN": "",
@@ -21,6 +13,19 @@ class CLI(object):
         "GRAY": "",
         "END": "", 
     }
+    
+    @staticmethod
+    def show_colors():
+        CLI.color = {
+            "PINK": "\033[95m", 
+            "BLUE": "\033[94m", 
+            "CYAN": "\033[96m",
+            "GREEN": "\033[92m", 
+            "YELLOW": "\033[93m", 
+            "RED": "\033[91m",
+            "GRAY": "\033[90m",
+            "END": "\033[0m", 
+        }   
 
     def __init__(self):
         self.__config_parser()
@@ -66,6 +71,13 @@ class CLI(object):
                 dest="show_sql_only", 
                 default=False, 
                 help="Show all SQL statements that would be executed but DON'T execute them in the database.")
+
+        self.__parser.add_option("--color", 
+                action="store_true", 
+                dest="show_colors", 
+                default=False, 
+                help="Show beautiful colors on output.")
+
 
     def get_parser(self):
         return self.__parser
