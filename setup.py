@@ -12,9 +12,6 @@ setup(
     packages = find_packages("src"),
     package_dir = {"":"src"},
     scripts = ["src/db-migrate"],
-    
-    install_requires = ["mysql-python>=1.2.2"], 
-
     author = "Guilherme Chapiewski",
     author_email = "guilherme.chapiewski@gmail.com",
     description = "simple-db-migrate is a database versioning and migration tool inspired on Rails Migrations.",
