@@ -43,6 +43,8 @@ Second, you have to configure access to your MySQL database so simple-db-migrate
     USERNAME = "root"
     PASSWORD = ""
     DATABASE = "migration_example"
+    # relative path from the location of this file
+    MIGRATIONS_DIR = "."
     
 You don't need to create the database. simple-db-migrate will create it for you.
 
@@ -56,9 +58,9 @@ If you don't want to navigate to the directory, you can specify it path instead.
 
 h2. Migrating to a specific version
 
-If you want you can migrate your database schema to specific version by informing the --version parameter. The version id is the YYYYMMDDHHMMSS identifier used at the migration file:
+If you want you can migrate your database schema to specific version by informing the --migration (or -m) parameter. The version id is the YYYYMMDDHHMMSS identifier used at the migration file:
 
-    $ db-migrate --version=20090227000129
+    $ db-migrate --migration=20090227000129
     
 If you don't specify any version, simple-db-migrate will migrate the schema to the latest version available on the migrations directory.
 
