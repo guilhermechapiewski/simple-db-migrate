@@ -43,8 +43,10 @@ Second, you have to configure access to your MySQL database so simple-db-migrate
     USERNAME = "root"
     PASSWORD = ""
     DATABASE = "migration_example"
-    MIGRATIONS_DIR = "." ### relative path from the location of this file
-    
+    MIGRATIONS_DIR = "."
+
+*** The MIGRATIONS_DIR directive is the relative path to the migrations directory from the location of this file.
+
 You don't need to create the database. simple-db-migrate will create it for you.
 
 After this two things you are ready to go. Just navigate to your migrations directory and type:
