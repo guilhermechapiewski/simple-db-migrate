@@ -1,0 +1,6 @@
+.coverage
+build
+dist
+src
+tests
+
