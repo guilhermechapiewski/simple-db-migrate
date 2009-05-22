@@ -1,0 +1,5 @@
+python-simple-db-migrate (1.2.5) stable; urgency=low
+
+  * Initial release.
+
+ -- Gabriel Falcão Gonçalves de Moura <gabriel.falcao@corp.globo.com>  Thu, 07 May 2009 15:26:01 -0300
