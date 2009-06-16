@@ -73,10 +73,13 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         
         self.__mock_db_init(mysql_driver_mock, db_mock, cursor_mock)
         
-        db_mock.expects(once()).method("query").query(eq("drop database if exists migration_test;"))
+        db_mock.expects(once()).method("query").query(eq("set foreign_key_checks=0; drop database if exists migration_test;"))
         db_mock.expects(once()).method("close")
 
-        mysql = MySQL(self.__config, mysql_driver=mysql_driver_mock)
+        config = Config("test.conf")
+        config.put("drop_db_first", True)
+
+        mysql = MySQL(config, mysql_driver=mysql_driver_mock)
     
     def test_it_should_execute_migration_up_and_update_schema_version(self):
         mysql_driver_mock = Mock()
