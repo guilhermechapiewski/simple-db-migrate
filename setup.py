@@ -9,8 +9,8 @@ simple_db_migrate_version = re.match(r".*SIMPLE_DB_MIGRATE_VERSION = \"(.*)\"\n.
 setup(
     name = "simple-db-migrate",
     version = simple_db_migrate_version,
-    packages = find_packages("src"),
-    package_dir = {"":"src"},
+    packages = ["simple_db_migrate"],
+    package_dir = {"simple_db_migrate": "src/simple_db_migrate"},
     scripts = ["src/db-migrate"],
     author = "Guilherme Chapiewski",
     author_email = "guilherme.chapiewski@gmail.com",
@@ -19,5 +19,4 @@ setup(
     keywords = "database migration tool mysql",
     url = "http://guilhermechapiewski.github.com/simple-db-migrate/",
     long_description = "simple-db-migrate is a database versioning and migration tool inspired on Rails Migrations. This tool helps you easily refactor, manage and track your database schema. The main difference is that Rails migrations are intended to be used only on Ruby projects while simple-db-migrate makes it possible to have migrations in any language (Java, Python, Ruby, PHP, whatever). This is possible because simple-db-migrate uses database's DDL (Data Definition Language) to do the database operations, while Rails Migrations are written in a Ruby internal DSL.",
-    download_url = "http://github.com/guilhermechapiewski/simple-db-migrate",
 )
