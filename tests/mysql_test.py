@@ -19,7 +19,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         f.write(config_file)
         f.close()
 
-        self.__config = Config("test.conf")
+        self.__config = FileConfig("test.conf")
         self.__config.put("drop_db_first", False)
         
     def tearDown(self):
@@ -76,7 +76,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         db_mock.expects(once()).method("query").query(eq("set foreign_key_checks=0; drop database if exists migration_test;"))
         db_mock.expects(once()).method("close")
 
-        config = Config("test.conf")
+        config = FileConfig("test.conf")
         config.put("drop_db_first", True)
 
         mysql = MySQL(config, mysql_driver=mysql_driver_mock)

@@ -8,12 +8,28 @@ import re
 
 class Config(object):
     
+    def __init__(self):
+        self._config = {}
+        
     def __repr__(self):
-        return str(self.__config)
+        return str(self._config)
+
+    def get(self, config_key):
+        try:
+            return self._config[config_key]
+        except KeyError, e:
+            raise Exception("invalid configuration key ('%s')" % config_key)
+            
+    def put(self, config_key, config_value):
+        if config_key in self._config:
+            raise Exception("the configuration key '%s' already exists and you cannot override any configuration" % config_key)
+        self._config[config_key] = config_value
+
+class FileConfig(Config):
     
     def __init__(self, config_file="simple-db-migrate.conf"):
         self.__cli = CLI()
-        self.__config = {}
+        self._config = {}
         
         # read configurations
         try:
@@ -38,18 +54,20 @@ class Config(object):
     
     def __get_migrations_absolute_dir(self, config_file_path, migrations_dir):
         return os.path.abspath(Utils.get_path_without_config_file_name(config_file_path) + "/" + migrations_dir)
-        
-    def get(self, config_key):
-        try:
-            return self.__config[config_key]
-        except KeyError, e:
-            raise Exception("invalid configuration key ('%s')" % config_key)
-            
-    def put(self, config_key, config_value):
-        if config_key in self.__config:
-            raise Exception("the configuration key '%s' already exists and you cannot override any configuration" % config_key)
-        self.__config[config_key] = config_value
 
+class InPlaceConfig(Config):
+    
+    def __init__(self, db_host, db_user, db_password, db_name, migrations_dir, db_version_table="__db_version__"):
+        self._config = {
+            "db_host": db_host,
+            "db_user": db_user,
+            "db_password": db_password,
+            "db_name": db_name,
+            "db_version_table": db_version_table,
+            "migrations_dir": migrations_dir
+        }
+
+        
 class Migrations(object):
     
     __migration_files_extension = ".migration"

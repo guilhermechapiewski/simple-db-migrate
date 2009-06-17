@@ -22,7 +22,8 @@ if __name__ == "__main__":
     # crap
     # crap
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(CLITest))
-    test_suites.append(unittest.TestLoader().loadTestsFromTestCase(ConfigTest))
+    test_suites.append(unittest.TestLoader().loadTestsFromTestCase(FileConfigTest))
+    test_suites.append(unittest.TestLoader().loadTestsFromTestCase(InPlaceConfigTest))
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(ListsTest))
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(MainTest))
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(MySQLTest))

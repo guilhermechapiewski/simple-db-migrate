@@ -7,7 +7,7 @@ import os
 import stubs
 import unittest
 
-class ConfigTest(unittest.TestCase):
+class FileConfigTest(unittest.TestCase):
     
     def setUp(self):
         config_file = """
@@ -26,7 +26,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "example"
     
     def test_it_should_read_config_file(self):
         config_path = os.path.abspath("sample.conf")
-        config = Config(config_path)
+        config = FileConfig(config_path)
         self.assertEquals(config.get("db_host"), "localhost")
         self.assertEquals(config.get("db_user"), "root")
         self.assertEquals(config.get("db_password"), "")
@@ -36,7 +36,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "example"
 
     def test_it_should_stop_execution_when_an_invalid_key_is_requested(self):
         config_path = os.path.abspath("sample.conf")
-        config = Config(config_path)
+        config = FileConfig(config_path)
         try:
             config.get("invalid_config")
             self.fail("it should not pass here")
@@ -45,7 +45,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "example"
     
     def test_it_should_create_new_configs(self):
         config_path = os.path.abspath("sample.conf")
-        config = Config(config_path)
+        config = FileConfig(config_path)
         
         # ensure that the config does not exist
         self.assertRaises(Exception, config.get, "sample_config", "TEST")
@@ -58,7 +58,43 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "example"
         
     def test_it_should_not_override_existing_configs(self):
         config_path = os.path.abspath("sample.conf")
-        config = Config(config_path)
+        config = FileConfig(config_path)
+        config.put("sample_config", "TEST")
+        self.assertRaises(Exception, config.put, "sample_config", "TEST")
+
+class InPlaceConfigTest(unittest.TestCase):
+    
+    def test_it_should_configure_default_parameters(self):
+        config = InPlaceConfig("localhost", "user", "passwd", "db", "dir")
+        self.assertEquals(config.get("db_host"), "localhost") 
+        self.assertEquals(config.get("db_user"), "user")
+        self.assertEquals(config.get("db_password"), "passwd")
+        self.assertEquals(config.get("db_name"), "db")
+        self.assertEquals(config.get("db_version_table"), "__db_version__")
+        self.assertEquals(config.get("migrations_dir"), "dir")
+    
+    def test_it_should_stop_execution_when_an_invalid_key_is_requested(self):
+        config = InPlaceConfig("localhost", "user", "passwd", "db", "dir")
+        try:
+            config.get("invalid_config")
+            self.fail("it should not pass here")
+        except:
+            pass
+    
+    def test_it_should_create_new_configs(self):
+        config = InPlaceConfig("localhost", "user", "passwd", "db", "dir")
+        
+        # ensure that the config does not exist
+        self.assertRaises(Exception, config.get, "sample_config", "TEST")
+        
+        # create the config
+        config.put("sample_config", "TEST")
+        
+        # read the config
+        self.assertEquals(config.get("sample_config"), "TEST")
+        
+    def test_it_should_not_override_existing_configs(self):
+        config = InPlaceConfig("localhost", "user", "passwd", "db", "dir")
         config.put("sample_config", "TEST")
         self.assertRaises(Exception, config.put, "sample_config", "TEST")
 
@@ -80,7 +116,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         f.write(config_file)
         f.close()
         
-        self.__config = Config("test_config_file.conf")
+        self.__config = FileConfig("test_config_file.conf")
             
     def setUp(self):
         self.__create_config()

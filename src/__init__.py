@@ -1,8 +1,8 @@
 from cli import CLI
-from core import Config
+from core import FileConfig
 from main import Main
 
-SIMPLE_DB_MIGRATE_VERSION = "1.2.7.5"
+SIMPLE_DB_MIGRATE_VERSION = "1.2.8"
 
 def run():
     (options, args) = CLI().parse()
@@ -15,7 +15,7 @@ def run():
         CLI.show_colors()
 
     # Create config
-    config = Config(options.config_file)
+    config = FileConfig(options.config_file)
     config.put("schema_version", options.schema_version)
     config.put("show_sql", options.show_sql)
     config.put("show_sql_only", options.show_sql_only)
