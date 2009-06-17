@@ -17,7 +17,7 @@ class Config(object):
         
         # read configurations
         try:
-            f = codecs.open(config_file, "r", "utf-8")
+            f = codecs.open(config_file, "rU", "utf-8")
             exec(f.read())
         except IOError:
             self.__cli.error_and_exit("%s: file not found" % config_file)
@@ -80,7 +80,7 @@ class Migrations(object):
         
     def get_sql_command(self, sql_file, migration_up=True):
         try:
-            f = codecs.open(self.__migrations_dir + "/" + sql_file, "r", "utf-8")
+            f = codecs.open(self.__migrations_dir + "/" + sql_file, "rU", "utf-8")
             exec(f.read())
         except IOError:
             self.__cli.error_and_exit("%s: file not found" % self.__migrations_dir + "/" + sql_file)
