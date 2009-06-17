@@ -60,7 +60,7 @@
         For now, simple-db-migrate only works with MySQL databases, but it will support other databases in a near future. Come back to check soon. You can also follow the project roadmap and changes at <a href="http://simple-db-migrate.lighthouseapp.com/projects/25437-simple-db-migrate/overview">Lighthouse</a>.
     </div>
 
-    <h2>Download</h2>
+    <h2>Download and Install</h2>
     <p>
       The current production version is <a href="http://github.com/guilhermechapiewski/simple-db-migrate/tree/v1.2.7"><b>v1.2.7</b></a>. The simplest way to install is using <b>easy_install</b>:
       <pre>$ sudo easy_install simple-db-migrate</pre>
@@ -80,6 +80,52 @@
       <pre>$ sudo python setup.py install</pre>
     </p>
     
+    <h2>Installing on Windows</h2>
+    <p>
+      <b>1) Install Python</b><br>
+      <br>
+      1.1) Go to the Python 2.5.4 release page (http://python.org/download/releases/2.5.4/) and download Python installer (if you are not sure about the installer you'll need, use http://python.org/ftp/python/2.5.4/python-2.5.4.msi).<br>
+      <br>
+      1.2) Install Python. If you are not sure about what to do, follow these instructions:
+      <ul>
+        <li>Select the "Install for all users" option and click "Next"</li>
+        <li>Choose the default directory (C:\Python25\) and click "Next"</li>
+        <li>Choose to instal all features and click "Next"</li>
+        <li>Click "Finish" and you're done</li>
+      </ul>
+      <br>
+      <b>2) Install setuptools<b><br>
+      <br>
+      Go to the setuptools 0.6c9 page (http://pypi.python.org/pypi/setuptools) and download setuptools installer (if you are not sure about the installer you'll need, use http://pypi.python.org/packages/2.5/s/setuptools/setuptools-0.6c9.win32-py2.5.exe#md5=602d06054ec1165e995ae54ac30884d7).<br>
+      <br>
+      Install setuptools (Next, Next, ..., Finish)<br>
+      <br>
+      <b>3) Configure Python and setuptools ENV variables</b><br>
+      <br>
+      <ul>
+        <li>Go to Windows Explorer</li>
+        <li>Click with the right button in "My Computer" and then click on "Properties"</li>
+        <li>Go to the "Advanced" tab</li>
+        <li>Click on "Environment Variables"</li>
+        <li>Find the "Path" system variable and click on "Edit"</li>
+        <li>Add ";C:\Python25;C:\Python25\Scripts" to the end of the variable value, that are the paths to find Python and easy_install on your system</li>
+        <li>Click on OK and then OK again</li>
+      </ul>
+      <br>
+      <b>4) Install MySQL-Python</b><br>
+      <br>
+      Go to the MySQL-Python project page (http://sourceforge.net/projects/mysql-python) and download the release 1.2.2 installer (http://ufpr.dl.sourceforge.net/sourceforge/mysql-python/MySQL-python-1.2.2.win32-py2.5.exe).<br>
+      <br>
+      Install MySQL-Python (Next, Next, ..., Finish)<br>
+      <br>
+      <b>5) Installing simple-db-migrate<b><br>
+      <br>
+      <ul>
+        <li>Go to the command prompt (Start > Execute > "cmd")</li>
+        <li>Type "easy_install simple-db-migrate"</li>
+      </ul>
+    </p>
+    
     <h2>Usage instructions</h2>
     <p>
         For <a href="http://github.com/guilhermechapiewski/simple-db-migrate/blob/69ac2de2f9f3a8097a54007db77a07e26396e06f/README.textile">usage instructions check the "README.textile" file</a> and the <a href="http://github.com/guilhermechapiewski/simple-db-migrate/tree/082ea11cbdcaf8211c23ddfa5278b33fa84c7494/example">"example" directory</a> on the project root to see how your migrations will be like. For usage instructions you can type on your shell:
@@ -96,11 +142,6 @@
     <p>
         You can also get in touch through the <a href="http://groups.google.com/group/simple-db-migrate">mailing list at Google Groups (simple-db-migrate at googlegroups dot com)</a>.
     </p>
-
-    <h2>Developement</h2>
-    <p>
-        <b>simple-db-migrate</b> is an open-source project developed by <a href="http://gc.blog.br">Guilherme Chapiewski</a> under <a href="http://www.apache.org/licenses/LICENSE-2.0.html">Apache License 2.0</a>. It is developed entirely in Python 2.5 using Ubuntu+Gedit or Mac OS X+Textmate (depending on the developer's mood).
-    </p>
     
     <h2>Contributors</h2>
     <p>
@@ -111,6 +152,11 @@
           <li><a href="http://simple-db-migrate.lighthouseapp.com/users/58108">Guilherme Souza</a></li>
           <li><a href="http://manicprogrammer.com/cs/blogs/heynemann/">Bernardo Heynemann</a></li>
         <ul>
+    </p>
+    
+    <h2>Developement</h2>
+    <p>
+        <b>simple-db-migrate</b> is an open-source project developed by <a href="http://gc.blog.br">Guilherme Chapiewski</a> under <a href="http://www.apache.org/licenses/LICENSE-2.0.html">Apache License 2.0</a>. It is developed entirely in Python 2.5 using Ubuntu+Gedit or Mac OS X+Textmate (depending on the developer's mood).
     </p>
     
     <div class="footer">
