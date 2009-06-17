@@ -1,4 +1,4 @@
-SQL_UP = """
+SQL_UP = u"""
 CREATE TABLE users (
   id int(11) NOT NULL auto_increment,
   oid varchar(500) default NULL,
@@ -9,6 +9,6 @@ CREATE TABLE users (
 );
 """
 
-SQL_DOWN = """
+SQL_DOWN = u"""
 DROP TABLE users;
 """

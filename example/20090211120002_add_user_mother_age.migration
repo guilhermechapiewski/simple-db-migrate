@@ -1,7 +1,7 @@
-SQL_UP = """
+SQL_UP = u"""
 ALTER TABLE users add column mother_age int(11) NULL;
 """
 
-SQL_DOWN = """
+SQL_DOWN = u"""
 ALTER TABLE users drop column mother_age;
 """

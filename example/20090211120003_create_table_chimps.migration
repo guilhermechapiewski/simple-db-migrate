@@ -1,4 +1,4 @@
-SQL_UP = """
+SQL_UP = u"""
 CREATE TABLE chimps (
   id int(11) NOT NULL auto_increment,
   first_name varchar(255) default NULL,
@@ -7,6 +7,6 @@ CREATE TABLE chimps (
 INSERT INTO chimps (first_name) VALUES ('Tião');
 """
 
-SQL_DOWN = """
+SQL_DOWN = u"""
 DROP TABLE chimps;
 """
