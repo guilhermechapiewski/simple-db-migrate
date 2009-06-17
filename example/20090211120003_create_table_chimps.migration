@@ -4,6 +4,7 @@ CREATE TABLE chimps (
   first_name varchar(255) default NULL,
   PRIMARY KEY  (id)
 );
+INSERT INTO chimps (first_name) VALUES ('Tião');
 """
 
 SQL_DOWN = """
