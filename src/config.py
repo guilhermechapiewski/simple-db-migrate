@@ -22,10 +22,13 @@ class Config(object):
             raise Exception("the configuration key '%s' already exists and you cannot override any configuration" % config_key)
         self._config[config_key] = config_value
         
-    def _parse_migrations_dir(self, dirs):
+    def _parse_migrations_dir(self, dirs, config_dir=''):
         abs_dirs = []
         for dir in dirs.split(':'):
-            abs_dirs.append(os.path.abspath(dir))
+            if config_dir == '':
+                abs_dirs.append(os.path.abspath(dir))
+            else:
+                abs_dirs.append(os.path.abspath('%s/%s' % (config_dir, dir)))
         return abs_dirs
     
 class FileConfig(Config):
@@ -48,7 +51,9 @@ class FileConfig(Config):
             self.put("db_password", PASSWORD)
             self.put("db_name", DATABASE)
             self.put("db_version_table", self.DB_VERSION_TABLE)
-            self.put("migrations_dir", self._parse_migrations_dir(MIGRATIONS_DIR))
+            
+            config_path = os.path.split(config_file)[0]
+            self.put("migrations_dir", self._parse_migrations_dir(MIGRATIONS_DIR, config_path))
         except NameError, e:
             raise Exception("config file error: " + str(e))
 

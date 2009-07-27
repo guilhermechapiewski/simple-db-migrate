@@ -11,17 +11,14 @@ class Migration(object):
     TEMPLATE = 'SQL_UP = u"""\n\n"""\n\nSQL_DOWN = u"""\n\n"""'
     
     def __init__(self, file):
-        match = re.match(r'(.*)(%s)' % self.MIGRATION_FILES_MASK, file, re.IGNORECASE)
-        path = match.group(1)
-        file_name = match.group(2)
+        if not os.path.exists(file):
+            raise Exception('migration file does not exist (%s)' % file)
         
+        file_name = os.path.split(file)[1]
         if not Migration.is_file_name_valid(file_name):
             raise Exception('invalid migration file name (%s)' % file_name)
         
-        if not os.path.exists(file_name):
-            raise Exception('migration file does not exist (%s)' % file_name)
-        
-        self.abspath = os.path.abspath(file_name)
+        self.abspath = os.path.abspath(file)
         self.file_name = file_name
         self.version = file_name[0:file_name.find("_")]
         self.sql_up, self.sql_down = self._get_commands()
@@ -98,7 +95,7 @@ class SimpleDBMigrate(object):
         
             for dir_file in dir_list:
                 if dir_file.endswith(Migration.MIGRATION_FILES_EXTENSION) and Migration.is_file_name_valid(dir_file):
-                    migration = Migration(dir_file)
+                    migration = Migration('%s/%s' % (path, dir_file))
                     migrations.append(migration)
         
         if len(migrations) == 0:

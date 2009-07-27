@@ -32,7 +32,7 @@ class MainTest(unittest.TestCase):
         main = Main(mysql=mysql_mock, db_migrate=db_migrate_mock)
         
         # execute stuff
-        migrations_to_be_executed = main._get_migration_files_to_be_executed("20090212120000", "20090212120005")
+        migrations_to_be_executed = main.get_migration_files_to_be_executed("20090212120000", "20090212120005")
         
         self.assertEquals(len(migrations_to_be_executed), 3)
         self.assertEquals(migrations_to_be_executed[0], "20090211120005")
@@ -56,7 +56,7 @@ class MainTest(unittest.TestCase):
         main = Main(mysql=mysql_mock, db_migrate=db_migrate_mock)
 
         # execute stuff
-        migrations_to_be_executed = main._get_migration_files_to_be_executed("20090212120000", "20090212120000")
+        migrations_to_be_executed = main.get_migration_files_to_be_executed("20090212120000", "20090212120000")
 
         self.assertEquals(len(migrations_to_be_executed), 2)
         self.assertEquals(migrations_to_be_executed[0], "20090211120005")
@@ -79,7 +79,7 @@ class MainTest(unittest.TestCase):
         main = Main(mysql=mysql_mock, db_migrate=db_migrate_mock)
 
         # execute stuff
-        migrations_to_be_executed = main._get_migration_files_to_be_executed("20090212120000", "20090212120000")
+        migrations_to_be_executed = main.get_migration_files_to_be_executed("20090212120000", "20090212120000")
 
         self.assertEquals(len(migrations_to_be_executed), 0)
     
@@ -97,7 +97,7 @@ class MainTest(unittest.TestCase):
         main = Main(mysql=mysql_mock, db_migrate=db_migrate_mock)
 
         # execute stuff
-        migrations_to_be_executed = main._get_migration_files_to_be_executed("20090212120000", "20090211120001")
+        migrations_to_be_executed = main.get_migration_files_to_be_executed("20090212120000", "20090211120001")
 
         self.assertEquals(len(migrations_to_be_executed), 3)
         self.assertEquals(migrations_to_be_executed[0], "20090212120000")
@@ -119,7 +119,7 @@ class MainTest(unittest.TestCase):
 
         # execute stuff
         try:
-            migrations_to_be_executed = main._get_migration_files_to_be_executed("20090212120000", "20090211120001")
+            migrations_to_be_executed = main.get_migration_files_to_be_executed("20090212120000", "20090211120001")
             self.fail("it should not pass here")
         except:
             pass
