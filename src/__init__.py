@@ -23,4 +23,7 @@ def run():
     config.put("drop_db_first", options.drop_db_first)
 
     # If CLI was correctly parsed, execute db-migrate.
-    Main(config).execute()
+    try:
+        Main(config).execute()
+    except Exception, e:
+        CLI().error_and_exit(e.message)
