@@ -1,5 +1,5 @@
 from test import *
-from core import *
+from config import *
 from mysql import *
 from pmock import *
 import os

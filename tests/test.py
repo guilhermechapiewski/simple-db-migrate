@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.abspath("../tests"))
 
 if __name__ == "__main__":
     from cli_test import *
+    from config_test import *
     from core_test import *
     from helpers_test import *
     from main_test import *
