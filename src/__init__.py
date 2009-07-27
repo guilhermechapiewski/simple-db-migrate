@@ -2,7 +2,7 @@ from cli import CLI
 from config import FileConfig
 from main import Main
 
-SIMPLE_DB_MIGRATE_VERSION = "1.2.8"
+SIMPLE_DB_MIGRATE_VERSION = "1.3.0"
 
 def run():
     try:
