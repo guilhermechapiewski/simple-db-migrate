@@ -3,7 +3,7 @@ import codecs
 import os
 import shutil
 import re
-   
+
 class Migration(object):
     
     MIGRATION_FILES_EXTENSION = ".migration"
@@ -11,13 +11,13 @@ class Migration(object):
     TEMPLATE = 'SQL_UP = u"""\n\n"""\n\nSQL_DOWN = u"""\n\n"""'
     
     def __init__(self, file):
-        if not os.path.exists(file):
-            raise Exception('migration file does not exist (%s)' % file)
-        
         file_name = os.path.split(file)[1]
         if not Migration.is_file_name_valid(file_name):
             raise Exception('invalid migration file name (%s)' % file_name)
         
+        if not os.path.exists(file):
+            raise Exception('migration file does not exist (%s)' % file)
+    
         self.abspath = os.path.abspath(file)
         self.file_name = file_name
         self.version = file_name[0:file_name.find("_")]
