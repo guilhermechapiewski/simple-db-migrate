@@ -198,6 +198,10 @@ class MigrationsTest(unittest.TestCase):
         for migration in db_migrate.get_all_migrations():
             os.remove(migration.abspath)
         
+        # remove bad files
+        for each_file in self.test_migration_files_bad:
+            os.remove(each_file)
+        
         # remove temp config file
         os.remove('test_config_file.conf')
 
