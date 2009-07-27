@@ -27,6 +27,7 @@ if __name__ == "__main__":
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(ListsTest))
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(MainTest))
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(MySQLTest))
+    test_suites.append(unittest.TestLoader().loadTestsFromTestCase(MigrationTest))
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(MigrationsTest))
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(UtilsTest))
     

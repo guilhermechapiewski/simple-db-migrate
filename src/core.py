@@ -66,8 +66,50 @@ class InPlaceConfig(Config):
             "db_version_table": db_version_table,
             "migrations_dir": migrations_dir
         }
-
+   
+class Migration(object):
+    
+    __migration_files_extension = ".migration"
+    __migration_files_mask = r"[0-9]{14}\w+%s$" % __migration_files_extension
+    
+    def __init__(self, file):
+        match = re.match(r'(.*)(%s)' % self.__migration_files_mask, file, re.IGNORECASE)
+        path = match.group(1)
+        file_name = match.group(2)
         
+        if not self._is_file_name_valid(file_name):
+            raise Exception('invalid migration file name (%s)' % file_name)
+        
+        if not os.path.exists(file_name):
+            raise Exception('migration file does not exist (%s)' % file_name)
+        
+        self.abspath = os.path.abspath(file_name)
+        self.file_name = file_name
+        self.version = file_name[0:file_name.find("_")]
+        self.sql_up, self.sql_down = self._get_commands()
+        
+    def _is_file_name_valid(self, file_name):
+        match = re.match(self.__migration_files_mask, file_name, re.IGNORECASE)
+        return match != None
+        
+    def _get_commands(self):
+        f = codecs.open(self.abspath, "rU", "utf-8")
+        exec(f.read())
+        f.close()
+
+        try:
+            (SQL_UP, SQL_DOWN)
+        except NameError:
+            raise Exception("migration file is incorrect; it does not define 'SQL_UP' or 'SQL_DOWN' (%s)" % self.abspath)
+
+        if SQL_UP is None or SQL_UP == "":
+            raise Exception("migration command 'SQL_UP' is empty (%s)" % self.abspath)
+
+        if SQL_DOWN is None or SQL_DOWN == "":
+            raise Exception("migration command 'SQL_DOWN' is empty (%s)" % self.abspath)
+
+        return SQL_UP, SQL_DOWN
+
 class Migrations(object):
     
     __migration_files_extension = ".migration"

@@ -7,168 +7,172 @@ import os
 import stubs
 import unittest
 
+def create_empty_file(file_name):
+    f = open(file_name, 'w')
+    f.close()
+
+def create_migration_file(file_name, sql_up='', sql_down=''):
+    f = open(file_name, 'w')
+    f.write('SQL_UP=u"%s"\nSQL_DOWN=u"%s"' % (sql_up, sql_down))
+    f.close()
+    
+def create_config(host='localhost', username='root', password='', database='migration_example', migrations_dir='.'):
+    config_file = '''
+HOST = os.getenv('DB_HOST') or '%s'
+USERNAME = os.getenv('DB_USERNAME') or '%s'
+PASSWORD = os.getenv('DB_PASSWORD') or '%s'
+DATABASE = os.getenv('DB_DATABASE') or '%s'
+MIGRATIONS_DIR = os.getenv('MIGRATIONS_DIR') or '%s'
+''' % (host, username, password, database, migrations_dir)
+    f = open('test_config_file.conf', 'w')
+    f.write(config_file)
+    f.close()
+    
+    return FileConfig('test_config_file.conf')
+
 class FileConfigTest(unittest.TestCase):
     
     def setUp(self):
-        config_file = """
-HOST = os.getenv("DB_HOST") or "localhost"
-USERNAME = os.getenv("DB_USERNAME") or "root"
-PASSWORD = os.getenv("DB_PASSWORD") or ""
-DATABASE = os.getenv("DB_DATABASE") or "migration_example"
-MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "example"
-"""
-        f = open("sample.conf", "w")
+        config_file = '''
+HOST = os.getenv('DB_HOST') or 'localhost'
+USERNAME = os.getenv('DB_USERNAME') or 'root'
+PASSWORD = os.getenv('DB_PASSWORD') or ''
+DATABASE = os.getenv('DB_DATABASE') or 'migration_example'
+MIGRATIONS_DIR = os.getenv('MIGRATIONS_DIR') or 'example'
+'''
+        f = open('sample.conf', 'w')
         f.write(config_file)
         f.close()
         
     def tearDown(self):
-        os.remove("sample.conf")
+        os.remove('sample.conf')
     
     def test_it_should_read_config_file(self):
-        config_path = os.path.abspath("sample.conf")
+        config_path = os.path.abspath('sample.conf')
         config = FileConfig(config_path)
-        self.assertEquals(config.get("db_host"), "localhost")
-        self.assertEquals(config.get("db_user"), "root")
-        self.assertEquals(config.get("db_password"), "")
-        self.assertEquals(config.get("db_name"), "migration_example")
-        self.assertEquals(config.get("db_version_table"), "__db_version__")
-        self.assertEquals(config.get("migrations_dir"), os.path.abspath("example"))
+        self.assertEquals(config.get('db_host'), 'localhost')
+        self.assertEquals(config.get('db_user'), 'root')
+        self.assertEquals(config.get('db_password'), '')
+        self.assertEquals(config.get('db_name'), 'migration_example')
+        self.assertEquals(config.get('db_version_table'), '__db_version__')
+        self.assertEquals(config.get('migrations_dir'), os.path.abspath('example'))
 
     def test_it_should_stop_execution_when_an_invalid_key_is_requested(self):
-        config_path = os.path.abspath("sample.conf")
+        config_path = os.path.abspath('sample.conf')
         config = FileConfig(config_path)
         try:
-            config.get("invalid_config")
-            self.fail("it should not pass here")
+            config.get('invalid_config')
+            self.fail('it should not pass here')
         except:
             pass
     
     def test_it_should_create_new_configs(self):
-        config_path = os.path.abspath("sample.conf")
+        config_path = os.path.abspath('sample.conf')
         config = FileConfig(config_path)
         
         # ensure that the config does not exist
-        self.assertRaises(Exception, config.get, "sample_config", "TEST")
+        self.assertRaises(Exception, config.get, 'sample_config', 'TEST')
         
         # create the config
-        config.put("sample_config", "TEST")
+        config.put('sample_config', 'TEST')
         
         # read the config
-        self.assertEquals(config.get("sample_config"), "TEST")
+        self.assertEquals(config.get('sample_config'), 'TEST')
         
     def test_it_should_not_override_existing_configs(self):
-        config_path = os.path.abspath("sample.conf")
+        config_path = os.path.abspath('sample.conf')
         config = FileConfig(config_path)
-        config.put("sample_config", "TEST")
-        self.assertRaises(Exception, config.put, "sample_config", "TEST")
+        config.put('sample_config', 'TEST')
+        self.assertRaises(Exception, config.put, 'sample_config', 'TEST')
 
 class InPlaceConfigTest(unittest.TestCase):
     
     def test_it_should_configure_default_parameters(self):
-        config = InPlaceConfig("localhost", "user", "passwd", "db", "dir")
-        self.assertEquals(config.get("db_host"), "localhost") 
-        self.assertEquals(config.get("db_user"), "user")
-        self.assertEquals(config.get("db_password"), "passwd")
-        self.assertEquals(config.get("db_name"), "db")
-        self.assertEquals(config.get("db_version_table"), "__db_version__")
-        self.assertEquals(config.get("migrations_dir"), "dir")
+        config = InPlaceConfig('localhost', 'user', 'passwd', 'db', 'dir')
+        self.assertEquals(config.get('db_host'), 'localhost') 
+        self.assertEquals(config.get('db_user'), 'user')
+        self.assertEquals(config.get('db_password'), 'passwd')
+        self.assertEquals(config.get('db_name'), 'db')
+        self.assertEquals(config.get('db_version_table'), '__db_version__')
+        self.assertEquals(config.get('migrations_dir'), 'dir')
     
     def test_it_should_stop_execution_when_an_invalid_key_is_requested(self):
-        config = InPlaceConfig("localhost", "user", "passwd", "db", "dir")
+        config = InPlaceConfig('localhost', 'user', 'passwd', 'db', 'dir')
         try:
-            config.get("invalid_config")
-            self.fail("it should not pass here")
+            config.get('invalid_config')
+            self.fail('it should not pass here')
         except:
             pass
     
     def test_it_should_create_new_configs(self):
-        config = InPlaceConfig("localhost", "user", "passwd", "db", "dir")
+        config = InPlaceConfig('localhost', 'user', 'passwd', 'db', 'dir')
         
         # ensure that the config does not exist
-        self.assertRaises(Exception, config.get, "sample_config", "TEST")
+        self.assertRaises(Exception, config.get, 'sample_config', 'TEST')
         
         # create the config
-        config.put("sample_config", "TEST")
+        config.put('sample_config', 'TEST')
         
         # read the config
-        self.assertEquals(config.get("sample_config"), "TEST")
+        self.assertEquals(config.get('sample_config'), 'TEST')
         
     def test_it_should_not_override_existing_configs(self):
-        config = InPlaceConfig("localhost", "user", "passwd", "db", "dir")
-        config.put("sample_config", "TEST")
-        self.assertRaises(Exception, config.put, "sample_config", "TEST")
+        config = InPlaceConfig('localhost', 'user', 'passwd', 'db', 'dir')
+        config.put('sample_config', 'TEST')
+        self.assertRaises(Exception, config.put, 'sample_config', 'TEST')
 
 class MigrationsTest(unittest.TestCase):
-    
-    def __create_empty_file(self, file_name):
-        f = open(file_name, "w")
-        f.close()
-        
-    def __create_config(self):
-        config_file = """
-HOST = os.getenv("DB_HOST") or "localhost"
-USERNAME = os.getenv("DB_USERNAME") or "root"
-PASSWORD = os.getenv("DB_PASSWORD") or ""
-DATABASE = os.getenv("DB_DATABASE") or "migration_example"
-MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
-"""
-        f = open("test_config_file.conf", "w")
-        f.write(config_file)
-        f.close()
-        
-        self.__config = FileConfig("test_config_file.conf")
-            
     def setUp(self):
-        self.__create_config()
+        self.__config = create_config()
         
         # random migration_files
-        self.__test_migration_files = ["20090214115100_example_migration_file1.migration", 
-                "20090214115200_example_migration_file2.migration", 
-                "20090214115300_example_migration_file3.migration",
-                "20090214115400_example_migration_file4.migration",
-                "20090214115500_example_migration_file5.migration",
-                "20090214115600_example_migration_file6.migration"]
+        self.__test_migration_files = ['20090214115100_example_migration_file1.migration', 
+                '20090214115200_example_migration_file2.migration', 
+                '20090214115300_example_migration_file3.migration',
+                '20090214115400_example_migration_file4.migration',
+                '20090214115500_example_migration_file5.migration',
+                '20090214115600_example_migration_file6.migration']
         
         for each_file in self.__test_migration_files:
-            self.__create_empty_file(each_file)
+            create_migration_file(each_file)
         
         # migration file with commands
-        file_with_commands = "20090214120600_example_migration_file_with_commands.migration"
-        f = open(file_with_commands, "w")
-        f.write("SQL_UP = 'create table test;'\n")
-        f.write("SQL_DOWN = 'drop table test;'\n")
+        file_with_commands = '20090214120600_example_migration_file_with_commands.migration'
+        f = open(file_with_commands, 'w')
+        f.write('SQL_UP = "create table test;"\n')
+        f.write('SQL_DOWN = "drop table test;"\n')
         f.close()
         self.__test_migration_files.append(file_with_commands)
         
         # migration file with commands having unicode characters
-        file_with_commands = "20090508155742_example_migration_file_with_unicode_commands.migration"
-        f = codecs.open(file_with_commands, "w", "utf-8")
+        file_with_commands = '20090508155742_example_migration_file_with_unicode_commands.migration'
+        f = codecs.open(file_with_commands, 'w', 'utf-8')
         f.write(stubs.utf8_migration)
         f.close()
         self.__test_migration_files.append(file_with_commands)
         
         # migration file without commands
-        file_without_commands = "20090214120700_example_migration_file_without_commands.migration"
-        f = open(file_without_commands, "w")
-        f.write("SQL_UP = ''\n")
-        f.write("SQL_DOWN = ''\n")
+        file_without_commands = '20090214120700_example_migration_file_without_commands.migration'
+        f = open(file_without_commands, 'w')
+        f.write('SQL_UP = ''\n')
+        f.write('SQL_DOWN = ''\n')
         f.close()
         self.__test_migration_files.append(file_without_commands)
         
         # very very last schema version available
-        file_in_the_future = "21420101000000_example_migration_file.migration"
-        self.__create_empty_file(file_in_the_future)
+        file_in_the_future = '21420101000000_example_migration_file.migration'
+        create_migration_file(file_in_the_future)
         self.__test_migration_files.append(file_in_the_future)
         
         # random migration files with bad names
-        self.__test_migration_files_with_bad_names = ["randomrandomrandom.migration", 
-                "21420101000000-wrong-separators.migration", 
-                "2009021401_old_file_name_style.migration"
-                "20090214120600_good_name_bad_extension.foo",
-                "spamspamspamspamspaam"]
+        self.__test_migration_files_with_bad_names = ['randomrandomrandom.migration', 
+                '21420101000000-wrong-separators.migration', 
+                '2009021401_old_file_name_style.migration'
+                '20090214120600_good_name_bad_extension.foo',
+                'spamspamspamspamspaam']
         
         for each_file in self.__test_migration_files_with_bad_names:
-            self.__create_empty_file(each_file)
+            create_migration_file(each_file)
     
     def tearDown(self):
         for each_file in self.__test_migration_files:
@@ -186,7 +190,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         except:
             pass
         
-        os.remove("test_config_file.conf")
+        os.remove('test_config_file.conf')
 
     def test_it_should_get_all_migration_files_in_dir(self):
         db_migrate = Migrations(self.__config)
@@ -217,28 +221,28 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
             
     def test_it_should_get_all_migration_versions_up_to_a_version(self):
         db_migrate = Migrations(self.__config)
-        migration_files = db_migrate.get_all_migration_versions_up_to("20090214115200")
+        migration_files = db_migrate.get_all_migration_versions_up_to('20090214115200')
         self.assertEquals(len(migration_files), 1)
-        self.assertEquals(migration_files[0], "20090214115100")    
+        self.assertEquals(migration_files[0], '20090214115100')    
         
     def test_it_should_get_migration_up_command_in_file(self):
         db_migrate = Migrations(self.__config)
-        migration_file = "20090214120600_example_migration_file_with_commands.migration"
+        migration_file = '20090214120600_example_migration_file_with_commands.migration'
         sql = db_migrate.get_sql_command(migration_file, True)
-        self.assertEquals(sql, "create table test;")
+        self.assertEquals(sql, 'create table test;')
     
     def test_it_should_get_migration_down_command_in_file(self):
         db_migrate = Migrations(self.__config)
-        migration_file = "20090214120600_example_migration_file_with_commands.migration"
+        migration_file = '20090214120600_example_migration_file_with_commands.migration'
         sql = db_migrate.get_sql_command(migration_file, False)
-        self.assertEquals(sql, "drop table test;")
+        self.assertEquals(sql, 'drop table test;')
         
     def test_it_should_not_get_migration_command_in_files_with_blank_commands(self):
         db_migrate = Migrations(self.__config)
-        migration_file = "20090214120700_example_migration_file_without_commands.migration"
+        migration_file = '20090214120700_example_migration_file_without_commands.migration'
         try:
             sql = db_migrate.get_sql_command(migration_file, True)
-            self.fail("it should not pass here")
+            self.fail('it should not pass here')
         except:
             pass
 
@@ -247,37 +251,37 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         migration_file = self.__test_migration_files[0]
         try:
             sql = db_migrate.get_sql_command(migration_file, True)
-            self.fail("it should not pass here")
+            self.fail('it should not pass here')
         except NameError:
-            self.fail("it should not pass here")
+            self.fail('it should not pass here')
         except:
             pass
         
     def test_it_should_get_migration_version_from_file(self):
         db_migrate = Migrations(self.__config)
         # good file name
-        example_file_name = "20090214120600_example_migration_file_name.migration"
+        example_file_name = '20090214120600_example_migration_file_name.migration'
         version = db_migrate.get_migration_version(example_file_name)
-        self.assertEquals(version, "20090214120600")
+        self.assertEquals(version, '20090214120600')
         # old file name
-        example_file_name = "2009021401_example_migration_file_name.migration"
+        example_file_name = '2009021401_example_migration_file_name.migration'
         version = db_migrate.get_migration_version(example_file_name)
-        self.assertEquals(version, "2009021401")
+        self.assertEquals(version, '2009021401')
     
     def test_it_should_check_if_schema_version_exists_in_files(self):
         db_migrate = Migrations(self.__config)
-        exists = db_migrate.check_if_version_exists("20090214115100")
+        exists = db_migrate.check_if_version_exists('20090214115100')
         self.assertTrue(exists)
         
     def test_it_should_not_inform_that_schema_version_exists_just_matching_the_beggining_of_version_number(self):
         db_migrate = Migrations(self.__config)
-        exists = db_migrate.check_if_version_exists("2009")
+        exists = db_migrate.check_if_version_exists('2009')
         self.assertFalse(exists)
     
     def test_it_should_get_the_latest_schema_version_available(self):
         db_migrate = Migrations(self.__config)
         latest_version = db_migrate.latest_schema_version_available()
-        self.assertEquals(latest_version, "21420101000000")
+        self.assertEquals(latest_version, '21420101000000')
         
     def test_it_should_validate_file_name_format_mask(self):
         db_migrate = Migrations(self.__config)
@@ -290,12 +294,12 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
     
     def test_it_should_not_validate_gedit_swap_files(self):
         db_migrate = Migrations(self.__config)
-        invalid_file_name = "%s~" % self.__test_migration_files[0]
+        invalid_file_name = '%s~' % self.__test_migration_files[0]
         self.assertFalse(db_migrate.is_file_name_valid(invalid_file_name))
             
     def test_it_should_create_migration_file(self):
         db_migrate = Migrations(self.__config)
-        new_migration_file_name = db_migrate.create_migration("create_a_migration_file")
+        new_migration_file_name = db_migrate.create_migration('create_a_migration_file')
         
         self.assertTrue(db_migrate.is_file_name_valid(new_migration_file_name))
         self.assertTrue(os.path.exists(new_migration_file_name))
@@ -306,27 +310,82 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
     def test_it_should_not_create_migration_file_with_bad_name(self):
         db_migrate = Migrations(self.__config)
         try:
-            db_migrate.create_migration("INVALID FILE NAME")
-            self.fail("it should not pass here")
+            db_migrate.create_migration('INVALID FILE NAME')
+            self.fail('it should not pass here')
         except:
             pass
     
     def test_it_should_get_migration_file_from_version_number(self):
         db_migrate = Migrations(self.__config)
-        migration_file_name = db_migrate.get_migration_file_name_from_version_number("20090214115100")
-        self.assertEquals(migration_file_name, "20090214115100_example_migration_file1.migration")
+        migration_file_name = db_migrate.get_migration_file_name_from_version_number('20090214115100')
+        self.assertEquals(migration_file_name, '20090214115100_example_migration_file1.migration')
         
     def test_it_should_get_none_migration_file_from_invalid_version_number(self):
         db_migrate = Migrations(self.__config)
-        migration_file_name = db_migrate.get_migration_file_name_from_version_number("***invalid***")
+        migration_file_name = db_migrate.get_migration_file_name_from_version_number('***invalid***')
         self.assertTrue(migration_file_name is None)
         
     def test_it_should_get_sql_command_containing_unicode_characters(self):
         db_migrate = Migrations(self.__config)
-        migration_file_name = "20090508155742_example_migration_file_with_unicode_commands.migration"
+        migration_file_name = '20090508155742_example_migration_file_with_unicode_commands.migration'
         exec(stubs.utf8_migration)
         self.assertEquals(SQL_UP, db_migrate.get_sql_command(migration_file_name, True))
         self.assertEquals(SQL_DOWN, db_migrate.get_sql_command(migration_file_name, False))
 
-if __name__ == "__main__":
+class MigrationTest(unittest.TestCase):
+    def setUp(self):
+        create_migration_file('20090727104700_sample_migration.migration', sql_up='xxx', sql_down='yyy')
+        create_migration_file('20090727113900_sample_migration_empty_sql_up.migration', sql_up='', sql_down='zzz')
+        create_migration_file('20090727113900_sample_migration_empty_sql_down.migration', sql_up='zzz', sql_down='')
+        create_empty_file('20090727114700_empty_file.migration')
+    
+    def tearDown(self):
+        os.remove('20090727104700_sample_migration.migration')
+        os.remove('20090727113900_sample_migration_empty_sql_up.migration')
+        os.remove('20090727113900_sample_migration_empty_sql_down.migration')
+        os.remove('20090727114700_empty_file.migration')
+
+    def test_it_should_get_basic_properties_when_path_is_relative1(self):
+        migration = Migration(file='20090727104700_sample_migration.migration')
+        assert migration.version == '20090727104700'
+        assert migration.file_name == '20090727104700_sample_migration.migration'
+        assert migration.abspath == os.path.abspath('./20090727104700_sample_migration.migration')
+    
+    def test_it_should_get_basic_properties_when_path_is_relative2(self):
+        migration = Migration(file='./20090727104700_sample_migration.migration')
+        assert migration.version == '20090727104700'
+        assert migration.file_name == '20090727104700_sample_migration.migration'
+        assert migration.abspath == os.path.abspath('./20090727104700_sample_migration.migration')
+
+    def test_it_should_get_basic_properties_when_path_is_relative3(self):
+        migration = Migration(file='../tests/20090727104700_sample_migration.migration')
+        assert migration.version == '20090727104700'
+        assert migration.file_name == '20090727104700_sample_migration.migration'
+        assert migration.abspath == os.path.abspath('./20090727104700_sample_migration.migration')
+
+    def test_it_should_get_basic_properties_when_path_is_relative(self):
+        migration = Migration(file=os.path.abspath('./20090727104700_sample_migration.migration'))
+        assert migration.version == '20090727104700'
+        assert migration.file_name == '20090727104700_sample_migration.migration'
+        assert migration.abspath == os.path.abspath('./20090727104700_sample_migration.migration')
+    
+    def test_it_should_get_sql_up_and_down(self):
+        migration = Migration(file='20090727104700_sample_migration.migration')
+        assert migration.sql_up == 'xxx'
+        assert migration.sql_down == 'yyy'
+    
+    def test_it_should_raise_exception_when_file_does_not_exist(self):
+        self.assertRaises(Exception, Migration, '20090727104700_this_file_does_not_exist.migration')
+        
+    def test_it_should_raise_exception_when_file_name_is_invalid(self):
+        self.assertRaises(Exception, Migration, 'abra.cadabra')
+
+    def test_it_should_raise_exception_when_migration_commands_are_empty(self):
+        self.assertRaises(Exception, Migration, '20090727113900_sample_migration_empty_sql_up.migration')
+        self.assertRaises(Exception, Migration, '20090727113900_sample_migration_empty_sql_down.migration')
+        
+    def test_it_should_raise_exception_when_migration_file_is_empty(self):
+        self.assertRaises(Exception, Migration, '20090727114700_empty_file.migration')
+
+if __name__ == '__main__':
     unittest.main()
