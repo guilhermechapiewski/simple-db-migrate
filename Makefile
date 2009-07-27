@@ -4,7 +4,6 @@ help:
 	@echo "Please use \`make <target>' where <target> is one of"
 	@echo "  clean      to clean garbage left by builds and installation"
 	@echo "  test       to execute all simple-db-migrate tests"
-	@echo "  coverage   to execute simple-db-migrate coverage report"
 	@echo "  install    to install simple-db-migrate"
 	@echo "  build      to build without installing simple-db-migrate"
 	@echo "  publish    to publish the package to PyPI"
