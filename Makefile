@@ -12,11 +12,13 @@ help:
 
 clean:
 	@echo "Cleaning garbage..."
-	@rm -rf build dist src/simple_db_migrate.egg-info simple_db_migrate.egg-info *.pyc *~
+	@rm -rf build dist src/simple_db_migrate.egg-info simple_db_migrate.egg-info *.pyc *~ *.migration *.foo
 	@echo "Done."
 
 test:
+	@make clean
 	@./scripts/run_tests.sh
+	@make clean
 
 coverage:
 	@./scripts/run_coverage.sh

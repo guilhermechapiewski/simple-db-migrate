@@ -1,11 +1,10 @@
-from cli import CLI
-import MySQLdb
 import sys
+
+import MySQLdb
 
 class MySQL(object):
     
     def __init__(self, config=None, mysql_driver=MySQLdb):
-        self.__cli = CLI()
         self.__mysql_driver = mysql_driver
         self.__mysql_host = config.get("db_host")
         self.__mysql_user = config.get("db_user")
@@ -30,7 +29,7 @@ class MySQL(object):
                 conn.select_db(self.__mysql_db)
             return conn
         except Exception, e:
-            self.__cli.error_and_exit("could not connect to database (%s)" % e)
+            raise Exception("could not connect to database (%s)" % e)
     
     def __execute(self, sql):
         db = self.__mysql_connect()        
@@ -45,14 +44,14 @@ class MySQL(object):
             db.commit()
             db.close()
         except Exception, e:
-            self.__cli.error_and_exit("error executing migration (%s)" % e)
+            raise Exception("error executing migration (%s)" % e)
         
     def _drop_database(self):
         db = self.__mysql_connect(False)
         try:
             db.query("set foreign_key_checks=0; drop database if exists %s;" % self.__mysql_db)
         except Exception, e:
-            self.__cli.error_and_exit("can't drop database '%s'; database doesn't exist" % self.__mysql_db)
+            raise Exception("can't drop database '%s'; database doesn't exist" % self.__mysql_db)
         db.close()
         
     def _create_database_if_not_exists(self):

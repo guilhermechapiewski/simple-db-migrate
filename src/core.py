@@ -1,12 +1,13 @@
-from cli import CLI
 from time import strftime
-from helpers import Utils
 import codecs
 import os
 import shutil
 import re
 
+# TODO: move to a config module (the 3 config classes below)
 class Config(object):
+    
+    DB_VERSION_TABLE = "__db_version__"
     
     def __init__(self):
         self._config = {}
@@ -17,18 +18,23 @@ class Config(object):
     def get(self, config_key):
         try:
             return self._config[config_key]
-        except KeyError, e:
+        except KeyError:
             raise Exception("invalid configuration key ('%s')" % config_key)
             
     def put(self, config_key, config_value):
         if config_key in self._config:
             raise Exception("the configuration key '%s' already exists and you cannot override any configuration" % config_key)
         self._config[config_key] = config_value
-
+        
+    def _parse_migrations_dir(self, dirs):
+        abs_dirs = []
+        for dir in dirs.split(':'):
+            abs_dirs.append(os.path.abspath(dir))
+        return abs_dirs
+    
 class FileConfig(Config):
     
     def __init__(self, config_file="simple-db-migrate.conf"):
-        self.__cli = CLI()
         self._config = {}
         
         # read configurations
@@ -36,7 +42,7 @@ class FileConfig(Config):
             f = codecs.open(config_file, "rU", "utf-8")
             exec(f.read())
         except IOError:
-            self.__cli.error_and_exit("%s: file not found" % config_file)
+            raise Exception("%s: file not found" % config_file)
         else:
             f.close()
         
@@ -45,39 +51,37 @@ class FileConfig(Config):
             self.put("db_user", USERNAME)
             self.put("db_password", PASSWORD)
             self.put("db_name", DATABASE)
-            self.put("db_version_table", "__db_version__")
-        
-            migrations_dir = self.__get_migrations_absolute_dir(config_file, MIGRATIONS_DIR)
-            self.put("migrations_dir", migrations_dir)
+            self.put("db_version_table", self.DB_VERSION_TABLE)
+            self.put("migrations_dir", self._parse_migrations_dir(MIGRATIONS_DIR))
         except NameError, e:
-            self.__cli.error_and_exit("config file error: " + str(e))
-    
-    def __get_migrations_absolute_dir(self, config_file_path, migrations_dir):
-        return os.path.abspath(Utils.get_path_without_config_file_name(config_file_path) + "/" + migrations_dir)
+            raise Exception("config file error: " + str(e))
 
 class InPlaceConfig(Config):
-    
-    def __init__(self, db_host, db_user, db_password, db_name, migrations_dir, db_version_table="__db_version__"):
+
+    def __init__(self, db_host, db_user, db_password, db_name, migrations_dir, db_version_table=''):
+        if not db_version_table or db_version_table == '':
+            db_version_table = self.DB_VERSION_TABLE
         self._config = {
             "db_host": db_host,
             "db_user": db_user,
             "db_password": db_password,
             "db_name": db_name,
             "db_version_table": db_version_table,
-            "migrations_dir": migrations_dir
+            "migrations_dir": self._parse_migrations_dir(migrations_dir)
         }
    
 class Migration(object):
     
-    __migration_files_extension = ".migration"
-    __migration_files_mask = r"[0-9]{14}\w+%s$" % __migration_files_extension
+    MIGRATION_FILES_EXTENSION = ".migration"
+    MIGRATION_FILES_MASK = r"[0-9]{14}\w+%s$" % MIGRATION_FILES_EXTENSION
+    TEMPLATE = 'SQL_UP = u"""\n\n"""\n\nSQL_DOWN = u"""\n\n"""'
     
     def __init__(self, file):
-        match = re.match(r'(.*)(%s)' % self.__migration_files_mask, file, re.IGNORECASE)
+        match = re.match(r'(.*)(%s)' % self.MIGRATION_FILES_MASK, file, re.IGNORECASE)
         path = match.group(1)
         file_name = match.group(2)
         
-        if not self._is_file_name_valid(file_name):
+        if not Migration.is_file_name_valid(file_name):
             raise Exception('invalid migration file name (%s)' % file_name)
         
         if not os.path.exists(file_name):
@@ -87,11 +91,7 @@ class Migration(object):
         self.file_name = file_name
         self.version = file_name[0:file_name.find("_")]
         self.sql_up, self.sql_down = self._get_commands()
-        
-    def _is_file_name_valid(self, file_name):
-        match = re.match(self.__migration_files_mask, file_name, re.IGNORECASE)
-        return match != None
-        
+    
     def _get_commands(self):
         f = codecs.open(self.abspath, "rU", "utf-8")
         exec(f.read())
@@ -109,121 +109,86 @@ class Migration(object):
             raise Exception("migration command 'SQL_DOWN' is empty (%s)" % self.abspath)
 
         return SQL_UP, SQL_DOWN
+    
+    def compare_to(self, another_migration):
+        if self.version < another_migration.version:
+            return -1
+        elif self.version > another_migration.version:
+            return 1
+        return 0
+    
+    @staticmethod
+    def sort_migrations_list(migrations, reverse=False):
+        return sorted(migrations, cmp=lambda x,y: x.compare_to(y), reverse=reverse)
+    
+    @staticmethod
+    def is_file_name_valid(file_name):
+        match = re.match(Migration.MIGRATION_FILES_MASK, file_name, re.IGNORECASE)
+        return match != None
 
+    @staticmethod
+    def create(migration_name, migration_dir='.'):
+        timestamp = strftime("%Y%m%d%H%M%S")        
+        file_name = "%s_%s%s" % (timestamp, migration_name, Migration.MIGRATION_FILES_EXTENSION)
+
+        if not Migration.is_file_name_valid(file_name):
+            raise Exception("invalid migration name; it should contain only letters, numbers and/or underscores ('%s')" % migration_name)
+
+        new_file_name = "%s/%s" % (migration_dir, file_name)
+
+        try:
+            f = codecs.open(new_file_name, "w", "utf-8")
+            f.write(Migration.TEMPLATE)
+            f.close()
+        except IOError:
+            raise Exception("could not create file ('%s')" % new_file_name)
+
+        return new_file_name
+        
+# TODO: rename again to SimpleDBMigrate :)
 class Migrations(object):
     
-    __migration_files_extension = ".migration"
-    
     def __init__(self, config=None):
-        self.__migrations_dir = config.get("migrations_dir")
-        self.__cli = CLI()
-
-    def get_all_migration_files(self):
-        path = os.path.abspath(self.__migrations_dir)
-        dir_list = None
-        try:
-            dir_list = os.listdir(path)
-        except OSError:
-            self.__cli.error_and_exit("directory not found ('%s')" % path)
-        
-        files = []
-        for dir_file in dir_list:
-            if self.is_file_name_valid(dir_file):
-                files.append(dir_file)
-        
-        if len(files) == 0:
-            self.__cli.error_and_exit("no migration files found")
-        
-        files.sort()
-        
-        return files
-        
-    def get_sql_command(self, sql_file, migration_up=True):
-        try:
-            f = codecs.open(self.__migrations_dir + "/" + sql_file, "rU", "utf-8")
-            exec(f.read())
-        except IOError:
-            self.__cli.error_and_exit("%s: file not found" % self.__migrations_dir + "/" + sql_file)
-        else:
-            f.close()
-        
-        try:
-            (SQL_UP, SQL_DOWN)
-        except NameError:
-            self.__cli.error_and_exit("migration file is incorrect; it does not define 'SQL_UP' or 'SQL_DOWN' ('%s')" % sql_file)
-        
-        sql = u""
-        sql = SQL_UP if migration_up else SQL_DOWN
-        
-        if sql is None or sql == "":
-            self.__cli.error_and_exit("migration command is empty ('%s')" % sql_file)
-        
-        return sql
+        self._migrations_dir = config.get("migrations_dir")
     
+    def get_all_migrations(self):
+        migrations = []
+        
+        for dir in self._migrations_dir:
+            path = os.path.abspath(dir)
+            
+            dir_list = None
+            try:
+                dir_list = os.listdir(path)
+            except OSError:
+                raise Exception("directory not found ('%s')" % path)
+        
+            for dir_file in dir_list:
+                if dir_file.endswith(Migration.MIGRATION_FILES_EXTENSION) and Migration.is_file_name_valid(dir_file):
+                    migration = Migration(dir_file)
+                    migrations.append(migration)
+        
+        if len(migrations) == 0:
+            raise Exception("no migration files found")
+        
+        return Migration.sort_migrations_list(migrations)
+            
     def get_all_migration_versions(self):
-        versions = []
-        migration_files = self.get_all_migration_files()
-        for each_file in migration_files:
-            versions.append(self.get_migration_version(each_file))
-        return versions
+        return [migration.version for migration in self.get_all_migrations()]
     
     def get_all_migration_versions_up_to(self, limit_version):
-        all_versions = self.get_all_migration_versions()
-        return [version for version in all_versions if version < limit_version]
+        return [version for version in self.get_all_migration_versions() if version < limit_version]
     
-    def get_migration_version(self, sql_file):
-        return sql_file[0:sql_file.find("_")]
-        
     def check_if_version_exists(self, version):
-        files = self.get_all_migration_files()
-        for file_name in files:
-            if file_name[0:14] == version:
-                return True
-        return False
+        return version in self.get_all_migration_versions()
         
-    def latest_schema_version_available(self):
-        all_files = self.get_all_migration_files()
-        
-        all_files.sort()
-        all_files.reverse()
-        
-        return self.get_migration_version(all_files[0])
+    def latest_version_available(self):
+        all_migrations = self.get_all_migrations()
+        all_migrations = Migration.sort_migrations_list(all_migrations, reverse=True)
+        return all_migrations[0].version
     
-    def is_file_name_valid(self, file_name):
-        mask = r"[0-9]{14}\w+%s$" % self.__migration_files_extension
-        match = re.match(mask, file_name, re.IGNORECASE)
-        return match != None
-        
-    def create_migration(self, migration_name):
-        timestamp = strftime("%Y%m%d%H%M%S")        
-        file_name = "%s_%s%s" % (timestamp, migration_name, self.__migration_files_extension)
-        
-        if not self.is_file_name_valid(file_name):
-            self.__cli.error_and_exit("invalid migration name; it should contain only letters, numbers and/or underscores ('%s')" % migration_name)
-        
-        new_file = "%s/%s" % (self.__migrations_dir, file_name)
-        
-        try:
-            f = codecs.open(new_file, "w", "utf-8")
-            f.write(MigrationFile.template)
-            f.close()
-        except IOError:
-            self.__cli.error_and_exit("could not create file ('%s')" % new_file)
-            
-        return file_name
-    
-    def get_migration_file_name_from_version_number(self, version):
-        all_files = self.get_all_migration_files()
-        for f in all_files:
-            if f.startswith(version):
-                return f
+    def get_migration_from_version_number(self, version):
+        migrations = [migration for migration in self.get_all_migrations() if migration.version == version]
+        if len(migrations) > 0:
+            return migrations[0]
         return None
-        
-class MigrationFile(object):
-    template = '''SQL_UP = u"""
-
-"""
-
-SQL_DOWN = u"""
-
-"""'''

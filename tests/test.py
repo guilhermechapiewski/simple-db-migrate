@@ -22,6 +22,7 @@ if __name__ == "__main__":
     # crap
     # crap
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(CLITest))
+    test_suites.append(unittest.TestLoader().loadTestsFromTestCase(ConfigTest))
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(FileConfigTest))
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(InPlaceConfigTest))
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(ListsTest))
@@ -29,7 +30,6 @@ if __name__ == "__main__":
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(MySQLTest))
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(MigrationTest))
     test_suites.append(unittest.TestLoader().loadTestsFromTestCase(MigrationsTest))
-    test_suites.append(unittest.TestLoader().loadTestsFromTestCase(UtilsTest))
     
     alltests = unittest.TestSuite(test_suites)
     
@@ -37,10 +37,8 @@ if __name__ == "__main__":
     alltests.run(result)
        
     if result.wasSuccessful():
-        print "\n*** All %d tests passed :) ***\n" % result.testsRun
+        print "\n%s All %d tests passed :) %s\n" % ('*' * 20, result.testsRun, '*' * 20)
     else:
-        print "\nError in tests (%d runned, %d errors, %d failures)\n" % (result.testsRun, len(result.errors), len(result.failures))
-
         for problems in [result.errors, result.failures]:
             for problem in problems:
                 print "======================================================================"
@@ -54,4 +52,4 @@ if __name__ == "__main__":
                         print info
                     i += 1
                 print "----------------------------------------------------------------------"
-        print ""
+        print "\nError in tests (%d runned, %d errors, %d failures)\n" % (result.testsRun, len(result.errors), len(result.failures))

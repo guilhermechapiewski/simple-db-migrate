@@ -52,7 +52,7 @@ class Main(object):
             destination_version = self.__db_migrate.latest_schema_version_available()
 
         if not self.__db_migrate.check_if_version_exists(destination_version):
-            self.__cli.error_and_exit("version not found (%s)" % destination_version)
+            raise Exception("version not found (%s)" % destination_version)
 
         return destination_version
         
@@ -70,7 +70,7 @@ class Main(object):
         down_versions = [version for version in mysql_versions if version <= current_version and version > destination_version]
         for version in down_versions:
             if version not in migration_versions:
-                self.__cli.error_and_exit("impossible to migrate down: one of the versions was not found (%s)" % version)
+                raise Exception("impossible to migrate down: one of the versions was not found (%s)" % version)
         down_versions.reverse()
         return down_versions
         

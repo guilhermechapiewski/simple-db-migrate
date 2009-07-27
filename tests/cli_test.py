@@ -34,7 +34,7 @@ class CLITest(unittest.TestCase):
     def test_it_should_show_error_message_and_exit(self):
         cli = CLI()
         try:
-            cli.error_and_exit("test message")
+            cli.error_and_exit("error test message, dont mind about it :)")
             self.fail("it should not get here")
         except:
             pass
@@ -42,7 +42,7 @@ class CLITest(unittest.TestCase):
     def test_it_should_show_info_message_and_exit(self):
         cli = CLI()
         try:
-            cli.info_and_exit("test message")
+            cli.info_and_exit("info test message, dont mind about it :)")
             self.fail("it should not get here")
         except:
             pass
