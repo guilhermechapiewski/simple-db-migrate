@@ -35,7 +35,7 @@ MIGRATIONS_DIR = os.getenv('MIGRATIONS_DIR') or '%s'
     
     return FileConfig('test_config_file.conf')
 
-class MigrationsTest(unittest.TestCase):
+class SimpleDBMigrateTest(unittest.TestCase):
     def setUp(self):
         self.config = create_config()
         self.test_migration_files = []
@@ -69,7 +69,7 @@ class MigrationsTest(unittest.TestCase):
             
     def tearDown(self):
         # remove all migrations
-        db_migrate = Migrations(self.config)
+        db_migrate = SimpleDBMigrate(self.config)
         for migration in db_migrate.get_all_migrations():
             os.remove(migration.abspath)
         
@@ -81,7 +81,7 @@ class MigrationsTest(unittest.TestCase):
         os.remove('test_config_file.conf')
 
     def test_it_should_get_all_migrations_in_dir(self):
-        db_migrate = Migrations(self.config)
+        db_migrate = SimpleDBMigrate(self.config)
         migrations = db_migrate.get_all_migrations()
         assert migrations is not None
         assert len(migrations) == len(self.test_migration_files)
@@ -89,14 +89,14 @@ class MigrationsTest(unittest.TestCase):
             assert migration.file_name in self.test_migration_files
     
     def test_it_should_get_only_valid_migrations_in_dir(self):
-        db_migrate = Migrations(self.config)
+        db_migrate = SimpleDBMigrate(self.config)
         migrations = db_migrate.get_all_migrations()
         for migration in migrations:
             assert migration.file_name in self.test_migration_files
             assert migration.file_name not in self.test_migration_files_bad
     
     def test_it_should_get_all_migration_versions_available(self):
-        db_migrate = Migrations(self.config)
+        db_migrate = SimpleDBMigrate(self.config)
         migrations = db_migrate.get_all_migrations()
         expected_versions = []
         for migration in migrations:
@@ -109,32 +109,32 @@ class MigrationsTest(unittest.TestCase):
             assert version in expected_versions
     
     def test_it_should_get_all_migration_versions_up_to_a_version(self):
-        db_migrate = Migrations(self.config)
+        db_migrate = SimpleDBMigrate(self.config)
         migration_versions = db_migrate.get_all_migration_versions_up_to('20090214115200')
         assert len(migration_versions) == 1
         assert migration_versions[0] == '20090214115100'
     
     def test_it_should_check_if_schema_version_exists(self):
-        db_migrate = Migrations(self.config)
+        db_migrate = SimpleDBMigrate(self.config)
         assert db_migrate.check_if_version_exists('20090214115100')
         assert not db_migrate.check_if_version_exists('19000101000000')
         
     def test_it_should_not_inform_that_schema_version_exists_just_matching_the_beggining_of_version_number(self):
-        db_migrate = Migrations(self.config)
+        db_migrate = SimpleDBMigrate(self.config)
         assert not db_migrate.check_if_version_exists('2009')
     
     def test_it_should_get_the_latest_version_available(self):
-        db_migrate = Migrations(self.config)
+        db_migrate = SimpleDBMigrate(self.config)
         assert db_migrate.latest_version_available() == '21420101000000'
     
     def test_it_should_get_migration_from_version_number(self):
-        db_migrate = Migrations(self.config)
+        db_migrate = SimpleDBMigrate(self.config)
         migration = db_migrate.get_migration_from_version_number('20090214115100')
         assert migration.version == '20090214115100'
         assert migration.file_name == '20090214115100_example_migration_file1.migration'
     
     def test_it_should_not_get_migration_from_invalid_version_number(self):
-        db_migrate = Migrations(self.config)
+        db_migrate = SimpleDBMigrate(self.config)
         migration = db_migrate.get_migration_from_version_number('***invalid***')
         assert migration is None
         

@@ -1,5 +1,5 @@
 from cli import CLI
-from core import Migrations
+from core import SimpleDBMigrate
 from helpers import Lists
 from mysql import MySQL
 import sys
@@ -16,7 +16,7 @@ class Main(object):
         
         self.__db_migrate = db_migrate
         if self.__db_migrate is None:
-            self.__db_migrate = Migrations(config)
+            self.__db_migrate = SimpleDBMigrate(config)
     
     def execute(self):
         self.__cli.msg("\nStarting DB migration...", "PINK")

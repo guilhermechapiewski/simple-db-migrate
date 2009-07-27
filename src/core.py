@@ -79,8 +79,7 @@ class Migration(object):
 
         return new_file_name
         
-# TODO: rename again to SimpleDBMigrate :)
-class Migrations(object):
+class SimpleDBMigrate(object):
     
     def __init__(self, config=None):
         self._migrations_dir = config.get("migrations_dir")
