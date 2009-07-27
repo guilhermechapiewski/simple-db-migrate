@@ -11,17 +11,15 @@ help:
 	@echo " "
 
 clean:
-	@echo "Cleaning garbage..."
+	@echo "Cleaning..."
 	@rm -rf build dist src/simple_db_migrate.egg-info simple_db_migrate.egg-info *.pyc **/*.pyc *~ *.migration *.foo
-	@echo "Done."
 
 test:
 	@make clean
-	@./scripts/run_tests.sh
+	@echo "Starting tests..."
+	@nosetests -s --verbose --with-coverage --cover-erase --cover-package=cli,config,core,helpers,main,mysql tests/* > /dev/null
+	@#nosetests -s --verbose --with-coverage --cover-erase --cover-inclusive tests/* > /dev/null
 	@make clean
-
-coverage:
-	@./scripts/run_coverage.sh
 
 install:
 	@/usr/bin/env python ./setup.py install
