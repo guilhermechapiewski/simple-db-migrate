@@ -4,24 +4,21 @@ help:
 	@echo "Please use \`make <target>' where <target> is one of"
 	@echo "  clean      to clean garbage left by builds and installation"
 	@echo "  test       to execute all simple-db-migrate tests"
-	@echo "  coverage   to execute simple-db-migrate coverage report"
 	@echo "  install    to install simple-db-migrate"
 	@echo "  build      to build without installing simple-db-migrate"
 	@echo "  publish    to publish the package to PyPI"
 	@echo " "
 
 clean:
-	@echo "Cleaning garbage..."
+	@echo "Cleaning..."
 	@rm -rf build dist src/simple_db_migrate.egg-info simple_db_migrate.egg-info *.pyc **/*.pyc *~ *.migration *.foo
-	@echo "Done."
 
 test:
 	@make clean
-	@./scripts/run_tests.sh
+	@echo "Starting tests..."
+	@nosetests -s --verbose --with-coverage --cover-erase --cover-package=cli,config,core,helpers,main,mysql tests/* > /dev/null
+	@#nosetests -s --verbose --with-coverage --cover-erase --cover-inclusive tests/* > /dev/null
 	@make clean
-
-coverage:
-	@./scripts/run_coverage.sh
 
 install:
 	@/usr/bin/env python ./setup.py install
