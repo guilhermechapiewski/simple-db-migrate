@@ -26,7 +26,7 @@ def run():
         # If CLI was correctly parsed, execute db-migrate.
         Main(config).execute()
     except Exception, e:
-        CLI().error_and_exit(e.message)
+        CLI().error_and_exit(str(e))
         
 if __name__ == '__main__':
     run()
