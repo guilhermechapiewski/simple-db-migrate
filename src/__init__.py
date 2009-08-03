@@ -1,8 +1,10 @@
+import codecs
+
 from cli import CLI
 from config import FileConfig
 from main import Main
 
-SIMPLE_DB_MIGRATE_VERSION = "1.3.2"
+SIMPLE_DB_MIGRATE_VERSION = "1.3.3"
 
 # fixing print in non-utf8 terminals
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
