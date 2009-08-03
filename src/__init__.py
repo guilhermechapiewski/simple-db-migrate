@@ -2,7 +2,7 @@ from cli import CLI
 from config import FileConfig
 from main import Main
 
-SIMPLE_DB_MIGRATE_VERSION = "1.3.0"
+SIMPLE_DB_MIGRATE_VERSION = "1.3.1"
 
 def run():
     try:
@@ -26,7 +26,7 @@ def run():
         # If CLI was correctly parsed, execute db-migrate.
         Main(config).execute()
     except Exception, e:
-        CLI().error_and_exit(e.message)
+        CLI().error_and_exit(str(e))
         
 if __name__ == '__main__':
     run()
