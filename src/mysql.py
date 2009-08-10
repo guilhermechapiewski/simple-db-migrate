@@ -36,16 +36,18 @@ class MySQL(object):
         cursor = db.cursor()
         cursor._defer_warnings = True
         try:
-            sql_statements = sql.split(";")
-            sql_statements = [s.strip() for s in sql_statements if s.strip() != ""]
-            for statement in sql_statements:
+            for statement in self._parse_sql_statements(sql):
                 cursor.execute(statement.encode("utf-8"))
             cursor.close()        
             db.commit()
             db.close()
         except Exception, e:
             raise Exception("error executing migration (%s)" % e)
-        
+            
+    def _parse_sql_statements(self, migration_sql):
+        all_statements = migration_sql.split(';')
+        return [s.strip() for s in all_statements if s.strip() != ""]
+
     def _drop_database(self):
         db = self.__mysql_connect(False)
         try:

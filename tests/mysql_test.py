@@ -144,6 +144,21 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         self.assertEquals(len(expected_versions), len(schema_versions))
         for version in schema_versions:
             self.assertTrue(version in expected_versions)
-    
+            
+    def test_it_should_parse_sql_statements(self):
+        mysql_driver_mock = Mock()
+        db_mock = Mock()
+        cursor_mock = Mock()
+        self.__mock_db_init(mysql_driver_mock, db_mock, cursor_mock)
+        mysql = MySQL(self.__config, mysql_driver_mock)
+        
+        sql = 'create table eggs; drop table spam; ; ;'
+        statements = mysql._parse_sql_statements(sql)
+        
+        assert len(statements) == 2
+        assert statements[0] == 'create table eggs'
+        assert statements[1] == 'drop table spam'
+        
+
 if __name__ == "__main__":
     unittest.main()
