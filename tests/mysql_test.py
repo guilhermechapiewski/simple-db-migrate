@@ -159,6 +159,36 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         assert statements[0] == 'create table eggs'
         assert statements[1] == 'drop table spam'
         
+    def test_it_should_parse_sql_statements_with_html_inside(self):
+        mysql_driver_mock = Mock()
+        db_mock = Mock()
+        cursor_mock = Mock()
+        self.__mock_db_init(mysql_driver_mock, db_mock, cursor_mock)
+        mysql = MySQL(self.__config, mysql_driver_mock)
+        
+        sql = u"""
+        create table eggs;
+        INSERT INTO widget_parameter_domain (widget_parameter_id, label, value)
+        VALUES ((SELECT MAX(widget_parameter_id)
+                FROM widget_parameter),  "Carros", '<div class="box-zap-geral">
+
+            <div class="box-zap box-zap-autos">
+                <a class="logo" target="_blank" title="ZAP" href="http://www.zap.com.br/Parceiros/g1/RedirG1.aspx?CodParceriaLink=42&amp;URL=http://www.zap.com.br">');
+        drop table spam;
+        """
+        statements = mysql._parse_sql_statements(sql)
+        
+        expected_sql_with_html = """INSERT INTO widget_parameter_domain (widget_parameter_id, label, value)
+        VALUES ((SELECT MAX(widget_parameter_id)
+                FROM widget_parameter),  "Carros", '<div class="box-zap-geral">
+
+            <div class="box-zap box-zap-autos">
+                <a class="logo" target="_blank" title="ZAP" href="http://www.zap.com.br/Parceiros/g1/RedirG1.aspx?CodParceriaLink=42&amp;URL=http://www.zap.com.br">')"""
+        
+        assert len(statements) == 3, 'expected %s, got %s' % (3, len(statements))
+        assert statements[0] == 'create table eggs'
+        assert statements[1] == expected_sql_with_html, 'expected "%s", got "%s"' % (expected_sql_with_html, statements[1])
+        assert statements[2] == 'drop table spam'
 
 if __name__ == "__main__":
     unittest.main()

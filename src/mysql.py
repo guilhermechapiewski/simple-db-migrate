@@ -1,6 +1,9 @@
+import re
 import sys
 
 import MySQLdb
+
+from helpers import Utils
 
 class MySQL(object):
     
@@ -44,8 +47,36 @@ class MySQL(object):
         except Exception, e:
             raise Exception("error executing migration (%s)" % e)
             
+    def __change_db_version(self, version, up=True):
+        if up:
+            # moving up and storing history
+            sql = "insert into %s (version) values (\"%s\");" % (self.__version_table, str(version))
+        else:
+            # moving down and deleting from history
+            sql = "delete from %s where version >= \"%s\";" % (self.__version_table, str(version))
+        self.__execute(sql)
+        
     def _parse_sql_statements(self, migration_sql):
-        all_statements = migration_sql.split(';')
+        all_statements = []
+        last_statement = ''
+        
+        for statement in migration_sql.split(';'):
+            if len(last_statement) > 0:
+                curr_statement = '%s;%s' % (last_statement, statement)
+            else:
+                curr_statement = statement
+            
+            single_quotes = Utils.how_many(curr_statement, "'")
+            double_quotes = Utils.how_many(curr_statement, '"')
+            left_parenthesis = Utils.how_many(curr_statement, '(')
+            right_parenthesis = Utils.how_many(curr_statement, ')')
+            
+            if single_quotes % 2 == 0 and double_quotes % 2 == 0 and left_parenthesis == right_parenthesis:
+                all_statements.append(curr_statement)
+                last_statement = ''
+            else:
+                last_statement = curr_statement
+            
         return [s.strip() for s in all_statements if s.strip() != ""]
 
     def _drop_database(self):
@@ -77,15 +108,6 @@ class MySQL(object):
         if count == 0:
             sql = "insert into %s (version) values (\"0\");" % self.__version_table
             self.__execute(sql)
-    
-    def __change_db_version(self, version, up=True):
-        if up:
-            # moving up and storing history
-            sql = "insert into %s (version) values (\"%s\");" % (self.__version_table, str(version))
-        else:
-            # moving down and deleting from history
-            sql = "delete from %s where version >= \"%s\";" % (self.__version_table, str(version))
-        self.__execute(sql)
     
     def change(self, sql, new_db_version, up=True):
         self.__execute(sql)
