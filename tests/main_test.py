@@ -14,6 +14,45 @@ class MainTest(unittest.TestCase):
         self.database_versions.append("20090211120003")
         self.database_versions.append("20090212120000")
     
+    def test_it_should_create_migration_if_option_is_activated_by_the_user(self):
+        class MainMock(Main):
+            def create_migration(self):
+                assert True
+            def migrate(self):
+                assert False, "it should not try to migrate database!"
+        
+        config_mock = {"new_migration":"some_new_migration"}
+        mysql_mock = Mock()
+        db_migrate_mock = Mock()
+        main = MainMock(config=config_mock, mysql=mysql_mock, db_migrate=db_migrate_mock)
+        main.execute()
+
+    def test_it_should_migrate_db_if_create_migration_option_is_not_activated_by_user(self):
+        class MainMock(Main):
+            def create_migration(self):
+                assert False, "it should not try to migrate database!"
+            def migrate(self):
+                assert True
+
+        config_mock = {}
+        mysql_mock = Mock()
+        db_migrate_mock = Mock()
+        main = MainMock(config=config_mock, mysql=mysql_mock, db_migrate=db_migrate_mock)
+        main.execute()
+        
+    def test_it_should_create_new_migration(self):
+        import core
+        core.Migration = Mock()
+        core.Migration.TEMPLATE = ""
+        core.Migration.expects(once()).method("is_file_name_valid").will(return_value(eq(True)))
+        core.Migration.expects(once()).method("create").with(eq("some_new_migration"))
+        
+        config_mock = {"new_migration":"some_new_migration"}
+        mysql_mock = Mock()
+        db_migrate_mock = Mock()
+        main = Main(config=config_mock, mysql=mysql_mock, db_migrate=db_migrate_mock)
+        main.execute()
+
     def test_it_should_get_all_migration_files_that_must_be_executed_considering_database_version_when_migrating_up(self):
         database_versions = self.database_versions
         

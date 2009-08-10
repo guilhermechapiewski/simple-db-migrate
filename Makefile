@@ -12,7 +12,7 @@ help:
 
 clean:
 	@echo "Cleaning..."
-	@git clean -df
+	@git clean -df > /dev/null
 	@rm -rf build dist src/simple_db_migrate.egg-info simple_db_migrate.egg-info *.pyc **/*.pyc *~ *.migration *.foo
 
 compile: clean
