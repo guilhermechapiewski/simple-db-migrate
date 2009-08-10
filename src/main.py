@@ -7,15 +7,13 @@ class Main(object):
 
     def __init__(self, config=None, mysql=None, db_migrate=None):
         self.cli = CLI()
-        self.config = config
+        self.config = config or {}
 
         self.mysql = mysql
         if self.mysql is None and not self.config.get("new_migration"):
             self.mysql = MySQL(config)
 
-        self.db_migrate = db_migrate
-        if self.db_migrate is None:
-            self.db_migrate = SimpleDBMigrate(config)
+        self.db_migrate = db_migrate or SimpleDBMigrate(config)
 
     def execute(self):
         self.cli.msg("\nStarting DB migration...", "PINK")

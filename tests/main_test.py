@@ -13,7 +13,7 @@ class MainTest(unittest.TestCase):
         self.database_versions.append("20090211120002")
         self.database_versions.append("20090211120003")
         self.database_versions.append("20090212120000")
-    
+
     def test_it_should_create_migration_if_option_is_activated_by_the_user(self):
         class MainMock(Main):
             def create_migration(self):
