@@ -82,7 +82,7 @@ class Main(object):
             self.cli.msg("\nNothing to do.\n", "PINK")
             return
 
-        up_down_label = migration_up and "up" or "down"
+        up_down_label = is_migration_up and "up" or "down"
         if self.config.get("show_sql_only"):
             self.cli.msg("\nWARNING: database migrations are not being executed ('--showsqlonly' activated)", "YELLOW")
         else:
