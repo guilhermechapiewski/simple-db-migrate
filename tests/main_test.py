@@ -34,17 +34,16 @@ class MainTest(unittest.TestCase):
             def migrate(self):
                 assert True
 
-        config_mock = {}
         mysql_mock = Mock()
         db_migrate_mock = Mock()
-        main = MainMock(config=config_mock, mysql=mysql_mock, db_migrate=db_migrate_mock)
+        main = MainMock(config={}, mysql=mysql_mock, db_migrate=db_migrate_mock)
         main.execute()
         
     def test_it_should_create_new_migration(self):
         import core
         core.Migration = Mock()
         core.Migration.TEMPLATE = ""
-        core.Migration.expects(once()).method("is_file_name_valid").will(return_value(eq(True)))
+        core.Migration.expects(once()).method("is_file_name_valid").will(return_value(True))
         core.Migration.expects(once()).method("create").with(eq("some_new_migration"))
         
         config_mock = {"new_migration":"some_new_migration"}
@@ -52,6 +51,62 @@ class MainTest(unittest.TestCase):
         db_migrate_mock = Mock()
         main = Main(config=config_mock, mysql=mysql_mock, db_migrate=db_migrate_mock)
         main.execute()
+    
+    def test_it_should_migrate_database_with_migration_is_up(self):
+        class MainMock(Main):
+            def get_destination_version(self):
+                return "20090810170301"
+            def execute_migrations(self, current_version, destination_version, is_migration_up):
+                assert current_version == "20090810170300"
+                assert destination_version == "20090810170301"
+                assert is_migration_up
+            
+        mysql_mock = Mock()
+        mysql_mock.expects(once()).method("get_current_schema_version").will(return_value("20090810170300"))
+        db_migrate_mock = Mock()
+        main = MainMock(config={}, mysql=mysql_mock, db_migrate=db_migrate_mock)
+        main.execute()
+
+    def test_it_should_migrate_database_with_migration_is_down(self):
+        class MainMock(Main):
+            def get_destination_version(self):
+                return "20080810170300"
+            def execute_migrations(self, current_version, destination_version, is_migration_up):
+                assert current_version == "20090810170300"
+                assert destination_version == "20080810170300"
+                assert not is_migration_up
+
+        mysql_mock = Mock()
+        mysql_mock.expects(once()).method("get_current_schema_version").will(return_value("20090810170300"))
+        db_migrate_mock = Mock()
+        main = MainMock(config={}, mysql=mysql_mock, db_migrate=db_migrate_mock)
+        main.execute()
+        
+    def test_it_should_get_destination_version_when_user_informs_a_specific_version(self):
+        config_mock = {"schema_version":"20090810170300"}
+        mysql_mock = Mock()
+        db_migrate_mock = Mock()
+        db_migrate_mock.expects(once()).method("check_if_version_exists").with(eq("20090810170300")).will(return_value(True))
+        main = Main(config=config_mock, mysql=mysql_mock, db_migrate=db_migrate_mock)
+        destination_version = main.get_destination_version()
+        assert destination_version == "20090810170300"
+
+    def test_it_should_get_destination_version_when_user_does_not_inform_a_specific_version(self):
+        mysql_mock = Mock()
+        db_migrate_mock = Mock()
+        db_migrate_mock.expects(once()).method("latest_version_available").will(return_value("20090810170300"))
+        db_migrate_mock.expects(once()).method("check_if_version_exists").with(eq("20090810170300")).will(return_value(True))
+        main = Main(config={}, mysql=mysql_mock, db_migrate=db_migrate_mock)
+        destination_version = main.get_destination_version()
+        assert destination_version == "20090810170300"
+
+    def test_it_should_raise_exception_when_get_destination_version_and_version_does_not_exist(self):
+        mysql_mock = Mock()
+        db_migrate_mock = Mock()
+        db_migrate_mock.expects(once()).method("latest_version_available").will(return_value("20090810170300"))
+        db_migrate_mock.expects(once()).method("check_if_version_exists").with(eq("20090810170300")).will(return_value(False))
+        main = Main(config={}, mysql=mysql_mock, db_migrate=db_migrate_mock)
+        self.assertRaises(Exception, main.get_destination_version)
 
     def test_it_should_get_all_migration_files_that_must_be_executed_considering_database_version_when_migrating_up(self):
         database_versions = self.database_versions
