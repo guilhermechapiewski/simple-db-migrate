@@ -1,3 +1,9 @@
+python-simple-db-migrate (1.3.6) stable; urgency=low
+
+  * New release.
+
+ -- Gabriel Falcão Gonçalves de Moura <gabriel@nacaolivre.org>  Tue, 11 Aug 2009 10:49:40 -0300
+
 python-simple-db-migrate (1.3.4) stable; urgency=low
 
   * New release.
