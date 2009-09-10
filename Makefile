@@ -1,7 +1,7 @@
 # Makefile for simple-db-migrate
 
 help:
-	@echo "Please use \`make <target>' where <target> is one of"
+	@echo "Please use 'make <target>' where <target> is one of"
 	@echo "  clean      to clean garbage left by builds and installation"
 	@echo "  compile    to compile .py files (just to check for syntax errors)"
 	@echo "  test       to execute all simple-db-migrate tests"
