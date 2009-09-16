@@ -1,6 +1,5 @@
 from test import *
 from helpers import *
-from pmock import *
 import unittest
 
 class ListsTest(unittest.TestCase):

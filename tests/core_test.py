@@ -2,7 +2,6 @@
 from test import *
 from config import *
 from core import *
-from pmock import *
 import codecs
 import os
 import stubs
