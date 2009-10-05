@@ -6,7 +6,7 @@ import src
 setup(
     name = "simple-db-migrate",
     version = src.SIMPLE_DB_MIGRATE_VERSION,
-    packages = ["simple_db_migrate"],
+    packages = ["simple_db_migrate", "simple_db_migrate.core"],
     package_dir = {"simple_db_migrate": "src"},
     author = "Guilherme Chapiewski",
     author_email = "guilherme.chapiewski@gmail.com",
