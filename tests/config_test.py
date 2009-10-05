@@ -92,6 +92,15 @@ MIGRATIONS_DIR = os.getenv('MIGRATIONS_DIR') or 'example'
         config = FileConfig(config_path)
         config.put('sample_config', 'TEST')
         self.assertRaises(Exception, config.put, 'sample_config', 'TEST')
+        
+    def test_it_should_get_local_variable_values(self):
+        config_path = os.path.abspath('sample.conf')
+        config = FileConfig(config_path)
+        
+        weird_variable = 'weird_value'
+        result = config.get_local_variable(locals(), 'weird_variable', 'weirdest_variable')
+        
+        assert result == weird_variable
 
 class InPlaceConfigTest(unittest.TestCase):
     

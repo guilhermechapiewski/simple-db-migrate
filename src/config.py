@@ -35,6 +35,7 @@ class FileConfig(Config):
     
     def __init__(self, config_file="simple-db-migrate.conf"):
         self._config = {}
+        self.put("db_version_table", self.DB_VERSION_TABLE)
         
         # read configurations
         try:
@@ -42,20 +43,24 @@ class FileConfig(Config):
             exec(f.read())
         except IOError:
             raise Exception("%s: file not found" % config_file)
-        else:
+        finally:
             f.close()
         
-        try:
-            self.put("db_host", HOST)
-            self.put("db_user", USERNAME)
-            self.put("db_password", PASSWORD)
-            self.put("db_name", DATABASE)
-            self.put("db_version_table", self.DB_VERSION_TABLE)
-            
-            config_path = os.path.split(config_file)[0]
-            self.put("migrations_dir", self._parse_migrations_dir(MIGRATIONS_DIR, config_path))
-        except NameError, e:
-            raise Exception("config file error: " + str(e))
+        config_path = os.path.split(config_file)[0]
+        self.put("db_host", self.get_local_variable(locals(), 'DATABASE_HOST', 'HOST'))
+        self.put("db_user", self.get_local_variable(locals(), 'DATABASE_USER', 'USERNAME'))
+        self.put("db_password", self.get_local_variable(locals(), 'DATABASE_PASSWORD', 'PASSWORD'))
+        self.put("db_name", self.get_local_variable(locals(), 'DATABASE_NAME', 'DATABASE'))
+        
+        migrations_dir = self.get_local_variable(locals(), 'DATABASE_MIGRATIONS_DIR', 'MIGRATIONS_DIR')
+        self.put("migrations_dir", self._parse_migrations_dir(migrations_dir, config_path))
+        
+    def get_local_variable(self, local_variables_dict, name, old_name):
+        if name in local_variables_dict or old_name in local_variables_dict:
+            return local_variables_dict.get(name, local_variables_dict.get(old_name))
+        else:
+            raise NameError("config file error: name '%s' is not defined" % name)
+
 
 class InPlaceConfig(Config):
 
