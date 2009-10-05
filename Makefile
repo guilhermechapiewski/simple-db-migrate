@@ -27,7 +27,6 @@ test: compile
 	@make clean
 	@echo "Starting tests..."
 	@nosetests -s --verbose --with-coverage --cover-erase --cover-package=cli,config,core,helpers,main,mysql tests/*
-	@#nosetests -s --verbose --with-coverage --cover-erase --cover-inclusive tests/*
 	@make clean
 
 install:
