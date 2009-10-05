@@ -63,7 +63,7 @@ class Migration(object):
         file_name = "%s_%s%s" % (timestamp, migration_name, Migration.MIGRATION_FILES_EXTENSION)
 
         if not Migration.is_file_name_valid(file_name):
-            raise Exception("invalid migration name; it should contain only letters, numbers and/or underscores ('%s')" % migration_name)
+            raise Exception("invalid migration name ('%s'); it should contain only letters, numbers and/or underscores" % migration_name)
 
         new_file_name = "%s/%s" % (migration_dir, file_name)
 
