@@ -14,8 +14,9 @@ help:
 
 clean:
 	@echo "Cleaning..."
-	@git clean -df > /dev/null
 	@rm -rf build dist src/simple_db_migrate.egg-info simple_db_migrate.egg-info *.pyc **/*.pyc *~ *.migration *.foo
+	# removing test temp files
+	@rm -rf `date +%Y`*
 
 compile: clean
 	@echo "Compiling source code..."

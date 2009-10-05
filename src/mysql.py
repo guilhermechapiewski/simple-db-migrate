@@ -3,6 +3,7 @@ import sys
 
 import MySQLdb
 
+from core.exceptions import MigrationException
 from helpers import Utils
 
 class MySQL(object):
@@ -32,20 +33,22 @@ class MySQL(object):
                 conn.select_db(self.__mysql_db)
             return conn
         except Exception, e:
-            raise Exception("could not connect to database (%s)" % e)
+            raise Exception("could not connect to database: %s" % e)
     
     def __execute(self, sql):
         db = self.__mysql_connect()        
         cursor = db.cursor()
         cursor._defer_warnings = True
+        curr_statement = None
         try:
             for statement in self._parse_sql_statements(sql):
+                curr_statement = statement
                 cursor.execute(statement.encode("utf-8"))
             cursor.close()        
             db.commit()
             db.close()
         except Exception, e:
-            raise Exception("error executing migration (%s)" % e)
+            raise MigrationException("error executing migration: %s" % e, curr_statement)
             
     def __change_db_version(self, version, up=True):
         if up:
