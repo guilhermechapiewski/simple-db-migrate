@@ -103,8 +103,15 @@ class Main(object):
                     log = self.cli.msg
                 
                 self.mysql.change(sql, migration_version, is_migration_up, execution_log=log)
+                
+                # interactive mode
+                if self.config.get("interactive_mode"):
+                    try:
+                        raw_input("* press <enter> to continue... ")
+                    except KeyboardInterrupt:
+                        self.cli.info_and_exit("\nExecution interrupted by the user...")
 
-            #recording the last statement executed
+            # recording the last statement executed
             sql_statements_executed.append(sql)
 
         if self.config.get("show_sql") or self.config.get("show_sql_only"):

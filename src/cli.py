@@ -81,6 +81,12 @@ class CLI(object):
                 default=1, 
                 help="Log level: 0-no log; 1-migrations log; 2-statement execution log (default: %default)")
 
+        self.__parser.add_option("-i", "--interactive", 
+                action="store_true", 
+                dest="interactive_mode", 
+                default=False, 
+                help="Execute in interactive mode. In this mode you will need to press <enter> key in order to execute each SQL command, making it easier to see what is being executed and helping debug.")
+
 
     def get_parser(self):
         return self.__parser
