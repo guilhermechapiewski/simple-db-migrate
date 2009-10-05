@@ -36,22 +36,39 @@ class CLI(object):
                 default="simple-db-migrate.conf", 
                 help="Use a specific config file. If not provided, will search for 'simple-db-migrate.conf' in the current directory.")
 
+        self.__parser.add_option("-i", "--interactive", 
+                action="store_true", 
+                dest="interactive_mode", 
+                default=False, 
+                help="Execute in interactive mode. In this mode you will need to press <enter> key in order to execute each SQL command, making it easier to see what is being executed and helping debug. When interactive mode is enabled, log level is automatically set to [2].")
+
+        self.__parser.add_option("-l", "--log-level", 
+                dest="log_level", 
+                default=1, 
+                help="Log level: 0-no log; 1-migrations log; 2-statement execution log (default: %default)")
+
         self.__parser.add_option("-m", "--migration", 
                 dest="schema_version", 
                 default=None, 
-                help="Schema version to migrate to. If not provided will migrate to the last version available in the migrations directory.")        
-        
+                help="Schema version to migrate to. If not provided will migrate to the last version available in the migrations directory.") 
+
+        self.__parser.add_option("-n", "--create", "--new", 
+                dest="new_migration", 
+                default=None, 
+                help="Create migration file with the given nickname. The nickname should contain only lowercase characters and underscore '_'. Example: 'create_table_xyz'.")
+
         self.__parser.add_option("-v", "--version", 
                 action="store_true",
                 dest="simple_db_migrate_version", 
                 default=False, 
                 help="Displays simple-db-migrate's version and exit.")
 
-        self.__parser.add_option("--create", "--new", 
-                dest="new_migration", 
-                default=None, 
-                help="Create migration file with the given nickname. The nickname should contain only lowercase characters and underscore '_'. Example: 'create_table_xyz'.")
-                
+        self.__parser.add_option("--color", 
+                action="store_true", 
+                dest="show_colors", 
+                default=False, 
+                help="Output with beautiful colors.")
+
         self.__parser.add_option("--drop", "--drop-database-first",
                 action="store_true", 
                 dest="drop_db_first", 
@@ -69,24 +86,6 @@ class CLI(object):
                 dest="show_sql_only", 
                 default=False, 
                 help="Show all SQL statements that would be executed but DON'T execute them in the database.")
-
-        self.__parser.add_option("--color", 
-                action="store_true", 
-                dest="show_colors", 
-                default=False, 
-                help="Show beautiful colors on output.")
-                
-        self.__parser.add_option("-l", "--log-level", 
-                dest="log_level", 
-                default=1, 
-                help="Log level: 0-no log; 1-migrations log; 2-statement execution log (default: %default)")
-
-        self.__parser.add_option("-i", "--interactive", 
-                action="store_true", 
-                dest="interactive_mode", 
-                default=False, 
-                help="Execute in interactive mode. In this mode you will need to press <enter> key in order to execute each SQL command, making it easier to see what is being executed and helping debug.")
-
 
     def get_parser(self):
         return self.__parser

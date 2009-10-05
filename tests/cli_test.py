@@ -23,6 +23,7 @@ class CLITest(unittest.TestCase):
         self.assertTrue(parser.has_option("--showsql"))
         self.assertTrue(parser.has_option("--showsqlonly"))
         
+        self.assertTrue(parser.has_option("-n"))
         self.assertTrue(parser.has_option("--create"))
         self.assertTrue(parser.has_option("--new"))
         
@@ -34,6 +35,9 @@ class CLITest(unittest.TestCase):
         self.assertTrue(parser.has_option("-l"))
         self.assertTrue(parser.has_option("--log-level"))
         
+        self.assertTrue(parser.has_option("-i"))
+        self.assertTrue(parser.has_option("--interactive"))
+
     def test_it_should_show_error_message_and_exit(self):
         cli = CLI()
         try:
