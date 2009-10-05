@@ -1,15 +1,11 @@
 from setuptools import setup, find_packages
 import re
 
-# TODO: There is a more intelligent way to do this :)
-f = open("src/__init__.py")
-content = f.read()
-f.close()
-simple_db_migrate_version = re.match(r".*SIMPLE_DB_MIGRATE_VERSION = \"(.*)\"\n.*", content, re.S).group(1)
+import src
 
 setup(
     name = "simple-db-migrate",
-    version = simple_db_migrate_version,
+    version = src.SIMPLE_DB_MIGRATE_VERSION
     packages = ["simple_db_migrate"],
     package_dir = {"simple_db_migrate": "src"},
     author = "Guilherme Chapiewski",
