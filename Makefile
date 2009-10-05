@@ -1,6 +1,7 @@
 # Makefile for simple-db-migrate
 
 help:
+	@echo
 	@echo "Please use 'make <target>' where <target> is one of"
 	@echo "  clean      to clean garbage left by builds and installation"
 	@echo "  compile    to compile .py files (just to check for syntax errors)"
@@ -8,7 +9,7 @@ help:
 	@echo "  install    to install simple-db-migrate"
 	@echo "  build      to build without installing simple-db-migrate"
 	@echo "  publish    to publish the package to PyPI"
-	@echo " "
+	@echo
 
 clean:
 	@echo "Cleaning..."
