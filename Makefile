@@ -8,6 +8,7 @@ help:
 	@echo "  test       to execute all simple-db-migrate tests"
 	@echo "  install    to install simple-db-migrate"
 	@echo "  build      to build without installing simple-db-migrate"
+	@echo "  dist       to create egg for distribution"
 	@echo "  publish    to publish the package to PyPI"
 	@echo
 
@@ -35,5 +36,8 @@ install:
 build:
 	@/usr/bin/env python ./setup.py build
 
-publish:
-	@python setup.py bdist_egg upload
+dist: clean
+	@python setup.py sdist
+
+publish: dist
+	@python setup.py sdist upload
