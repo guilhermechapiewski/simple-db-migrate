@@ -28,6 +28,7 @@ def run():
         config.put("show_sql_only", options.show_sql_only)
         config.put("new_migration", options.new_migration)
         config.put("drop_db_first", options.drop_db_first)
+        config.put("log_level", int(options.log_level))
 
         # If CLI was correctly parsed, execute db-migrate.
         Main(config).execute()

@@ -35,7 +35,7 @@ class MySQL(object):
         except Exception, e:
             raise Exception("could not connect to database: %s" % e)
     
-    def __execute(self, sql):
+    def __execute(self, sql, execution_log=None):
         db = self.__mysql_connect()        
         cursor = db.cursor()
         cursor._defer_warnings = True
@@ -43,12 +43,16 @@ class MySQL(object):
         try:
             for statement in self._parse_sql_statements(sql):
                 curr_statement = statement
-                cursor.execute(statement.encode("utf-8"))
+                affected_rows = cursor.execute(statement.encode("utf-8"))
+                if execution_log:
+                    execution_log("%s\n-- %d row(s) affected\n" % (statement, affected_rows))
             cursor.close()        
             db.commit()
             db.close()
         except Exception, e:
             raise MigrationException("error executing migration: %s" % e, curr_statement)
+        
+        return execution_log
             
     def __change_db_version(self, version, up=True):
         if up:
@@ -112,8 +116,8 @@ class MySQL(object):
             sql = "insert into %s (version) values (\"0\");" % self.__version_table
             self.__execute(sql)
     
-    def change(self, sql, new_db_version, up=True):
-        self.__execute(sql)
+    def change(self, sql, new_db_version, up=True, execution_log=None):
+        self.__execute(sql, execution_log)
         self.__change_db_version(new_db_version, up)
         
     def get_current_schema_version(self):

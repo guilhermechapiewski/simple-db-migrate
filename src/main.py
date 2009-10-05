@@ -85,8 +85,9 @@ class Main(object):
             self.cli.msg("\nWARNING: database migrations are not being executed ('--showsqlonly' activated)", "YELLOW")
         else:
             self.cli.msg("\nStarting migration %s!" % up_down_label)
-
-        self.cli.msg("*** versions: %s\n" % versions_to_be_executed, "CYAN")
+        
+        if self.config.get("log_level") >= 1:
+            self.cli.msg("*** versions: %s\n" % versions_to_be_executed, "CYAN")
 
         sql_statements_executed = []
         for migration_version in versions_to_be_executed:
@@ -94,8 +95,14 @@ class Main(object):
             sql = is_migration_up and migration.sql_up or migration.sql_down
 
             if not self.config.get("show_sql_only"):
-                self.cli.msg("===== executing %s (%s) =====" % (migration.file_name, up_down_label))
-                self.mysql.change(sql, migration_version, is_migration_up)
+                if self.config.get("log_level") >= 1:
+                    self.cli.msg("===== executing %s (%s) =====" % (migration.file_name, up_down_label))
+                
+                log = None
+                if self.config.get("log_level") >= 2:
+                    log = self.cli.msg
+                
+                self.mysql.change(sql, migration_version, is_migration_up, execution_log=log)
 
             #recording the last statement executed
             sql_statements_executed.append(sql)

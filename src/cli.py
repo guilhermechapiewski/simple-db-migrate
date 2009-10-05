@@ -75,6 +75,11 @@ class CLI(object):
                 dest="show_colors", 
                 default=False, 
                 help="Show beautiful colors on output.")
+                
+        self.__parser.add_option("-l", "--log-level", 
+                dest="log_level", 
+                default=1, 
+                help="Log level: 0-no log; 1-migrations log; 2-statement execution log (default: %default)")
 
 
     def get_parser(self):
