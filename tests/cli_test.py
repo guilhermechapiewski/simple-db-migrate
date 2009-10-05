@@ -1,6 +1,6 @@
-from test import *
-from cli import *
 import unittest
+
+from cli import *
 
 class CLITest(unittest.TestCase):
 

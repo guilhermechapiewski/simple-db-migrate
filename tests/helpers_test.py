@@ -1,6 +1,6 @@
-from test import *
-from helpers import *
 import unittest
+
+from helpers import *
 
 class ListsTest(unittest.TestCase):
     

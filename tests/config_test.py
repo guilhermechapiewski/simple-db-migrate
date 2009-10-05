@@ -1,7 +1,7 @@
-from test import *
-from config import *
 import codecs
 import unittest
+
+from config import *
 
 class ConfigTest(unittest.TestCase):
     

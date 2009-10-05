@@ -1,10 +1,9 @@
-from test import *
-from config import *
-from mysql import *
+from mox import Mox, MockObject
 import os
 import unittest
 
-from mox import Mox, MockObject
+from config import *
+from mysql import *
 
 class MySQLTest(unittest.TestCase):
 

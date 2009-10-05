@@ -1,11 +1,11 @@
 # coding: utf-8
-from test import *
-from config import *
-from core import *
 import codecs
 import os
 import stubs
 import unittest
+
+from config import *
+from core import *
 
 def create_file(file_name, content=None):
     f = codecs.open(file_name, 'w', 'utf-8')

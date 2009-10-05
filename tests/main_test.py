@@ -1,7 +1,7 @@
-from test import *
-from main import *
 from mox import Mox
 import unittest
+
+from main import *
 
 class MainTest(unittest.TestCase):
     
