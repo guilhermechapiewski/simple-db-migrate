@@ -106,10 +106,7 @@ class Main(object):
                 
                 # paused mode
                 if self.config.get("paused_mode"):
-                    try:
-                        raw_input("* press <enter> to continue... ")
-                    except KeyboardInterrupt:
-                        self.cli.info_and_exit("\nExecution interrupted by the user...")
+                    raw_input("* press <enter> to continue... ")
 
             # recording the last statement executed
             sql_statements_executed.append(sql)

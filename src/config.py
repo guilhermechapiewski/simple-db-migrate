@@ -23,7 +23,13 @@ class Config(object):
         if config_key in self._config:
             raise Exception("the configuration key '%s' already exists and you cannot override any configuration" % config_key)
         self._config[config_key] = config_value
-        
+    
+    def remove(self, config_key):
+        try:
+            del self._config[config_key]
+        except KeyError:
+            raise Exception("invalid configuration key ('%s')" % config_key)
+    
     def _parse_migrations_dir(self, dirs, config_dir=''):
         abs_dirs = []
         for dir in dirs.split(':'):

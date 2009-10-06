@@ -101,6 +101,17 @@ MIGRATIONS_DIR = os.getenv('MIGRATIONS_DIR') or 'example'
         result = config.get_variable(locals(), 'weird_variable', 'weirdest_variable')
         
         assert result == weird_variable
+        
+    def test_it_should_delete_config(self):
+        config_path = os.path.abspath('sample.conf')
+        config = FileConfig(config_path)
+        config.put('sample_config', 'TEST')
+        
+        assert config.get('sample_config') == 'TEST'
+        
+        config.remove('sample_config')
+        
+        self.assertRaises(Exception, config.get, 'sample_config')
 
 class InPlaceConfigTest(unittest.TestCase):
     
