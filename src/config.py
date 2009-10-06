@@ -39,20 +39,25 @@ class FileConfig(Config):
         @staticmethod
         def import_file(full_filename):
             path, filename = os.path.split(full_filename)
+            name, extension = os.path.splitext(filename)
             
-            # add settings dir from path
-            sys.path.insert(0, path)
-            
-            # read config file
             try:
-                execfile(full_filename)
+                # add settings dir from path
+                sys.path.insert(0, path)
+            
+                if extension == '.py':
+                    # if is Python, execute as a module
+                    exec "from %s import *" % name
+                else:
+                    # if not, exec the file contents
+                    execfile(full_filename)
             except IOError:
                 raise Exception("%s: file not found" % full_filename)
             except Exception, e:
                 raise Exception("error interpreting config file '%s': %s" % (filename, str(e)))
-            
-            # remove settings dir from path
-            sys.path.remove(path)
+            finally:
+                # remove settings dir from path
+                sys.path.remove(path)
             
             return locals()
     
