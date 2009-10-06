@@ -55,7 +55,7 @@ class CLI(object):
                 action="store_true", 
                 dest="paused_mode", 
                 default=False, 
-                help="Execute in 'paused' mode. In this mode you will need to press <enter> key in order to execute each SQL command, making it easier to see what is being executed and helping debug. When interactive mode is enabled, log level is automatically set to [2].")
+                help="Execute in 'paused' mode. In this mode you will need to press <enter> key in order to execute each SQL command, making it easier to see what is being executed and helping debug. When paused mode is enabled, log level is automatically set to [2].")
 
         self.__parser.add_option("-v", "--version", 
                 action="store_true",
