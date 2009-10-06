@@ -33,18 +33,25 @@ class Config(object):
     
 class FileConfig(Config):
     
+#    class SettingsFile(object):
+
+#        @staticmethod
+#        def import_file(self, filename):
+#            os.path.splitext(os.path.split(filename)[1])[0]
+#            sys.path.append(path)
+#            __import__(filename)
+#            sys.path.remove(path)
+    
     def __init__(self, config_file="simple-db-migrate.conf"):
         self._config = {}
         self.put("db_version_table", self.DB_VERSION_TABLE)
         
         # read configurations
+        FileConfig.SettingsFile.import(config_file)
         try:
-            f = codecs.open(config_file, "rU", "utf-8")
-            exec(f.read())
+            __import__(config_file)
         except IOError:
             raise Exception("%s: file not found" % config_file)
-        finally:
-            f.close()
         
         config_path = os.path.split(config_file)[0]
         self.put("db_host", self.get_local_variable(locals(), 'DATABASE_HOST', 'HOST'))
@@ -60,7 +67,6 @@ class FileConfig(Config):
             return local_variables_dict.get(name, local_variables_dict.get(old_name))
         else:
             raise NameError("config file error: name '%s' is not defined" % name)
-
 
 class InPlaceConfig(Config):
 
