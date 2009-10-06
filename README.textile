@@ -39,11 +39,11 @@ The file names need to respect the format "YYYYMMDDHHMMSS_migration_description.
 
 Second, you have to configure access to your MySQL database so simple-db-migrate can execute DDL. Just create a file named "simple-db-migrate.conf" located in your migrations dir, with the following content (there is also an example on the "example" directory):
 
-    HOST = "localhost"
-    USERNAME = "root"
-    PASSWORD = ""
-    DATABASE = "migration_example"
-    MIGRATIONS_DIR = "."
+    DATABASE_HOST = "localhost"
+    DATABASE_USER = "root"
+    DATABASE_PASSWORD = ""
+    DATABASE_NAME = "migration_example"
+    DATABASE_MIGRATIONS_DIR = "."
 
 *** The MIGRATIONS_DIR directive is the relative path to the migrations directory from the location of this file.
 
