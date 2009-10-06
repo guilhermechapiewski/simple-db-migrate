@@ -36,12 +36,6 @@ class CLI(object):
                 default="simple-db-migrate.conf", 
                 help="Use a specific config file. If not provided, will search for 'simple-db-migrate.conf' in the current directory.")
 
-        self.__parser.add_option("-i", "--interactive", 
-                action="store_true", 
-                dest="interactive_mode", 
-                default=False, 
-                help="Execute in interactive mode. In this mode you will need to press <enter> key in order to execute each SQL command, making it easier to see what is being executed and helping debug. When interactive mode is enabled, log level is automatically set to [2].")
-
         self.__parser.add_option("-l", "--log-level", 
                 dest="log_level", 
                 default=1, 
@@ -56,6 +50,12 @@ class CLI(object):
                 dest="new_migration", 
                 default=None, 
                 help="Create migration file with the given nickname. The nickname should contain only lowercase characters and underscore '_'. Example: 'create_table_xyz'.")
+
+        self.__parser.add_option("-p", "--paused-mode", 
+                action="store_true", 
+                dest="paused_mode", 
+                default=False, 
+                help="Execute in 'paused' mode. In this mode you will need to press <enter> key in order to execute each SQL command, making it easier to see what is being executed and helping debug. When interactive mode is enabled, log level is automatically set to [2].")
 
         self.__parser.add_option("-v", "--version", 
                 action="store_true",

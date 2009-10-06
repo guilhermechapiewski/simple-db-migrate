@@ -104,8 +104,8 @@ class Main(object):
                 
                 self.mysql.change(sql, migration_version, is_migration_up, execution_log=log)
                 
-                # interactive mode
-                if self.config.get("interactive_mode"):
+                # paused mode
+                if self.config.get("paused_mode"):
                     try:
                         raw_input("* press <enter> to continue... ")
                     except KeyboardInterrupt:

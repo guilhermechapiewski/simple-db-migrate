@@ -28,10 +28,11 @@ def run():
         config.put('show_sql_only', options.show_sql_only)
         config.put('new_migration', options.new_migration)
         config.put('drop_db_first', options.drop_db_first)
-        config.put('interactive_mode', options.interactive_mode)
+        config.put('paused_mode', options.paused_mode)
         
+        # paused mode forces log_level to 2
         log_level = int(options.log_level)
-        if options.interactive_mode:
+        if options.paused_mode:
             log_level = 2
         
         config.put('log_level', log_level)
