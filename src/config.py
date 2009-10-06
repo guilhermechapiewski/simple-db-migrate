@@ -1,5 +1,6 @@
 import codecs
 import os
+import sys
 
 class Config(object):
     
@@ -33,25 +34,51 @@ class Config(object):
     
 class FileConfig(Config):
     
-#    class SettingsFile(object):
-
-#        @staticmethod
-#        def import_file(self, filename):
-#            os.path.splitext(os.path.split(filename)[1])[0]
-#            sys.path.append(path)
-#            __import__(filename)
-#            sys.path.remove(path)
+    class SettingsFile(object):
+        @staticmethod
+        def get_file_modules(filename):
+            imports = []
+            try:
+                f = open(filename)
+                for line in f:
+                    line = line.strip()
+                    if line.startswith('import') or line.startswith('from'):
+                        imports.append(line)
+            finally:
+                f.close()
+            return imports
+        
+        @staticmethod
+        def import_file_modules(filename):
+            modules = FileConfig.SettingsFile.get_file_modules(filename)
+            for module in modules:
+                exec(module)
+        
+        @staticmethod
+        def import_file(full_filename):
+            path, filename = os.path.split(full_filename)
+            
+            sys.path.insert(0, path)
+            # read imports from config file
+            try:
+                FileConfig.SettingsFile.import_file_modules(full_filename)
+            except Exception, e:
+                raise Exception("error executing imports from config file '%s': %s" % (filename, str(e)))
+            # read config file
+            try:
+                execfile(full_filename, locals(), globals())
+            except IOError:
+                raise Exception("%s: file not found" % filename)
+            except Exception, e:
+                raise Exception("error interpreting config file '%s': %s" % (filename, str(e)))
+            sys.path.remove(path)
     
     def __init__(self, config_file="simple-db-migrate.conf"):
         self._config = {}
         self.put("db_version_table", self.DB_VERSION_TABLE)
         
         # read configurations
-        FileConfig.SettingsFile.import(config_file)
-        try:
-            __import__(config_file)
-        except IOError:
-            raise Exception("%s: file not found" % config_file)
+        FileConfig.SettingsFile.import_file(config_file)
         
         config_path = os.path.split(config_file)[0]
         self.put("db_host", self.get_local_variable(locals(), 'DATABASE_HOST', 'HOST'))
