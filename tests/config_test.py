@@ -98,7 +98,7 @@ MIGRATIONS_DIR = os.getenv('MIGRATIONS_DIR') or 'example'
         config = FileConfig(config_path)
         
         weird_variable = 'weird_value'
-        result = config.get_local_variable(locals(), 'weird_variable', 'weirdest_variable')
+        result = config.get_variable(locals(), 'weird_variable', 'weirdest_variable')
         
         assert result == weird_variable
 
