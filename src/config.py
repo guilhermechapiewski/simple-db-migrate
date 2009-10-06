@@ -40,6 +40,9 @@ class FileConfig(Config):
         def import_file(full_filename):
             path, filename = os.path.split(full_filename)
             
+            # add settings dir from path
+            sys.path.insert(0, path)
+            
             # read config file
             try:
                 execfile(full_filename)
@@ -47,6 +50,9 @@ class FileConfig(Config):
                 raise Exception("%s: file not found" % full_filename)
             except Exception, e:
                 raise Exception("error interpreting config file '%s': %s" % (filename, str(e)))
+            
+            # remove settings dir from path
+            sys.path.remove(path)
             
             return locals()
     
