@@ -657,12 +657,66 @@ DATABASE_ENGINE = os.getenv("DB_ENGINE") or "oracle"
         oracle = Oracle(config_mock, oracle_driver_mock)
         
         #TODO incluir os demais tipos de sql
-        sql = 'create table eggs; drop table spam; ; ;'
-        statements = oracle._parse_sql_statements(sql)
+        sql = "create table eggs; drop table spam; ; ;\
+        CREATE OR REPLACE FUNCTION simple \n\
+        RETURN VARCHAR2 IS \n\
+        BEGIN \n\
+        RETURN 'Simple Function'; \n\
+        END simple; \n\
+        / \n\
+        drop table eggs; \n\
+        create or replace procedure proc_db_migrate(dias_fim_mes out number) \n\
+        as v number; \n\
+        begin \n\
+            SELECT LAST_DAY(SYSDATE) - SYSDATE \"Days Left\" \n\
+            into v \n\
+            FROM DUAL; \n\
+            dias_fim_mes := v; \n\
+        end; \n\
+        /      \n\
+        create OR RePLaCe TRIGGER \"FOLDER_TR\" \n\
+        BEFORE INSERT ON \"FOLDER\" \n\
+        FOR EACH ROW WHEN \n\
+        (\n\
+            new.\"FOLDER_ID\" IS NULL \n\
+        )\n\
+        BEGIN\n\
+            SELECT \"FOLDER_SQ\".nextval\n\
+            INTO :new.\"FOLDER_ID\"\n\
+            FROM dual;\n\
+        EnD;\n\
+        /"
         
-        assert len(statements) == 2
+        statements = oracle._parse_sql_statements(sql)
+
+        assert len(statements) == 6
         assert statements[0] == 'create table eggs'
         assert statements[1] == 'drop table spam'
+        assert statements[2] == "CREATE OR REPLACE FUNCTION simple \n\
+        RETURN VARCHAR2 IS \n\
+        BEGIN \n\
+        RETURN 'Simple Function'; \n\
+        END simple;"
+        assert statements[3] == 'drop table eggs'
+        assert statements[4] == 'create or replace procedure proc_db_migrate(dias_fim_mes out number) \n\
+        as v number; \n\
+        begin \n\
+            SELECT LAST_DAY(SYSDATE) - SYSDATE \"Days Left\" \n\
+            into v \n\
+            FROM DUAL; \n\
+            dias_fim_mes := v; \n\
+        end;'
+        assert statements[5] == 'create OR RePLaCe TRIGGER \"FOLDER_TR\" \n\
+        BEFORE INSERT ON \"FOLDER\" \n\
+        FOR EACH ROW WHEN \n\
+        (\n\
+            new.\"FOLDER_ID\" IS NULL \n\
+        )\n\
+        BEGIN\n\
+            SELECT \"FOLDER_SQ\".nextval\n\
+            INTO :new.\"FOLDER_ID\"\n\
+            FROM dual;\n\
+        EnD;'
         
         mox.VerifyAll()
 
