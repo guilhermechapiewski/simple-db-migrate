@@ -18,11 +18,7 @@ class Oracle(object):
         self.__db = config.get("db_name")
         self.__version_table = config.get("db_version_table")
         
-        self.__re_objects = re.compile("(?ims)(?P<pre>.*?)(?P<principal>create[ ]*(or[ ]+replace[ ]*)?(trigger|function|procedure).*?\n[ ]*)/[ \n]+(?P<pos>.*)")
-        
-        self.__re_trigger = re.compile("(?ims)(?P<pre>.*?)(?P<principal>create[ ]*(or[ ]+replace[ ]*)?trigger.*?\n[ ]*)/[ \n]+(?P<pos>.*)")
-        self.__re_function = re.compile("(?ims)(?P<pre>.*?)(?P<principal>create[ ]*(or[ ]+replace[ ]*)?function.*?\n[ ]*)/[ \n]+(?P<pos>.*)")
-        self.__re_procedure = re.compile("(?ims)(?P<pre>.*?)(?P<principal>create[ ]*(or[ ]+replace[ ]*)?procedure.*?\n[ ]*)/[ \n]+(?P<pos>.*)")
+        self.__re_objects = re.compile("(?ims)(?P<pre>.*?)(?P<principal>create[ ]*(or[ ]+replace[ ]*)?(trigger|function|procedure).*?)\n[ ]*/([ \n]+(?P<pos>.*)|$)")
         
         self.__re_package = re.compile("(?ims)(?P<pre>.*?)(?P<principal>create[ ]*(or[ ]+replace[ ]*)?trigger.*?\n[ ]*)/[ \n]+(?P<pos>.*)")
         self.__re_package_body = re.compile("(?ims)(?P<pre>.*?)(?P<principal>create[ ]*(or[ ]+replace[ ]*)?trigger.*?\n[ ]*)/[ \n]+(?P<pos>.*)")
@@ -86,11 +82,6 @@ class Oracle(object):
         
         #import pdb; pdb.set_trace()
         match_stmt = self.__re_objects.match(migration_sql)
-        #match_stmt = self.__re_trigger.match(migration_sql)
-        #if not match_stmt:
-        #    match_stmt = self.__re_function.match(migration_sql)
-        #if not match_stmt:
-        #    match_stmt = self.__re_procedure.match(migration_sql)
         if not match_stmt:
             match_stmt = self.__re_package.match(migration_sql)
         if not match_stmt:
