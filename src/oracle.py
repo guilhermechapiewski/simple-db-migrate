@@ -18,11 +18,8 @@ class Oracle(object):
         self.__db = config.get("db_name")
         self.__version_table = config.get("db_version_table")
         
-        self.__re_objects = re.compile("(?ims)(?P<pre>.*?)(?P<principal>create[ ]*(or[ ]+replace[ ]*)?(trigger|function|procedure).*?)\n[ ]*/([ \n]+(?P<pos>.*)|$)")
-        
-        self.__re_package = re.compile("(?ims)(?P<pre>.*?)(?P<principal>create[ ]*(or[ ]+replace[ ]*)?trigger.*?\n[ ]*)/[ \n]+(?P<pos>.*)")
-        self.__re_package_body = re.compile("(?ims)(?P<pre>.*?)(?P<principal>create[ ]*(or[ ]+replace[ ]*)?trigger.*?\n[ ]*)/[ \n]+(?P<pos>.*)")
-        self.__re_anonymous = re.compile("(?ims)(?P<pre>.*?)(?P<principal>create[ ]*(or[ ]+replace[ ]*)?trigger.*?\n[ ]*)/[ \n]+(?P<pos>.*)")
+        self.__re_objects = re.compile("(?ims)(?P<pre>.*?)(?P<principal>create[ \n\t\r]*(or[ \n\t\r]+replace[ \n\t\r]*)?(trigger|function|procedure|package|package body).*?)\n[ \n\t\r]*/([ \n\t\r]+(?P<pos>.*)|$)")
+        self.__re_anonymous = re.compile("(?ims)(?P<pre>.*?)(?P<principal>(declare[ \n\t\r]+.*?)?begin.*?\n[ \n\t\r]*)/([ \n\t\r]+(?P<pos>.*)|$)")
         
         self.__driver = driver
         if not driver:
@@ -80,12 +77,7 @@ class Oracle(object):
         all_statements = []
         last_statement = ''
         
-        #import pdb; pdb.set_trace()
         match_stmt = self.__re_objects.match(migration_sql)
-        if not match_stmt:
-            match_stmt = self.__re_package.match(migration_sql)
-        if not match_stmt:
-            match_stmt = self.__re_package_body.match(migration_sql)
         if not match_stmt:
             match_stmt = self.__re_anonymous.match(migration_sql)
             

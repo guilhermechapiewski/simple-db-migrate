@@ -673,7 +673,7 @@ DATABASE_ENGINE = os.getenv("DB_ENGINE") or "oracle"
             FROM DUAL; \n\
             dias_fim_mes := v; \n\
         end; \n\
-        /      \n\
+        \t/      \n\
         create OR RePLaCe TRIGGER \"FOLDER_TR\" \n\
         BEFORE INSERT ON \"FOLDER\" \n\
         FOR EACH ROW WHEN \n\
@@ -685,11 +685,52 @@ DATABASE_ENGINE = os.getenv("DB_ENGINE") or "oracle"
             INTO :new.\"FOLDER_ID\"\n\
             FROM dual;\n\
         EnD;\n\
-        /"
+        /\n\
+        CREATE OR REPLACE\t PACKAGE pkg_dbm \n\
+        AS \n\
+        FUNCTION getArea (i_rad NUMBER) \n\
+        RETURN NUMBER;\n\
+            PROCEDURE p_print (i_str1 VARCHAR2 := 'hello',\n\
+            i_str2 VARCHAR2 := 'world', \n\
+            i_end VARCHAR2 := '!');\n\
+        END;\n\
+        / \n\
+        CREATE OR REPLACE\n PACKAGE BODY pkg_dbm \n\
+        AS \n\
+            FUNCTION getArea (i_rad NUMBER) \n\
+            RETURN NUMBER \n\
+            IS \n\
+                v_pi NUMBER := 3.14; \n\
+            BEGIN \n\
+                RETURN v_pi * (i_rad ** 2); \n\
+            END; \n\
+            PROCEDURE p_print (i_str1 VARCHAR2 := 'hello', i_str2 VARCHAR2 := 'world', i_end VARCHAR2 := '!') \n\
+            IS \n\
+            BEGIN \n\
+                DBMS_OUTPUT.put_line (i_str1 || ',' || i_str2 || i_end); \n\
+            END; \n\
+        END; \n\
+        / \n\
+        DECLARE\n\
+            counter NUMBER(10,8) := 2; \r\n\
+            pi NUMBER(8,7) := 3.1415926; \n\
+            test NUMBER(10,8) NOT NULL := 10;\n\
+        BEGIN \n\
+            counter := pi/counter; \n\
+            pi := pi/3; \n\
+            dbms_output.put_line(counter); \n\
+            dbms_output.put_line(pi); \n\
+        END; \n\
+        / \n\
+        BEGIN \n\
+            dbms_output.put_line('teste de bloco anonimo'); \n\
+            dbms_output.put_line(select 1 from dual); \n\
+        END; \n\
+        / "
         
         statements = oracle._parse_sql_statements(sql)
 
-        assert len(statements) == 6
+        assert len(statements) == 10
         assert statements[0] == 'create table eggs'
         assert statements[1] == 'drop table spam'
         assert statements[2] == "CREATE OR REPLACE FUNCTION simple \n\
@@ -717,6 +758,43 @@ DATABASE_ENGINE = os.getenv("DB_ENGINE") or "oracle"
             INTO :new.\"FOLDER_ID\"\n\
             FROM dual;\n\
         EnD;'
+        assert statements[6] == "CREATE OR REPLACE\t PACKAGE pkg_dbm \n\
+        AS \n\
+        FUNCTION getArea (i_rad NUMBER) \n\
+        RETURN NUMBER;\n\
+            PROCEDURE p_print (i_str1 VARCHAR2 := 'hello',\n\
+            i_str2 VARCHAR2 := 'world', \n\
+            i_end VARCHAR2 := '!');\n\
+        END;"
+        assert statements[7] == "CREATE OR REPLACE\n PACKAGE BODY pkg_dbm \n\
+        AS \n\
+            FUNCTION getArea (i_rad NUMBER) \n\
+            RETURN NUMBER \n\
+            IS \n\
+                v_pi NUMBER := 3.14; \n\
+            BEGIN \n\
+                RETURN v_pi * (i_rad ** 2); \n\
+            END; \n\
+            PROCEDURE p_print (i_str1 VARCHAR2 := 'hello', i_str2 VARCHAR2 := 'world', i_end VARCHAR2 := '!') \n\
+            IS \n\
+            BEGIN \n\
+                DBMS_OUTPUT.put_line (i_str1 || ',' || i_str2 || i_end); \n\
+            END; \n\
+        END;"
+        assert statements[8] == "DECLARE\n\
+            counter NUMBER(10,8) := 2; \r\n\
+            pi NUMBER(8,7) := 3.1415926; \n\
+            test NUMBER(10,8) NOT NULL := 10;\n\
+        BEGIN \n\
+            counter := pi/counter; \n\
+            pi := pi/3; \n\
+            dbms_output.put_line(counter); \n\
+            dbms_output.put_line(pi); \n\
+        END;"
+        assert statements[9] == "BEGIN \n\
+            dbms_output.put_line('teste de bloco anonimo'); \n\
+            dbms_output.put_line(select 1 from dual); \n\
+        END;"
         
         mox.VerifyAll()
 
