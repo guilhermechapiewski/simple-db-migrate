@@ -135,7 +135,7 @@ class Oracle(object):
                 drop_sqls = "\n".join(["%s" % (row[0]) for row in rows])
                 self.__execute(drop_sqls)
             except Exception, e:
-                raise Exception("can't drop database '%s'" % self.__db)
+                raise Exception("can't drop database '%s', %s" % (self.__db, e) )
         except Exception, e:
             self._verify_if_exception_is_invalid_user(e)
         
