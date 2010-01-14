@@ -131,11 +131,22 @@ class Oracle(object):
             cursor.close()
             conn.close()
             
-            try:
-                drop_sqls = "\n".join(["%s" % (row[0]) for row in rows])
-                self.__execute(drop_sqls)
-            except Exception, e:
-                raise Exception("can't drop database '%s', %s" % (self.__db, e) )
+            failed_sqls = ''
+            for row in rows:
+                drop_sql = row[0]
+                try:
+                    self.__execute(drop_sql)
+                except Exception, e:
+                    failed_sqls = failed_sqls + "can't execute drop command '%s' in database '%s', %s\n" % (drop_sql, self.__db, e.msg.strip())
+            
+            if failed_sqls != '':
+                cli = CLI()
+                cli.msg('\nThe following drop commands failed:\n%s' % (failed_sqls), "RED")
+                cli.msg('\nDo you want to continue anyway (y/N):', "END")
+                to_continue = self.std_in.readline().strip()
+                if to_continue.upper() != 'Y':
+                    raise Exception("can't drop database '%s'" % (self.__db) )
+                    
         except Exception, e:
             self._verify_if_exception_is_invalid_user(e)
         
