@@ -34,7 +34,14 @@ class MySQL(object):
             return conn
         except Exception, e:
             raise Exception("could not connect to database: %s" % e)
-    
+
+    def query_scalar(self, sql):
+        db = self.__mysql_connect()
+        cursor = db.cursor()
+        cursor.execute(sql)
+        count = cursor.fetchone()[0]
+        db.close()
+
     def __execute(self, sql, execution_log=None):
         db = self.__mysql_connect()        
         cursor = db.cursor()

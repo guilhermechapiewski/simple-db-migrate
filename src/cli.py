@@ -1,3 +1,5 @@
+# coding: utf-8
+
 from optparse import OptionParser
 import sys
 

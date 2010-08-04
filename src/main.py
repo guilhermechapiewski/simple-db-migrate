@@ -1,3 +1,5 @@
+# coding: utf-8
+
 from cli import CLI
 from core import Migration, SimpleDBMigrate
 from helpers import Lists
