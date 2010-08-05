@@ -26,8 +26,8 @@ compile: clean
 	@python -tt -m compileall tests
 
 metrics:
-	@pylint db_migrate.ui
-	@pyflakes db_migrate/ui
+	@pylint db_migrate.ui db_migrate.domain
+	@pyflakes db_migrate/ui db_migrate/domain
 
 test: compile
 	@make clean
