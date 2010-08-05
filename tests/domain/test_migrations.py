@@ -62,7 +62,9 @@ def test_load_gets_the_file_contents_and_errors_if_file_has_no_SQL_UP():
                .with_args(test_path, "rU", "utf-8") \
                .returns(fake_file)
 
-    fake_file.expects('read').returns('')
+    fake_file.expects('read').returns('''
+SQL_DOWN = "some command"
+''')
     fake_file.expects('close')
 
     try:
@@ -72,3 +74,34 @@ def test_load_gets_the_file_contents_and_errors_if_file_has_no_SQL_UP():
         return
     assert False, "Should not have gotten this far"
 
+@with_fakes
+@with_patched_object(migr, 'exists', Fake(callable=True))
+@with_patched_object(migr, 'codecs', Fake('codecs'))
+def test_load_gets_the_file_contents_and_errors_if_file_has_no_SQL_DOWN():
+    clear_expectations()
+
+    expected_ups = ['up']
+    expected_downs = ['down']
+
+    migration = Migration(filepath=test_path)
+
+    fake_file = Fake('file')
+    migr.exists.with_args(test_path).returns(True)
+    migr.codecs.expects('open') \
+               .with_args(test_path, "rU", "utf-8") \
+               .returns(fake_file)
+
+    fake_file.expects('read').returns('''
+SQL_UP = "some command"
+''')
+    fake_file.expects('close')
+
+    try:
+        migration.load()
+    except InvalidMigrationFileError, err:
+        assert str(err) == "Migration file at '/tmp/20101010101010_doing_some_db_changes.migration' it not well-formed. It should have both SQL_UP and SQL_DOWN variable assignments."
+        return
+    assert False, "Should not have gotten this far"
+
+def test_load_gets_the_file_contents_and_parses_ups_and_downs():
+    assert False
