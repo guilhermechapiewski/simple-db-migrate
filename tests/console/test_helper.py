@@ -48,3 +48,26 @@ def test_returned_version_is_yellow():
     actual_version = ConsoleChar.version()
     assert actual_version == expected_version, actual_version
 
+@with_fakes
+@with_patched_object(helper, 'sys', Fake('sys'))
+@with_patched_object(Actions, 'log', Fake(callable=True))
+def test_info_and_exit():
+    clear_expectations()
+
+    Actions.log.with_args('message\n', ConsoleChar.blue)
+    helper.sys.expects('exit').with_args(0).times_called(1)
+
+    Actions.info_and_exit('message')
+
+@with_fakes
+@with_patched_object(helper, 'sys', Fake('sys'))
+@with_patched_object(Actions, 'log', Fake(callable=True))
+def test_error_and_exit():
+    clear_expectations()
+
+    Actions.log.with_args('[ERROR] message\n', ConsoleChar.red)
+    helper.sys.expects('exit').with_args(1).times_called(1)
+
+    Actions.error_and_exit('message')
+
+    

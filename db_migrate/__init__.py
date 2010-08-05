@@ -9,6 +9,3 @@ Version = __version__
 def run():
     console = Console()
     console.run()
-
-if __name__ == '__main__':
-    run()
