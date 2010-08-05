@@ -25,10 +25,14 @@ compile: clean
 	@python -tt -m compileall src
 	@python -tt -m compileall tests
 
+metrics:
+	@pylint db_migrate.ui
+	@pyflakes db_migrate/ui
+
 test: compile
 	@make clean
 	@echo "Starting tests..."
-	@nosetests -s --verbose --with-coverage --cover-erase --cover-package=cli,config,core,dbtier,helpers,main,mysql tests/*
+	@nosetests -s --verbose --with-coverage --cover-erase --cover-package=db_migrate tests/*
 	@make clean
 
 install:

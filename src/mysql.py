@@ -145,9 +145,9 @@ class MySQL(object):
         versions = []
         db = self.__mysql_connect()
         cursor = db.cursor()
-        cursor.execute("select id, version from %s order by id;" % self.__version_table)
+        cursor.execute("select version from %s order by id;" % self.__version_table)
         all_versions = cursor.fetchall()
         for version in all_versions:
-            versions.append({"id":version[0], "version":version[1])
+            versions.append(version[0])
         db.close()
         return versions
