@@ -16,12 +16,6 @@ class MySQL(object):
         self.__mysql_db = config.get("db_name")
         self.__version_table = config.get("db_version_table")
 
-        if config.get("drop_db_first"):
-            self._drop_database()
-            
-        self._create_database_if_not_exists()
-        self._create_version_table_if_not_exists()
-
     def __mysql_connect(self, connect_using_db_name=True):
         try:
             conn = self.__mysql_driver.connect(host=self.__mysql_host, user=self.__mysql_user, passwd=self.__mysql_passwd)
@@ -33,7 +27,7 @@ class MySQL(object):
                 conn.select_db(self.__mysql_db)
             return conn
         except Exception, e:
-            raise Exception("could not connect to database: %s" % e)
+            raise Exception('could not connect to database: %s' % e)
 
     def query_scalar(self, sql):
         db = self.__mysql_connect()
@@ -41,6 +35,13 @@ class MySQL(object):
         cursor.execute(sql)
         count = cursor.fetchone()[0]
         db.close()
+
+        return count
+
+    def execute(self, sql):
+        #compatibility issue
+        #TODO: Remove later
+        return self.__execute(sql)
 
     def __execute(self, sql, execution_log=None):
         db = self.__mysql_connect()        
@@ -100,7 +101,12 @@ class MySQL(object):
         except Exception, e:
             raise Exception("can't drop database '%s'; database doesn't exist" % self.__mysql_db)
         db.close()
-        
+
+    def execute_without_db(self, sql):
+        db = self.__mysql_connect(False)
+        db.query(sql)
+        db.close()
+
     def _create_database_if_not_exists(self):
         db = self.__mysql_connect(False)
         db.query("create database if not exists %s;" % self.__mysql_db)
@@ -139,10 +145,9 @@ class MySQL(object):
         versions = []
         db = self.__mysql_connect()
         cursor = db.cursor()
-        cursor.execute("select version from %s order by version;" % self.__version_table)
+        cursor.execute("select id, version from %s order by id;" % self.__version_table)
         all_versions = cursor.fetchall()
         for version in all_versions:
-            versions.append(version[0])
+            versions.append({"id":version[0], "version":version[1])
         db.close()
-        versions.sort()
         return versions

@@ -22,134 +22,18 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
     def tearDown(self):
         os.remove("test.conf")
     
-    def test_it_should_create_database_and_version_table_on_init_if_not_exists(self):
-        mox = Mox()
-        
-        config_mock = self.create_config_mock(mox)
-
-        cursor_mock = mox.CreateMockAnything()
-        cursor_mock.execute('create table if not exists __db_version__ ( version varchar(20) NOT NULL default "0" )')
-        cursor_mock.close()
-        
-        db_mock = mox.CreateMockAnything()
-        db_mock.set_character_set('utf8')   
-        db_mock.query('create database if not exists migration_test;')
-        db_mock.close()
-        
-        db_mock.set_character_set('utf8')   
-        db_mock.select_db('migration_test')
-                
-        db_mock.cursor().AndReturn(cursor_mock)
-        
-        db_mock.commit()
-        db_mock.close()
-        
-        db_mock.set_character_set('utf8')   
-        db_mock.select_db('migration_test')
-        db_mock.cursor().AndReturn(cursor_mock)
-        
-        cursor_mock.execute('select count(*) from __db_version__;')
-        cursor_mock.fetchone().AndReturn([1])
-        
-        db_mock.close()
-    
-        mysql_driver_mock = mox.CreateMockAnything()
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
-        
-        mox.ReplayAll()
-        
-        mysql = MySQL(config_mock, mysql_driver_mock)
-        
-        mox.VerifyAll()
-    
-    def test_it_should_drop_database_on_init_if_its_asked(self):
-        mox = Mox()
-        mysql_driver_mock = mox.CreateMockAnything()
-        db_mock = mox.CreateMockAnything()
-        cursor_mock = mox.CreateMockAnything()
-                
-        db_mock = mox.CreateMockAnything()
-        db_mock.set_character_set('utf8')   
-        db_mock.query("set foreign_key_checks=0; drop database if exists migration_test;")
-        db_mock.close()
-
-        cursor_mock = mox.CreateMockAnything()
-        cursor_mock.execute('create table if not exists __db_version__ ( version varchar(20) NOT NULL default "0" )')
-        cursor_mock.close()
-        
-        db_mock.set_character_set('utf8')   
-        db_mock.query('create database if not exists migration_test;')
-        db_mock.close()
-        
-        db_mock.set_character_set('utf8')   
-        db_mock.select_db('migration_test')
-                
-        db_mock.cursor().AndReturn(cursor_mock)
-        
-        db_mock.commit()
-        db_mock.close()
-        
-        db_mock.set_character_set('utf8')   
-        db_mock.select_db('migration_test')
-        db_mock.cursor().AndReturn(cursor_mock)
-        
-        cursor_mock.execute('select count(*) from __db_version__;')
-        cursor_mock.fetchone().AndReturn([1])
-        
-        db_mock.close()
-    
-        mysql_driver_mock = mox.CreateMockAnything()
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
-
-        config = FileConfig("test.conf")
-        config.put("drop_db_first", True)
-        
-        mox.ReplayAll()
-
-        mysql = MySQL(config, mysql_driver=mysql_driver_mock)
-        
-        mox.VerifyAll()
-    
     def test_it_should_execute_migration_up_and_update_schema_version(self):
         mox = Mox()
 
         config_mock = self.create_config_mock(mox)
 
         cursor_mock = mox.CreateMockAnything()
-        cursor_mock.execute('create table if not exists __db_version__ ( version varchar(20) NOT NULL default "0" )')
-        cursor_mock.close()
-        
         db_mock = mox.CreateMockAnything()
+
         db_mock.set_character_set('utf8')   
-        db_mock.query('create database if not exists migration_test;')
-        db_mock.close()
-        
-        db_mock.set_character_set('utf8')   
-        db_mock.select_db('migration_test')
-                
+        db_mock.select_db('migration_test')                
         db_mock.cursor().AndReturn(cursor_mock)
-        
-        db_mock.commit()
-        db_mock.close()
-        
-        db_mock.set_character_set('utf8')   
-        db_mock.select_db('migration_test')
-        db_mock.cursor().AndReturn(cursor_mock)
-        
-        cursor_mock.execute('select count(*) from __db_version__;')
-        cursor_mock.fetchone().AndReturn([1])
-        
-        db_mock.close()
-        
-        db_mock.set_character_set('utf8')   
-        db_mock.select_db('migration_test')
-        db_mock.cursor().AndReturn(cursor_mock)
-        
+
         cursor_mock.execute("create table spam()")
         cursor_mock.close()
         
@@ -169,9 +53,6 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         mysql_driver_mock = mox.CreateMockAnything()
         mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
         mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
         
         mox.ReplayAll()
         mysql = MySQL(config_mock, mysql_driver_mock)
@@ -185,108 +66,57 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         config_mock = self.create_config_mock(mox)
 
         cursor_mock = mox.CreateMockAnything()
-        cursor_mock.execute('create table if not exists __db_version__ ( version varchar(20) NOT NULL default "0" )')
-        cursor_mock.close()
-        
         db_mock = mox.CreateMockAnything()
-        db_mock.set_character_set('utf8')   
-        db_mock.query('create database if not exists migration_test;')
-        db_mock.close()
-        
-        db_mock.set_character_set('utf8')   
-        db_mock.select_db('migration_test')
-                
-        db_mock.cursor().AndReturn(cursor_mock)
-        
-        db_mock.commit()
-        db_mock.close()
-        
+
         db_mock.set_character_set('utf8')   
         db_mock.select_db('migration_test')
         db_mock.cursor().AndReturn(cursor_mock)
-        
-        cursor_mock.execute('select count(*) from __db_version__;')
-        cursor_mock.fetchone().AndReturn([1])
-        
-        db_mock.close()
-        
-        db_mock.set_character_set('utf8')   
-        db_mock.select_db('migration_test')
-        db_mock.cursor().AndReturn(cursor_mock)
-        
+
         cursor_mock.execute('create table spam()')
         cursor_mock.close()
-        
+
         db_mock.commit()
         db_mock.close()
-        
+
         db_mock.set_character_set('utf8')   
         db_mock.select_db('migration_test')
         db_mock.cursor().AndReturn(cursor_mock)
-        
+
         cursor_mock.execute('delete from __db_version__ where version >= "20090212112104"')
         cursor_mock.close()
-        
+
         db_mock.commit()
         db_mock.close()
-    
+
         mysql_driver_mock = mox.CreateMockAnything()
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
         mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
         mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
 
         mox.ReplayAll()
-        
+
         mysql = MySQL(config_mock, mysql_driver_mock)
         mysql.change("create table spam();", "20090212112104", False)
-        
+
         mox.VerifyAll()
-    
+
     def test_it_should_get_current_schema_version(self):
         mox = Mox()
         
         config_mock = self.create_config_mock(mox)
 
-        cursor_mock = mox.CreateMockAnything()
-        cursor_mock.execute('create table if not exists __db_version__ ( version varchar(20) NOT NULL default "0" )')
-        cursor_mock.close()
-        
         db_mock = mox.CreateMockAnything()
-        db_mock.set_character_set('utf8')   
-        db_mock.query('create database if not exists migration_test;')
-        db_mock.close()
-        
+        cursor_mock = mox.CreateMockAnything()
+
         db_mock.set_character_set('utf8')   
         db_mock.select_db('migration_test')
-                
-        db_mock.cursor().AndReturn(cursor_mock)
-        
-        db_mock.commit()
-        db_mock.close()
-        
-        db_mock.set_character_set('utf8')   
-        db_mock.select_db('migration_test')
-        db_mock.cursor().AndReturn(cursor_mock)
-        
-        cursor_mock.execute('select count(*) from __db_version__;')
-        cursor_mock.fetchone().AndReturn([1])
-        
-        db_mock.close()
-        
-        db_mock.set_character_set('utf8')   
-        db_mock.select_db('migration_test')       
-        db_mock.cursor().AndReturn(cursor_mock)
-        
+
         cursor_mock.execute("select version from __db_version__ order by version desc limit 0,1;")
         cursor_mock.fetchone().AndReturn("0")
+
+        db_mock.cursor().AndReturn(cursor_mock)
         db_mock.close()
     
         mysql_driver_mock = mox.CreateMockAnything()
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
         mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
 
         mox.ReplayAll()
@@ -301,35 +131,10 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         mox = Mox()
 
         cursor_mock = mox.CreateMockAnything()
-        cursor_mock.execute('create table if not exists __db_version__ ( version varchar(20) NOT NULL default "0" )')
-        cursor_mock.close()
-        
         db_mock = mox.CreateMockAnything()
         db_mock.set_character_set('utf8')   
-        db_mock.query('create database if not exists migration_test;')
-        db_mock.close()
-        
-        db_mock.set_character_set('utf8')   
         db_mock.select_db('migration_test')
-                
-        db_mock.cursor().AndReturn(cursor_mock)
-        
-        db_mock.commit()
-        db_mock.close()
-        
-        db_mock.set_character_set('utf8')   
-        db_mock.select_db('migration_test')
-        db_mock.cursor().AndReturn(cursor_mock)
-        
-        cursor_mock.execute('select count(*) from __db_version__;')
-        cursor_mock.fetchone().AndReturn([1])
 
-        db_mock.close()
-          
-        db_mock.set_character_set('utf8')   
-        db_mock.select_db('migration_test')
-        db_mock.cursor().AndReturn(cursor_mock)
-        
         expected_versions = []
         expected_versions.append("0")
         expected_versions.append("20090211120001")
@@ -338,12 +143,10 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         cursor_mock.execute('select version from __db_version__ order by version;')
         cursor_mock.fetchall().AndReturn(tuple(zip(expected_versions)))
+        db_mock.cursor().AndReturn(cursor_mock)
         db_mock.close()
     
         mysql_driver_mock = mox.CreateMockAnything()
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
         mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
         
         config_mock = self.create_config_mock(mox)
@@ -364,36 +167,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         
         config_mock = self.create_config_mock(mox)
 
-        cursor_mock = mox.CreateMockAnything()
-        cursor_mock.execute('create table if not exists __db_version__ ( version varchar(20) NOT NULL default "0" )')
-        cursor_mock.close()
-        
-        db_mock = mox.CreateMockAnything()
-        db_mock.set_character_set('utf8')   
-        db_mock.query('create database if not exists migration_test;')
-        db_mock.close()
-        
-        db_mock.set_character_set('utf8')   
-        db_mock.select_db('migration_test')
-                
-        db_mock.cursor().AndReturn(cursor_mock)
-        
-        db_mock.commit()
-        db_mock.close()
-        
-        db_mock.set_character_set('utf8')   
-        db_mock.select_db('migration_test')
-        db_mock.cursor().AndReturn(cursor_mock)
-        
-        cursor_mock.execute('select count(*) from __db_version__;')
-        cursor_mock.fetchone().AndReturn([1])
-        
-        db_mock.close()
-    
         mysql_driver_mock = mox.CreateMockAnything()
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
         
         mox.ReplayAll()
         
@@ -415,7 +189,6 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         config_mock.get('db_password').AndReturn('')
         config_mock.get('db_name').AndReturn('migration_test')
         config_mock.get('db_version_table').AndReturn('__db_version__')
-        config_mock.get('drop_db_first').AndReturn(False)
         return config_mock
         
     def test_it_should_parse_sql_statements_with_html_inside(self):
@@ -423,37 +196,8 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         
         config_mock = self.create_config_mock(mox)
 
-        cursor_mock = mox.CreateMockAnything()
-        cursor_mock.execute('create table if not exists __db_version__ ( version varchar(20) NOT NULL default "0" )')
-        cursor_mock.close()
-        
-        db_mock = mox.CreateMockAnything()
-        db_mock.set_character_set('utf8')   
-        db_mock.query('create database if not exists migration_test;')
-        db_mock.close()
-        
-        db_mock.set_character_set('utf8')   
-        db_mock.select_db('migration_test')
-                
-        db_mock.cursor().AndReturn(cursor_mock)
-        
-        db_mock.commit()
-        db_mock.close()
-        
-        db_mock.set_character_set('utf8')   
-        db_mock.select_db('migration_test')
-        db_mock.cursor().AndReturn(cursor_mock)
-        
-        cursor_mock.execute('select count(*) from __db_version__;')
-        cursor_mock.fetchone().AndReturn([1])
-        
-        db_mock.close()
-    
         mysql_driver_mock = mox.CreateMockAnything()
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
-        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
-        
+
         mox.ReplayAll()
     
         mysql = MySQL(config_mock, mysql_driver_mock)

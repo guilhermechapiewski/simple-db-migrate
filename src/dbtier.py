@@ -13,8 +13,11 @@ class DbTier(object):
         if self.config.get("drop_db_first"):
             self.drop_db()
         self.create_db()
+        self.verify_db_consistency()
 
     def verify_db_consistency(self):
+        self.create_version_table()
+        self.verify_if_migration_zero_is_present()
         self.create_primary_key_in_versions_table()
 
     #executers
@@ -23,13 +26,13 @@ class DbTier(object):
         db_name = self.config.get("db_name")
         sql = "create database if not exists %s;" % db_name
 
-        self.db_driver.execute(sql)
+        self.db_driver.execute_without_db(sql)
 
     def drop_db(self):
         try:
             db_name = self.config.get("db_name")
             sql = "set foreign_key_checks=0; drop database if exists %s;" % db_name
-            self.db_driver.execute(sql)
+            self.db_driver.execute_without_db(sql)
         except MigrationException, e:
             raise MigrationException("can't drop database '%s'; database doesn't exist" % db_name)
 
@@ -50,7 +53,13 @@ class DbTier(object):
 
     def create_primary_key_in_versions_table(self):
         try:
-            sql = "alter table version add id int(11) primary key auto_increment not null;"
+            version_table = self.config.get("db_version_table")
+            sql = "alter table %s add id int(11) primary key auto_increment not null;" % version_table
             self.db_driver.execute(sql)
-        except MigrationException:
+        except MigrationException, err:
             pass
+
+    def get_migration_id(self, version):
+        version_table = self.config.get("db_version_table")
+        sql = "select id from %s where version='%s'" % (version_table, version)
+        self.db_driver.query_scalar(sql)

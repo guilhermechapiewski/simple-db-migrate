@@ -23,6 +23,8 @@ def test_new_db_tier_keeps_track_of_db_driver():
 
 @with_fakes
 @with_patched_object(DbTier, 'create_primary_key_in_versions_table', Fake(callable=True))
+@with_patched_object(DbTier, 'create_version_table', Fake(callable=True))
+@with_patched_object(DbTier, 'verify_if_migration_zero_is_present', Fake(callable=True))
 def test_verify_db_consistency_calls_the_right_methods():
     clear_expectations()
 
@@ -58,7 +60,7 @@ def test_drop_database_if_everything_works():
 
     config.expects('get').with_args('db_name').returns('myDb')
 
-    driver.expects('execute').with_args('set foreign_key_checks=0; drop database if exists myDb;')
+    driver.expects('execute_without_db').with_args('set foreign_key_checks=0; drop database if exists myDb;')
 
     tier.drop_db()
 
@@ -70,7 +72,7 @@ def test_drop_database_raises_migration_error_when_exception():
 
     config.expects('get').with_args('db_name').returns('myDb')
 
-    driver.expects('execute').with_args('set foreign_key_checks=0; drop database if exists myDb;').raises(MigrationException())
+    driver.expects('execute_without_db').with_args('set foreign_key_checks=0; drop database if exists myDb;').raises(MigrationException())
 
     try:
         tier.drop_db()
@@ -83,6 +85,7 @@ def test_drop_database_raises_migration_error_when_exception():
 @with_fakes
 @with_patched_object(DbTier, 'drop_db', Fake(callable=True))
 @with_patched_object(DbTier, 'create_db', Fake(callable=True))
+@with_patched_object(DbTier, 'verify_db_consistency', Fake(callable=True))
 def test_initialize_db_calls_drop_if_config_says_to():
     clear_expectations()
 
@@ -94,6 +97,7 @@ def test_initialize_db_calls_drop_if_config_says_to():
 
 @with_fakes
 @with_patched_object(DbTier, 'create_db', Fake(callable=True))
+@with_patched_object(DbTier, 'verify_db_consistency', Fake(callable=True))
 def test_initialize_db_does_not_call_drop_if_config_says_not_to():
     clear_expectations()
 
@@ -111,7 +115,7 @@ def test_create_db():
 
     config.expects('get').with_args('db_name').returns('myDb')
 
-    driver.expects('execute').with_args("create database if not exists myDb;")
+    driver.expects('execute_without_db').with_args("create database if not exists myDb;")
 
     tier.create_db()
 
