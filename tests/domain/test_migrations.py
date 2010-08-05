@@ -105,3 +105,12 @@ SQL_UP = "some command"
 
 def test_load_gets_the_file_contents_and_parses_ups_and_downs():
     assert False
+
+def test_is_filename_valid_for_invalid_file():
+    assert not Migration.is_valid_filename('config.ini')
+    assert not Migration.is_valid_filename('20101010101010_some_commands.ini')
+
+def test_is_filename_valid_for_valid_file():
+    filename = "20101010101010_some_commands.migration"
+    assert Migration.is_valid_filename(filename)
+    

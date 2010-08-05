@@ -27,8 +27,10 @@ class Migration(object):
         self.filepath = filepath
         self.filename = split(filepath)[-1]
 
-        if not self.is_file_name_valid(self.filename):
-            error = ("The file '%s' is not a migration and " + "cannot be parsed. Migrations should have the .migration extension.") % self.filepath
+        if not self.is_valid_filename(self.filename):
+            error = ("The file '%s' is not a migration and " + \
+                     "cannot be parsed. Migrations should have " + \
+                     "the .migration extension.") % self.filepath
             raise InvalidMigrationFilenameError(error)
 
         self.version = self.filename.split('_')[0]
@@ -36,8 +38,14 @@ class Migration(object):
                         .replace('.migration', '')
 
     @staticmethod
-    def is_file_name_valid(file_name):
-        match = re.match(Migration.MIGRATION_FILES_MASK, file_name, re.IGNORECASE)
+    def is_valid_filename(filename):
+        '''
+        Verifies if a given migration name is valid.
+        Being valid means matching the migration regular expression.
+        '''
+        match = re.match(Migration.MIGRATION_FILES_MASK, 
+                         filename, 
+                         re.IGNORECASE)
         return match != None
 
     def load(self):
@@ -45,20 +53,20 @@ class Migration(object):
         Loads this migration from the disk. 
         Gets both the up and down statements.
         '''
+        SQL_UP = None
+        SQL_DOWN = None
+
         if not exists(self.filepath):
             raise MigrationFileDoesNotExistError(('The migration at %s does'+
                                             ' not exist') % self.filepath)
         
         #TODO - Really don't like this. exec is evil.
-        f = codecs.open(self.filepath, "rU", "utf-8")
-        exec(f.read())
-        f.close()
+        migration_file = codecs.open(self.filepath, "rU", "utf-8")
+        exec(migration_file.read())
+        migration_file.close()
 
-        try:
-            (SQL_UP, SQL_DOWN)
-        except NameError:
+        if not SQL_UP or not SQL_DOWN:
             msg = ("Migration file at '%s' it not well-formed. " + \
                    "It should have both SQL_UP and SQL_DOWN variable " + \
                    "assignments.") % self.filepath
             raise InvalidMigrationFileError(msg)
-
