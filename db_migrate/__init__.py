@@ -1,4 +1,5 @@
-# coding: utf-8
+#!/usr/bin/env python
+# encoding: utf-8
 
 from db_migrate.ui.console import Console
 
@@ -9,3 +10,6 @@ Version = __version__
 def run():
     console = Console()
     console.run()
+
+if __name__ == '__main__':
+    run()
