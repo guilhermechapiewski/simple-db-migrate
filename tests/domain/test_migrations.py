@@ -80,9 +80,6 @@ SQL_DOWN = "some command"
 def test_load_gets_the_file_contents_and_errors_if_file_has_no_SQL_DOWN():
     clear_expectations()
 
-    expected_ups = ['up']
-    expected_downs = ['down']
-
     migration = Migration(filepath=test_path)
 
     fake_file = Fake('file')
@@ -103,9 +100,6 @@ SQL_UP = "some command"
         return
     assert False, "Should not have gotten this far"
 
-def test_load_gets_the_file_contents_and_parses_ups_and_downs():
-    assert False
-
 def test_is_filename_valid_for_invalid_file():
     assert not Migration.is_valid_filename('config.ini')
     assert not Migration.is_valid_filename('20101010101010_some_commands.ini')
@@ -113,4 +107,52 @@ def test_is_filename_valid_for_invalid_file():
 def test_is_filename_valid_for_valid_file():
     filename = "20101010101010_some_commands.migration"
     assert Migration.is_valid_filename(filename)
+
+@with_fakes
+@with_patched_object(migr, 'exists', Fake(callable=True))
+@with_patched_object(migr, 'codecs', Fake('codecs'))
+def test_load_gets_the_file_contents_and_parses_ups_and_downs():
     
+    clear_expectations()
+
+    migration = Migration(filepath=test_path)
+
+    fake_file = Fake('file')
+    migr.exists.with_args(test_path).returns(True)
+    migr.codecs.expects('open') \
+               .with_args(test_path, "rU", "utf-8") \
+               .returns(fake_file)
+
+    fake_file.expects('read').returns('''
+SQL_UP = "up command; up command 2;"
+
+SQL_DOWN = "down command; down command 2;"
+''')
+    fake_file.expects('close')
+
+    migration.load()
+
+    assert migration.up_statements == ['up command', 'up command 2']
+    assert migration.down_statements == ['down command', 'down command 2']
+
+def test_it_should_parse_sql_statements_handles_extra_semicolons():
+    sql = 'create table eggs; drop table spam; ; ;'
+    statements = Migration.parse_sql_statements(sql)
+    
+    assert len(statements) == 2
+    assert statements[0] == 'create table eggs'
+    assert statements[1] == 'drop table spam'
+    
+def test_it_should_parse_sql_statements_and_not_split_strings():
+    sql = 'create table "eggs;other";'
+    statements = Migration.parse_sql_statements(sql)
+
+    assert len(statements) == 1
+    assert statements[0] == 'create table "eggs;other"'
+
+    sql = "create table 'eggs;other';"
+    statements = Migration.parse_sql_statements(sql)
+
+    assert len(statements) == 1
+    assert statements[0] == "create table 'eggs;other'"
+
