@@ -1,0 +1,11 @@
+SQL_UP = """
+some test command;
+another test command;
+yet one more test command;
+"""
+
+SQL_DOWN = """
+yet one more test command;
+another test command;
+some test command;
+"""
