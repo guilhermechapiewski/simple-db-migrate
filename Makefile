@@ -5,7 +5,8 @@ help:
 	@echo "Please use 'make <target>' where <target> is one of"
 	@echo "  clean      to clean garbage left by builds and installation"
 	@echo "  compile    to compile .py files (just to check for syntax errors)"
-	@echo "  test       to execute all simple-db-migrate tests"
+	@echo "  unit       to execute all db-migrate unit tests"
+	@echo "  func       to execute all db-migrate functional tests"
 	@echo "  install    to install simple-db-migrate"
 	@echo "  build      to build without installing simple-db-migrate"
 	@echo "  dist       to create egg for distribution"
@@ -29,10 +30,16 @@ metrics:
 	@pylint db_migrate.ui db_migrate.domain
 	@pyflakes db_migrate/ui db_migrate/domain
 
-test: compile
+unit: compile
 	@make clean
 	@echo "Starting tests..."
-	@nosetests -s --verbose --with-coverage --cover-erase --cover-package=db_migrate tests/*
+	@nosetests -s --verbose --with-coverage --cover-erase --cover-package=db_migrate tests/unit/*
+	@make clean
+
+func: compile
+	@make clean
+	@echo "Starting tests..."
+	@nosetests -s --verbose --with-coverage --cover-erase --cover-package=db_migrate tests/functional/*
 	@make clean
 
 install:
