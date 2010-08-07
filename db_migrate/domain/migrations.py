@@ -4,7 +4,6 @@
 Module that contains the migrations model after they've been parsed from disk.
 """
 
-import string
 import codecs
 import re
 from os.path import split, exists
@@ -79,6 +78,10 @@ class Migration(object):
 
     @classmethod
     def parse_sql_statements(cls, sql):
+        '''
+        Given a string with sql statements split by ';' returns
+        a tuple with all the statements.
+        '''
         all_statements = []
         last_statement = ''
         
@@ -88,12 +91,14 @@ class Migration(object):
             else:
                 curr_statement = statement
             
-            single_quotes = string.count(curr_statement, "'")
-            double_quotes = string.count(curr_statement, '"')
-            left_parenthesis = string.count(curr_statement, '(')
-            right_parenthesis = string.count(curr_statement, ')')
+            single_quotes = curr_statement.count("'")
+            double_quotes = curr_statement.count('"')
+            left_parenthesis = curr_statement.count('(')
+            right_parenthesis = curr_statement.count(')')
             
-            if single_quotes % 2 == 0 and double_quotes % 2 == 0 and left_parenthesis == right_parenthesis:
+            if single_quotes % 2 == 0 and \
+               double_quotes % 2 == 0 and \
+               left_parenthesis == right_parenthesis:
                 all_statements.append(curr_statement)
                 last_statement = ''
             else:
