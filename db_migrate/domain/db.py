@@ -2,11 +2,12 @@
 # encoding: utf-8
 
 from db_migrate import lib
-from sqlalchemy.engine import Engine
+from sqlalchemy.engine import create_engine
 
 class Db(object):
     def __init__(self, config):
         self.config = config
+        self.connection = None
 
         self.connection_strings = {
             'postgre' : 'postgresql://%(user)s:%(pass)s@%(host)s/%(db)s', 
@@ -17,8 +18,17 @@ class Db(object):
             'in-memory-sqlite': 'sqlite://'
         }
 
-    def get_engine(self):
-        pass
+    def __del__(self):
+        self.close()
+
+    def connect(self):
+        engine = create_engine(self.connection_string)
+        self.connection = engine.connect()
+    
+    def close(self):
+        if self.connection:
+            self.connection.close()
+        self.connection = None
 
     @property
     def connection_string(self):
