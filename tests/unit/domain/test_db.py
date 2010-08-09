@@ -78,6 +78,68 @@ def test_close_exits_gracefully_when_no_connection_been_made():
     assert not db.connection
 
     db.close()
-    
+
     assert not db.connection
 
+@with_fakes
+@with_patched_object(Db, 'execute', Fake(callable=True))
+def test_create_db():
+    clear_expectations()
+
+    config = fake_config()
+
+    db = Db(config)
+
+    Db.execute.with_args('end; create database myDb')
+
+    db.create_database()
+
+@with_fakes
+@with_patched_object(Db, 'connect', Fake(callable=True))
+def test_execute_calls_connect_if_no_connection_done():
+    clear_expectations()
+
+    config = fake_config()
+
+    db = Db(config)
+
+    fake_connection = Fake('connection')
+
+    fake_connection.expects('execute').with_args('select 1 from dual')
+
+    def set_connection(db, connection):
+        def sets_attr():
+            setattr(db, 'connection', fake_connection)
+        return sets_attr
+
+    Db.connect.calls(set_connection(db, fake_connection))
+
+    db.execute('select 1 from dual')
+
+@with_fakes
+def test_execute_does_not_call_connect_if_connection_done():
+    clear_expectations()
+
+    config = fake_config()
+
+    db = Db(config)
+    db.connection = Fake('connection')
+
+    db.connection.expects('execute').with_args('select 1 from dual')
+
+    db.execute('select 1 from dual')
+
+@with_fakes
+@with_patched_object(Db, 'execute', Fake(callable=True))
+def test_query_scalar():
+    clear_expectations()
+
+    config = fake_config()
+
+    db = Db(config)
+
+    Db.execute.returns([[1]])
+
+    result = db.query_scalar('select 1 from dual')
+
+    assert result == 1

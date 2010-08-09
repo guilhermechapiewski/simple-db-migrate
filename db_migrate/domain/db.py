@@ -62,6 +62,11 @@ class Db(object):
 
         return result[0][0]
 
+    def create_database(self):
+        sql = "end; create database %s" % self.config.db
+
+        self.execute(sql)
+
     @property
     def connection_string(self):
         '''Returns the proper connection string according to config.'''
