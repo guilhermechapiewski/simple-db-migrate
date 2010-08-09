@@ -9,8 +9,6 @@ Must be db-agnostic as far as the supported Dbs go.
 from db_migrate import lib #sets the lib folder to be the first in PYTHONPATH
 from sqlalchemy.engine import create_engine
 
-from core.exceptions import MigrationException
-
 class Db(object):
     '''Class responsible for managing the communication with the database.'''
 
@@ -19,6 +17,7 @@ class Db(object):
 
         self.config = config
         self.connection = None
+        self.engine = None
 
         self.connection_strings = {
             'postgre' : 'postgresql://%(user)s:%(pass)s@%(host)s/%(db)s', 
@@ -53,16 +52,19 @@ class Db(object):
         self.connection = None
 
     def execute(self, sql):
+        '''Executes the sql and returns the cursor.'''
         if not self.connection:
             self.connect()
         return self.connection.execute(sql)
 
     def query_scalar(self, sql):
+        '''Executes the sql and returns the first item from the first row.'''
         result = self.execute(sql)
 
         return result[0][0]
 
     def create_database(self):
+        '''Creates a database with the config specified name.'''
         sql = "end; create database %s" % self.config.db
 
         self.execute(sql)
