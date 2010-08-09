@@ -43,7 +43,7 @@ class Db(object):
         '''
         self.engine = create_engine(self.connection_string)
         self.connection = self.engine.connect()
-    
+
     def close(self):
         '''
         Closes the connection if one is active. Does nothing otherwise.
