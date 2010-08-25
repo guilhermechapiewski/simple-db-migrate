@@ -41,3 +41,9 @@ def test_config_can_load_from_file_db_migrate_properties():
     assert config.password == 'myPass'
     assert config.port == 1111
     assert config.migrations_dir == 'myDir'
+
+def test_config_can_get_static_instance():
+    config = Config.static(some="config", goes="here")
+    
+    assert config.some == 'config'
+    assert config.goes == 'here'

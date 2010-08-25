@@ -22,17 +22,30 @@ def fake_config(dbtype='postgre', db='myDb', host='myHost',
     return config
 
 db_types = {
-            'postgre': 'postgresql://myUser:myPass@myHost/myDb',
-            'mysql': 'mysql://myUser:myPass@myHost/myDb',
-            'oracle': 'oracle://myUser:myPass@myHost:1111/myDb',
-            'mssql': 'mssql://myDb',
-            'sqlite': 'sqlite:///myHost',
-            'in-memory-sqlite': 'sqlite://'
+                'postgre': 'postgresql://myUser:myPass@myHost/myDb',
+                'mysql': 'mysql://myUser:myPass@myHost/myDb',
+                'oracle': 'oracle://myUser:myPass@myHost:1111/myDb',
+                'mssql': 'mssql://myDb',
+                'sqlite': 'sqlite:///myHost',
+                'in-memory-sqlite': 'sqlite://'
+           }
+
+main_db_types = {
+                'postgre': 'postgresql://myUser:myPass@myHost/',
+                'mysql': 'mysql://myUser:myPass@myHost/mysql',
+                'oracle': 'oracle://myUser:myPass@myHost:1111/',
+                'mssql': 'mssql://',
+                'sqlite': 'sqlite:///myHost',
+                'in-memory-sqlite': 'sqlite://'
            }
 
 def test_db_gets_proper_conn_str():
    for db_type in db_types.keys():
       yield assert_db_gets_proper_conn_str, db_type
+
+def test_db_gets_proper_main_conn_str():
+   for db_type in db_types.keys():
+      yield assert_db_gets_proper_main_conn_str, db_type
 
 @with_fakes
 def assert_db_gets_proper_conn_str(dbtype):
@@ -44,6 +57,17 @@ def assert_db_gets_proper_conn_str(dbtype):
     
     expected_conn_str = db_types[dbtype]
     assert db.connection_string == expected_conn_str
+
+@with_fakes
+def assert_db_gets_proper_main_conn_str(dbtype):
+    clear_expectations()
+
+    config = fake_config(dbtype=dbtype)
+
+    db = Db(config)
+    
+    expected_conn_str = main_db_types[dbtype]
+    assert db.main_database_connection_string == expected_conn_str
 
 @with_fakes
 @with_patched_object(db_module, 'create_engine', Fake(callable=True))
@@ -90,7 +114,7 @@ def test_create_db():
 
     db = Db(config)
 
-    Db.execute.with_args('end; create database myDb')
+    Db.execute.with_args('CREATE DATABASE IF NOT EXISTS myDb', to_main_database=True)
 
     db.create_database()
 
@@ -108,7 +132,7 @@ def test_execute_calls_connect_if_no_connection_done():
     fake_connection.expects('execute').with_args('select 1 from dual')
 
     def set_connection(db, connection):
-        def sets_attr():
+        def sets_attr(to_main_database):
             setattr(db, 'connection', fake_connection)
         return sets_attr
 

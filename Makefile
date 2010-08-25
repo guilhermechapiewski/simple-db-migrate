@@ -36,8 +36,12 @@ unit: compile
 	@nosetests -s --verbose --with-coverage --cover-erase --cover-package=db_migrate tests/unit/*
 	@make clean
 
+testdb:
+	@mysql -u root -e 'create database if not exists db_migrate_test_database'
+
 func: compile
 	@make clean
+	@make testdb
 	@echo "Starting tests..."
 	@nosetests -s --verbose --with-coverage --cover-erase --cover-package=db_migrate tests/functional/*
 	@make clean

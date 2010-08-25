@@ -27,6 +27,15 @@ class Db(object):
             'sqlite': 'sqlite:///%(host)s',
             'in-memory-sqlite': 'sqlite://'
         }
+        
+        self.main_database_names = {
+            'postgre': '', 
+            'mysql': 'mysql',
+            'oracle': '',
+            'mssql': '',
+            'sqlite': '',
+            'in-memory-sqlite': ''
+        }
 
     def __del__(self):
         '''
@@ -35,12 +44,16 @@ class Db(object):
         '''
         self.close()
 
-    def connect(self):
+    def connect(self, to_main_database=False):
         '''
         Connects to the database and sets the connection attribute 
         to the active connection.
         '''
-        self.engine = create_engine(self.connection_string)
+        conn_str = self.connection_string
+        if to_main_database:
+            conn_str = self.main_database_connection_string
+
+        self.engine = create_engine(conn_str)
         self.connection = self.engine.connect()
 
     def close(self):
@@ -51,23 +64,23 @@ class Db(object):
             self.connection.close()
         self.connection = None
 
-    def execute(self, sql):
+    def execute(self, sql, to_main_database=False):
         '''Executes the sql and returns the cursor.'''
         if not self.connection:
-            self.connect()
+            self.connect(to_main_database)
         return self.connection.execute(sql)
 
-    def query_scalar(self, sql):
+    def query_scalar(self, sql, to_main_database=False):
         '''Executes the sql and returns the first item from the first row.'''
-        result = self.execute(sql)
+        result = self.execute(sql, to_main_database)
 
-        return result[0][0]
+        return result.scalar()
 
     def create_database(self):
         '''Creates a database with the config specified name.'''
-        sql = "end; create database %s" % self.config.db
+        sql = "CREATE DATABASE IF NOT EXISTS %s" % self.config.db
 
-        self.execute(sql)
+        self.execute(sql, to_main_database=True)
 
     @property
     def connection_string(self):
@@ -78,4 +91,15 @@ class Db(object):
             'host': self.config.host,
             'port': self.config.port,
             'db' : self.config.db
+        }
+
+    @property
+    def main_database_connection_string(self):
+        '''Returns the proper connection string according to config.'''
+        return self.connection_strings[self.config.dbtype] % {
+            'user': self.config.user,
+            'pass': self.config.password,
+            'host': self.config.host,
+            'port': self.config.port,
+            'db' : self.main_database_names[self.config.dbtype]
         }
