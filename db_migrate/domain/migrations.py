@@ -4,13 +4,13 @@
 Module that contains the migrations model after they've been parsed from disk.
 """
 
-import codecs
 import re
 from os.path import split, exists
 
 from db_migrate.domain.errors import InvalidMigrationFilenameError, \
                                      MigrationFileDoesNotExistError, \
                                      InvalidMigrationFileError
+from db_migrate.config.loader import load_module
 
 class Migration(object):
     '''
@@ -55,26 +55,23 @@ class Migration(object):
         Loads this migration from the disk. 
         Gets both the up and down statements.
         '''
-        SQL_UP = None
-        SQL_DOWN = None
-
         if not exists(self.filepath):
             raise MigrationFileDoesNotExistError(('The migration at %s does'+
                                             ' not exist') % self.filepath)
-        
-        #TODO - Really don't like this. exec is evil.
-        migration_file = codecs.open(self.filepath, "rU", "utf-8")
-        exec(migration_file.read())
-        migration_file.close()
 
-        if not SQL_UP or not SQL_DOWN:
+        migration_module = load_module(self.filepath)
+
+        if not hasattr(migration_module, 'SQL_UP') or \
+           not hasattr(migration_module, 'SQL_DOWN'):
             msg = ("Migration file at '%s' it not well-formed. " + \
                    "It should have both SQL_UP and SQL_DOWN variable " + \
                    "assignments.") % self.filepath
             raise InvalidMigrationFileError(msg)
 
-        self.up_statements = Migration.parse_sql_statements(SQL_UP)
-        self.down_statements = Migration.parse_sql_statements(SQL_DOWN)
+        self.up_statements = \
+                    Migration.parse_sql_statements(migration_module.SQL_UP)
+        self.down_statements = \
+                    Migration.parse_sql_statements(migration_module.SQL_DOWN)
 
     @classmethod
     def parse_sql_statements(cls, sql):

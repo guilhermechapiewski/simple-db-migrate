@@ -10,6 +10,13 @@ from db_migrate.domain.errors import *
 
 test_path = "/tmp/20101010101010_doing_some_db_changes.migration"
 
+class TestMigration(object):
+    def __init__(self, ups, downs):
+        if ups:
+            self.SQL_UP = ";\n\n".join(ups)
+        if downs:
+            self.SQL_DOWN = ";\n\n".join(downs)
+
 def test_can_create_migration_model():
     migration = Migration(filepath=test_path)
 
@@ -47,25 +54,16 @@ def test_load_error_if_migration_does_not_exist():
 
 @with_fakes
 @with_patched_object(migr, 'exists', Fake(callable=True))
-@with_patched_object(migr, 'codecs', Fake('codecs'))
+@with_patched_object(migr, 'load_module', Fake(callable=True))
 def test_load_gets_the_file_contents_and_errors_if_file_has_no_SQL_UP():
     clear_expectations()
 
-    expected_ups = ['up']
-    expected_downs = ['down']
+    test_migration = TestMigration([], ['downs'])
 
     migration = Migration(filepath=test_path)
 
-    fake_file = Fake('file')
     migr.exists.with_args(test_path).returns(True)
-    migr.codecs.expects('open') \
-               .with_args(test_path, "rU", "utf-8") \
-               .returns(fake_file)
-
-    fake_file.expects('read').returns('''
-SQL_DOWN = "some command"
-''')
-    fake_file.expects('close')
+    migr.load_module.with_args(test_path).returns(test_migration)
 
     try:
         migration.load()
@@ -76,22 +74,16 @@ SQL_DOWN = "some command"
 
 @with_fakes
 @with_patched_object(migr, 'exists', Fake(callable=True))
-@with_patched_object(migr, 'codecs', Fake('codecs'))
+@with_patched_object(migr, 'load_module', Fake(callable=True))
 def test_load_gets_the_file_contents_and_errors_if_file_has_no_SQL_DOWN():
     clear_expectations()
 
+    test_migration = TestMigration(['ups'], [])
+
     migration = Migration(filepath=test_path)
 
-    fake_file = Fake('file')
     migr.exists.with_args(test_path).returns(True)
-    migr.codecs.expects('open') \
-               .with_args(test_path, "rU", "utf-8") \
-               .returns(fake_file)
-
-    fake_file.expects('read').returns('''
-SQL_UP = "some command"
-''')
-    fake_file.expects('close')
+    migr.load_module.with_args(test_path).returns(test_migration)
 
     try:
         migration.load()
@@ -110,30 +102,30 @@ def test_is_filename_valid_for_valid_file():
 
 @with_fakes
 @with_patched_object(migr, 'exists', Fake(callable=True))
-@with_patched_object(migr, 'codecs', Fake('codecs'))
+@with_patched_object(migr, 'load_module', Fake(callable=True))
 def test_load_gets_the_file_contents_and_parses_ups_and_downs():
-    
+
     clear_expectations()
 
-    migration = Migration(filepath=test_path)
+    migration = TestMigration([
+        'up command',
+        'up command 2',
+    ], [
+        'down command', 'down command 2'
+    ])
 
-    fake_file = Fake('file')
     migr.exists.with_args(test_path).returns(True)
-    migr.codecs.expects('open') \
-               .with_args(test_path, "rU", "utf-8") \
-               .returns(fake_file)
 
-    fake_file.expects('read').returns('''
-SQL_UP = "up command; up command 2;"
+    migr.load_module.with_args(test_path).returns(migration)
 
-SQL_DOWN = "down command; down command 2;"
-''')
-    fake_file.expects('close')
+    migration = Migration(filepath=test_path)
 
     migration.load()
 
     assert migration.up_statements == ['up command', 'up command 2']
     assert migration.down_statements == ['down command', 'down command 2']
+    
+    clear_expectations()
 
 def test_it_should_parse_sql_statements_handles_extra_semicolons():
     sql = 'create table eggs; drop table spam; ; ;'
