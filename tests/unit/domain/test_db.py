@@ -162,7 +162,9 @@ def test_query_scalar():
 
     db = Db(config)
 
-    Db.execute.returns([[1]])
+    results_fake = Fake('results')
+    results_fake.expects('scalar').returns(1L)
+    Db.execute.returns(results_fake)
 
     result = db.query_scalar('select 1 from dual')
 

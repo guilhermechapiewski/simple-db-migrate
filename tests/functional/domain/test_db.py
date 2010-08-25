@@ -85,4 +85,3 @@ def test_can_create_database():
     results = new_db.execute('show databases', to_main_database=True)
     dbs = [result[0] for result in results.fetchall()]
     assert 'db_migrate_test_database_2' in dbs
-    
