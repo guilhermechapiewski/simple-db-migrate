@@ -24,7 +24,7 @@ def test_loader_raises_when_file_not_found():
 
 @with_fakes
 @with_patched_object(loader, 'exists', Fake(callable=True))
-@with_patched_object(loader, 'do_open', Fake(callable=True))
+@with_patched_object(loader, 'DO_OPEN', Fake(callable=True))
 @with_patched_object(loader, 'imp', Fake('imp'))
 @with_patched_object(loader, 'md5', Fake('md5'))
 def test_loader_returns_module():
@@ -38,7 +38,7 @@ def test_loader_returns_module():
 
     file_like = StringIO('some code')
 
-    loader.do_open.with_args('/tmp/my_module.py', 'rb').returns(file_like)
+    loader.DO_OPEN.with_args('/tmp/my_module.py', 'rb').returns(file_like)
 
     loader.imp.expects('load_source') \
               .with_args('md5hash', '/tmp/my_module.py', file_like) \
