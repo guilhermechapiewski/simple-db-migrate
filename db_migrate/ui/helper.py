@@ -9,8 +9,6 @@ manipulation.
 import sys
 from datetime import datetime
 
-from db_migrate import Version
-
 class ConsoleChar(object):
     '''
     Helper class that provides access to the Console
@@ -23,11 +21,6 @@ class ConsoleChar(object):
     yellow = "\033[33m"
     red = "\033[31m"
     end = "\033[0m"
-
-    @classmethod
-    def version(cls):
-        '''returns the db-migrate version in yellow'''
-        return cls.colored_message(Version, cls.yellow)
     
     @classmethod
     def colored_message(cls, message, color):

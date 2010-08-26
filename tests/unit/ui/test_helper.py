@@ -42,12 +42,6 @@ def test_actions_log_with_cyan_as_default_color():
 
     Actions.log("message")
 
-def test_returned_version_is_yellow():
-    expected_version = "%s%s%s" % \
-                        (ConsoleChar.yellow, Version, ConsoleChar.end)
-    actual_version = ConsoleChar.version()
-    assert actual_version == expected_version, actual_version
-
 @with_fakes
 @with_patched_object(helper, 'sys', Fake('sys'))
 @with_patched_object(Actions, 'log', Fake(callable=True))

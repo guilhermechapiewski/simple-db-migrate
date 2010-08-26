@@ -8,6 +8,8 @@ The actual console infrastructure.
 import sys
 from optparse import OptionParser
 
+from db_migrate.ui.helper import Actions
+
 class Console(object):
     '''
     Class responsible for controlling console interaction with users.
@@ -16,6 +18,8 @@ class Console(object):
     def __init__(self):
         '''Initializes the console'''
         self.parser = None
+        self.arguments = None
+        self.options = None
 
     def run(self, arguments=None):
         '''Parses arguments and runs the required actions'''
@@ -23,6 +27,11 @@ class Console(object):
             arguments = sys.argv[1:]
 
         self.parse_arguments(arguments)
+
+        if not self.arguments:
+            action = "AutoMigrate"
+        else:
+            action = self.arguments[0]
 
     def parse_arguments(self, arguments):
         '''
@@ -98,4 +107,7 @@ migrate to the last version available in the migrations directory.""")
                 help="""Show all SQL statements that would be executed but
  DON'T execute them in the database.""")
 
-        self.parser.parse_args(arguments)
+        (arguments, options) = self.parser.parse_args(arguments)
+        
+        self.arguments = arguments
+        self.options = options

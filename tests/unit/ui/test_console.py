@@ -40,7 +40,7 @@ def test_console_parse_arguments_creates_proper_optparse():
     cons.OptionParser.returns(fake_parser)
 
     fake_parser.expects('add_option').times_called(10)
-    fake_parser.expects('parse_args').with_args(args).times_called(1)
+    fake_parser.expects('parse_args').with_args(args).times_called(1).returns(([], []))
 
     console = Console()
 
