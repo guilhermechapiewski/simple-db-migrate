@@ -75,7 +75,7 @@ def test_can_scalar_query_command_in_main_database():
 
     assert result == 1L
 
-def test_can_create_database():
+def test_can_create_and_drop_database():
     db = Db(config=NEW_DB_CONFIG)
 
     db.create_database()
@@ -85,3 +85,9 @@ def test_can_create_database():
     results = new_db.execute('show databases', to_main_database=True)
     dbs = [result[0] for result in results.fetchall()]
     assert 'db_migrate_test_database_2' in dbs
+
+    db.drop_database()
+
+    results = new_db.execute('show databases', to_main_database=True)
+    dbs = [result[0] for result in results.fetchall()]
+    assert 'db_migrate_test_database_2' not in dbs

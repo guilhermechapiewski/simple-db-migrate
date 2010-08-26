@@ -82,6 +82,12 @@ class Db(object):
 
         self.execute(sql, to_main_database=True)
 
+    def drop_database(self):
+        '''Drops the database with the config specified name.'''
+        sql = "DROP DATABASE IF EXISTS %s" % self.config.db
+
+        self.execute(sql, to_main_database=True)
+
     @property
     def connection_string(self):
         '''Returns the proper connection string according to config.'''

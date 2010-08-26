@@ -141,6 +141,19 @@ def test_create_db():
     db.create_database()
 
 @with_fakes
+@with_patched_object(Db, 'execute', Fake(callable=True))
+def test_drop_db():
+    clear_expectations()
+
+    config = fake_config()
+
+    db = Db(config)
+
+    Db.execute.with_args('DROP DATABASE IF EXISTS myDb', to_main_database=True)
+
+    db.drop_database()
+
+@with_fakes
 @with_patched_object(Db, 'connect', Fake(callable=True))
 def test_execute_calls_connect_if_no_connection_done():
     clear_expectations()
