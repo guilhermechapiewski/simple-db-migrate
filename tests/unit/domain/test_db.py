@@ -92,6 +92,28 @@ def test_connect_creates_engine_and_connects():
     assert db.connection == fake_connection
 
 @with_fakes
+@with_patched_object(db_module, 'create_engine', Fake(callable=True))
+def test_connect_creates_engine_and_connects_to_main_db():
+    clear_expectations()
+
+    config = fake_config()
+
+    db = Db(config)
+
+    fake_engine = Fake('engine')
+    fake_connection = Fake('connection')
+
+    db_module.create_engine \
+             .with_args(db.main_database_connection_string) \
+             .returns(fake_engine)
+
+    fake_engine.expects('connect').returns(fake_connection)
+
+    db.connect(to_main_database=True)
+    
+    assert db.connection == fake_connection
+
+@with_fakes
 def test_close_exits_gracefully_when_no_connection_been_made():
     clear_expectations()
 
