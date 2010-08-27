@@ -9,6 +9,7 @@ import sys
 from optparse import OptionParser
 
 from db_migrate.ui.helper import Actions
+import db_migrate.ui.console_actions as console_actions
 
 class Console(object):
     '''
@@ -29,9 +30,19 @@ class Console(object):
         self.parse_arguments(arguments)
 
         if not self.arguments:
-            action = "AutoMigrate"
+            action_key = "AutoMigrate"
         else:
-            action = self.arguments[0]
+            action_key = self.arguments[0]
+
+        action_to_execute = self.assert_and_get_action(action_key)
+
+    def assert_and_get_action(self, action_key):
+        if not action_key in console_actions.ACTIONS:
+            msg = 'The specified action of %s was not found. Available actions are: %s' % \
+                  (action_key, "\n-".join(console_actions.ACTIONS.keys()))
+            Actions.error_and_exit(msg) 
+
+        return console_actions.ACTIONS[action_key]
 
     def parse_arguments(self, arguments):
         '''
@@ -107,7 +118,7 @@ migrate to the last version available in the migrations directory.""")
                 help="""Show all SQL statements that would be executed but
  DON'T execute them in the database.""")
 
-        (arguments, options) = self.parser.parse_args(arguments)
+        (options, arguments) = self.parser.parse_args(arguments)
         
         self.arguments = arguments
         self.options = options
