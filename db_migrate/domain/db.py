@@ -6,7 +6,9 @@ Module responsible for managing Database interaction.
 Must be db-agnostic as far as the supported Dbs go.
 '''
 
-from sqlalchemy.schema import MetaData
+from sqlalchemy import *
+from sqlalchemy.sql import select
+from sqlalchemy.schema import MetaData, Table, Column
 from sqlalchemy.engine import create_engine
 
 from db_migrate import lib #sets the lib folder to be the first in PYTHONPATH
@@ -21,6 +23,11 @@ class Db(object):
         self.connection = None
         self.engine = None
         self.meta = MetaData()
+
+        self.Version = Table('__db_version__', self.meta, 
+            Column('id', Integer, primary_key = True),
+            Column('version', String(20), nullable = False)
+        )
 
         self.connection_strings = {
             'postgre' : 'postgresql://%(user)s:%(pass)s@%(host)s/%(db)s', 
@@ -85,12 +92,14 @@ class Db(object):
         sql = "CREATE DATABASE IF NOT EXISTS %s" % self.config.db
 
         self.execute(sql, to_main_database=True)
+        self.close()
 
     def drop_database(self):
         '''Drops the database with the config specified name.'''
         sql = "DROP DATABASE IF EXISTS %s" % self.config.db
 
         self.execute(sql, to_main_database=True)
+        self.close()
 
     def create_table(self, table):
         '''Creates a table with the given fields.'''
@@ -105,6 +114,22 @@ class Db(object):
             self.connect()
 
         table.drop(checkfirst=True)
+
+    def create_version_table(self):
+        if not self.connection:
+            self.connect()
+
+        self.create_table(self.Version)
+
+    def verify_if_migration_zero_is_present(self):
+        if not self.connection:
+            self.connect()
+
+        query = select([self.Version], self.Version.c.version == 0)
+        result = self.connection.execute(query).fetchall()
+
+        if not result:
+            self.Version.insert().execute(version=0)
 
     @property
     def connection_string(self):

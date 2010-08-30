@@ -22,6 +22,14 @@ NEW_DB_CONFIG = Config.static(
     port=None,
     db='db_migrate_test_database_2'
 )
+NEW_DB_CONFIG3 = Config.static(
+    dbtype='mysql',
+    user='root',
+    password='',
+    host='localhost',
+    port=None,
+    db='db_migrate_test_database_3'
+)
 
 def test_connect_to_some_database():
     db = Db(config=TEST_DB_CONFIG)
@@ -124,3 +132,35 @@ def test_create_and_drop_table():
     assert 'test_table' not in tables
 
     db.drop_table(tbl)
+
+def test_create_version_table():
+    db = Db(config=NEW_DB_CONFIG3)
+
+    try:
+        db.create_database()
+        db.create_version_table()
+
+        new_db = Db(config=NEW_DB_CONFIG3)
+
+        results = new_db.execute('show tables')
+        tables = [result[0] for result in results.fetchall()]
+
+        assert '__db_version__' in tables
+    finally:
+        db.drop_database()
+
+def test_verify_if_migration_zero_is_present():
+    db = Db(config=NEW_DB_CONFIG3)
+
+    try:
+        db.create_database()
+        db.create_version_table()
+        db.verify_if_migration_zero_is_present()
+
+        new_db = Db(config=NEW_DB_CONFIG3)
+
+        results = new_db.query_scalar('select count(*) from __db_version__')
+
+        assert results == 1, results
+    finally:
+        db.drop_database()
