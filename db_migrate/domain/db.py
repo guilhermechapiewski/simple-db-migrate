@@ -6,8 +6,10 @@ Module responsible for managing Database interaction.
 Must be db-agnostic as far as the supported Dbs go.
 '''
 
-from db_migrate import lib #sets the lib folder to be the first in PYTHONPATH
+from sqlalchemy.schema import MetaData
 from sqlalchemy.engine import create_engine
+
+from db_migrate import lib #sets the lib folder to be the first in PYTHONPATH
 
 class Db(object):
     '''Class responsible for managing the communication with the database.'''
@@ -18,6 +20,7 @@ class Db(object):
         self.config = config
         self.connection = None
         self.engine = None
+        self.meta = MetaData()
 
         self.connection_strings = {
             'postgre' : 'postgresql://%(user)s:%(pass)s@%(host)s/%(db)s', 
@@ -55,6 +58,7 @@ class Db(object):
 
         self.engine = create_engine(conn_str)
         self.connection = self.engine.connect()
+        self.meta.bind = self.engine
 
     def close(self):
         '''
@@ -87,6 +91,20 @@ class Db(object):
         sql = "DROP DATABASE IF EXISTS %s" % self.config.db
 
         self.execute(sql, to_main_database=True)
+
+    def create_table(self, table):
+        '''Creates a table with the given fields.'''
+        if not self.connection:
+            self.connect()
+
+        table.create(checkfirst=True)
+
+    def drop_table(self, table):
+        '''Creates a table with the given fields.'''
+        if not self.connection:
+            self.connect()
+
+        table.drop(checkfirst=True)
 
     @property
     def connection_string(self):

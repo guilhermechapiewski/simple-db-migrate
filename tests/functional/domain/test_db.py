@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+from sqlalchemy import *
+
 from db_migrate.config import Config
 from db_migrate.domain.db import Db
 
@@ -91,3 +93,34 @@ def test_can_create_and_drop_database():
     results = new_db.execute('show databases', to_main_database=True)
     dbs = [result[0] for result in results.fetchall()]
     assert 'db_migrate_test_database_2' not in dbs
+
+def test_create_and_drop_table():
+    db = Db(config=TEST_DB_CONFIG)
+
+    tbl = Table('test_table', db.meta, 
+        Column('user_id', Integer, primary_key = True),
+        Column('user_name', String(16), nullable = False),
+        Column('email_address', String(60), key='email'),
+        Column('password', String(20), nullable = False)
+    )
+
+    db.create_table(tbl)
+
+    new_db = Db(config=TEST_DB_CONFIG)
+
+    results = new_db.execute('show tables')
+    tables = [result[0] for result in results.fetchall()]
+
+    assert 'test_table' in tables
+
+    #shouldn't do anything
+    db.create_table(tbl)
+
+    db.drop_table(tbl)
+
+    results = new_db.execute('show tables')
+    tables = [result[0] for result in results.fetchall()]
+
+    assert 'test_table' not in tables
+
+    db.drop_table(tbl)

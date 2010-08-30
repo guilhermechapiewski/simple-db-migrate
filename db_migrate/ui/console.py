@@ -30,11 +30,13 @@ class Console(object):
         self.parse_arguments(arguments)
 
         if not self.arguments:
-            action_key = "AutoMigrate"
+            action_key = "migrate"
         else:
             action_key = self.arguments[0]
 
         action_to_execute = self.assert_and_get_action(action_key)
+
+        action_to_execute(arguments=self.arguments, options=self.options)
 
     def assert_and_get_action(self, action_key):
         if not action_key in console_actions.ACTIONS:

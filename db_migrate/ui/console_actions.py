@@ -12,3 +12,6 @@ def action(command):
         return fn
     return function
 
+@action('migrate')
+def auto_migrate(arguments, options):
+    pass

@@ -204,3 +204,31 @@ def test_query_scalar():
     result = db.query_scalar('select 1 from dual')
 
     assert result == 1
+
+@with_fakes
+@with_patched_object(Db, 'connect', Fake(callable=True))
+def test_create_table():
+    clear_expectations()
+
+    config = fake_config()
+
+    db = Db(config)
+
+    tbl = Fake('table')
+    tbl.expects('create').with_args(checkfirst=True)
+
+    db.create_table(tbl)
+
+@with_fakes
+@with_patched_object(Db, 'connect', Fake(callable=True))
+def test_drop_table():
+    clear_expectations()
+
+    config = fake_config()
+
+    db = Db(config)
+
+    tbl = Fake('table')
+    tbl.expects('drop').with_args(checkfirst=True)
+
+    db.drop_table(tbl)
