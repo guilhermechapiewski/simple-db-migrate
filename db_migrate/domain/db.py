@@ -16,7 +16,7 @@ from db_migrate import lib #sets the lib folder to be the first in PYTHONPATH
 class Db(object):
     '''Class responsible for managing the communication with the database.'''
 
-    def __init__(self, config):
+    def __init__(self, config, no_model=False):
         '''Initializes a Db object with the given config.'''
 
         self.config = config
@@ -24,10 +24,11 @@ class Db(object):
         self.engine = None
         self.meta = MetaData()
 
-        self.Version = Table('__db_version__', self.meta, 
-            Column('id', Integer, primary_key = True),
-            Column('version', String(20), nullable = False)
-        )
+        if not no_model:
+            self.Version = Table('__db_version__', self.meta, 
+                Column('id', Integer, primary_key = True),
+                Column('version', String(20), nullable = False)
+            )
 
         self.connection_strings = {
             'postgre' : 'postgresql://%(user)s:%(pass)s@%(host)s/%(db)s', 
@@ -130,6 +131,13 @@ class Db(object):
 
         if not result:
             self.Version.insert().execute(version=0)
+
+    def patch_migration_table(self):
+        if not self.connection:
+            self.connect()
+
+        if not 'id' in self.execute('desc __db_version__').fetchall()[0][0]:
+            self.execute('alter table __db_version__ add id int PRIMARY KEY')
 
     @property
     def connection_string(self):

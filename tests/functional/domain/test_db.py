@@ -164,3 +164,27 @@ def test_verify_if_migration_zero_is_present():
         assert results == 1, results
     finally:
         db.drop_database()
+
+def test_patching_existing_table_works():
+    db = Db(config=NEW_DB_CONFIG3, no_model=True)
+
+    try:
+        db.create_database()
+
+        old_table = Table('__db_version__', db.meta, 
+            Column('version', String(20), nullable=False),
+        )
+
+        db.create_table(old_table)
+
+        db2 = Db(config=NEW_DB_CONFIG3)
+        db2.patch_migration_table()
+
+        new_db = Db(config=NEW_DB_CONFIG3)
+
+        results = new_db.execute('desc __db_version__').fetchall()
+        fields = [result[0] for result in results]
+
+        assert 'id' in fields
+    finally:
+        db.drop_database()
