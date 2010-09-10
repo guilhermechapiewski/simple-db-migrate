@@ -79,7 +79,7 @@ MIGRATIONS_DIR = os.getenv('MIGRATIONS_DIR') or 'example'
         config = FileConfig(config_path)
         
         # ensure that the config does not exist
-        self.assertRaises(Exception, config.get, 'sample_config', 'TEST')
+        self.assertRaises(Exception, config.get, 'sample_config')
         
         # create the config
         config.put('sample_config', 'TEST')
@@ -136,7 +136,7 @@ class InPlaceConfigTest(unittest.TestCase):
         config = InPlaceConfig('localhost', 'user', 'passwd', 'db', 'dir')
         
         # ensure that the config does not exist
-        self.assertRaises(Exception, config.get, 'sample_config', 'TEST')
+        self.assertRaises(Exception, config.get, 'sample_config')
         
         # create the config
         config.put('sample_config', 'TEST')

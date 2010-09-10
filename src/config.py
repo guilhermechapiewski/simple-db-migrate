@@ -13,10 +13,12 @@ class Config(object):
     def __repr__(self):
         return str(self._config)
 
-    def get(self, config_key):
+    def get(self, config_key, default_value=None):
         try:
             return self._config[config_key]
         except KeyError:
+            if default_value:
+                return default_value
             raise Exception("invalid configuration key ('%s')" % config_key)
             
     def put(self, config_key, config_value):
@@ -83,10 +85,12 @@ class FileConfig(Config):
         config_dir = os.path.split(config_file)[0]
         self.put("migrations_dir", self._parse_migrations_dir(migrations_dir, config_dir))
         
-    def get_variable(self, settings, name, old_name):
+    def get_variable(self, settings, name, old_name, default_value=None):
         if name in settings or old_name in settings:
             return settings.get(name, settings.get(old_name))
         else:
+            if default_value:
+                return default_value
             raise NameError("config file error: name '%s' is not defined" % name)
 
 class InPlaceConfig(Config):
