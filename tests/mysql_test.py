@@ -410,6 +410,8 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         
     def create_config_mock(self, mox):
         config_mock = mox.CreateMockAnything()
+        config_mock.get('db_script_encoding', 'utf8').AndReturn('utf8')
+        config_mock.get('db_encoding', 'utf8').AndReturn('utf8')
         config_mock.get('db_host').AndReturn('localhost')
         config_mock.get('db_user').AndReturn('root')
         config_mock.get('db_password').AndReturn('')

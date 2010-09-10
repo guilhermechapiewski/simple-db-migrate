@@ -1,20 +1,25 @@
 import re
 import sys
 
-import MySQLdb
-
 from core.exceptions import MigrationException
 from helpers import Utils
 
 class MySQL(object):
     
-    def __init__(self, config=None, mysql_driver=MySQLdb):
+    def __init__(self, config=None, mysql_driver=None):
+        self.__mysql_script_encoding = config.get("db_script_encoding", "utf8")
+        self.__mysql_encoding = config.get("db_encoding", "utf8")
         self.__mysql_driver = mysql_driver
         self.__mysql_host = config.get("db_host")
         self.__mysql_user = config.get("db_user")
         self.__mysql_passwd = config.get("db_password")
         self.__mysql_db = config.get("db_name")
         self.__version_table = config.get("db_version_table")
+        
+        self.__mysql_driver = mysql_driver
+        if not mysql_driver:
+            import MySQLdb
+            self.__mysql_driver = MySQLdb
 
         if config.get("drop_db_first"):
             self._drop_database()
@@ -26,8 +31,7 @@ class MySQL(object):
         try:
             conn = self.__mysql_driver.connect(host=self.__mysql_host, user=self.__mysql_user, passwd=self.__mysql_passwd)
 
-            # this should be configured in the config file, not hardcoded
-            conn.set_character_set('utf8')
+            conn.set_character_set(self.__mysql_encoding)
             
             if connect_using_db_name:
                 conn.select_db(self.__mysql_db)
@@ -43,7 +47,7 @@ class MySQL(object):
         try:
             for statement in self._parse_sql_statements(sql):
                 curr_statement = statement
-                affected_rows = cursor.execute(statement.encode("utf-8"))
+                affected_rows = cursor.execute(statement.encode(self.__mysql_script_encoding))
                 if execution_log:
                     execution_log("%s\n-- %d row(s) affected\n" % (statement, affected_rows))
             cursor.close()        
