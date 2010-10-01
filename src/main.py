@@ -1,4 +1,5 @@
 from cli import CLI
+from log import LOG
 from core import Migration, SimpleDBMigrate
 from helpers import Lists
 from mysql import MySQL
@@ -8,6 +9,7 @@ class Main(object):
     def __init__(self, config=None, mysql=None, db_migrate=None):
         self.cli = CLI()
         self.config = config or {}
+        self.log = LOG(self.config.get("log_dir"))
 
         self.mysql = mysql
         if self.mysql is None and not self.config.get("new_migration"):
@@ -15,18 +17,23 @@ class Main(object):
 
         self.db_migrate = db_migrate or SimpleDBMigrate(config)
 
+    def execution_log(self, msg, color="CYAN", log_level_limit=2):
+        if self.config.get("log_level") >= log_level_limit:
+            self.cli.msg(msg)
+        self.log.debug(msg)
+
     def execute(self):
-        self.cli.msg("\nStarting DB migration...", "PINK")
+        self.execution_log("\nStarting DB migration...", "PINK", log_level_limit=1)
         if self.config.get("new_migration"):
             self.create_migration()
         else:
             self.migrate()
-        self.cli.msg("\nDone.\n", "PINK")
+        self.execution_log("\nDone.\n", "PINK", log_level_limit=1)
 
     def create_migration(self):
         # TODO: create file in the migrations directory, not in current
         new_file = Migration.create(self.config.get("new_migration"))
-        self.cli.msg("- Created file '%s'" % (new_file))
+        self.execution_log("- Created file '%s'" % (new_file), log_level_limit=1)
 
     def migrate(self):
         destination_version = self.get_destination_version()
@@ -99,23 +106,23 @@ class Main(object):
         # getting only the migration sql files to be executed
         migrations_to_be_executed = self.get_migration_files_to_be_executed(current_version, destination_version, is_migration_up)
 
-        self.cli.msg("- Current version is: %s" % current_version, "GREEN")
+        self.execution_log("- Current version is: %s" % current_version, "GREEN", log_level_limit=1)
 
         if migrations_to_be_executed is None or len(migrations_to_be_executed) == 0:
-            self.cli.msg("- Destination version is: %s" % current_version, "GREEN")
-            self.cli.msg("\nNothing to do.\n", "PINK")
+            self.execution_log("- Destination version is: %s" % current_version, "GREEN", log_level_limit=1)
+            self.execution_log("\nNothing to do.\n", "PINK", log_level_limit=1)
             return
 
-        self.cli.msg("- Destination version is: %s" % (is_migration_up and migrations_to_be_executed[-1].version or destination_version), "GREEN")
+        self.execution_log("- Destination version is: %s" % (is_migration_up and migrations_to_be_executed[-1].version or destination_version), "GREEN", log_level_limit=1)
 
         up_down_label = is_migration_up and "up" or "down"
         if self.config.get("show_sql_only"):
-            self.cli.msg("\nWARNING: database migrations are not being executed ('--showsqlonly' activated)", "YELLOW")
+            self.execution_log("\nWARNING: database migrations are not being executed ('--showsqlonly' activated)", "YELLOW", log_level_limit=1)
         else:
-            self.cli.msg("\nStarting migration %s!" % up_down_label)
+            self.execution_log("\nStarting migration %s!" % up_down_label, log_level_limit=1)
 
         if self.config.get("log_level") >= 1:
-            self.cli.msg("*** versions: %s\n" % ([ migration.version for migration in migrations_to_be_executed]), "CYAN")
+            self.execution_log("*** versions: %s\n" % ([ migration.version for migration in migrations_to_be_executed]), "CYAN", log_level_limit=1)
 
         sql_statements_executed = []
         for migration in migrations_to_be_executed:
@@ -123,13 +130,9 @@ class Main(object):
 
             if not self.config.get("show_sql_only"):
                 if self.config.get("log_level") >= 1:
-                    self.cli.msg("===== executing %s (%s) =====" % (migration.file_name, up_down_label))
+                    self.execution_log("===== executing %s (%s) =====" % (migration.file_name, up_down_label), log_level_limit=1)
 
-                log = None
-                if self.config.get("log_level") >= 2:
-                    log = self.cli.msg
-
-                self.mysql.change(sql, migration.version, migration.file_name, migration.sql_up, migration.sql_down, is_migration_up, execution_log=log)
+                self.mysql.change(sql, migration.version, migration.file_name, migration.sql_up, migration.sql_down, is_migration_up, execution_log=self.execution_log)
 
                 # paused mode
                 if self.config.get("paused_mode"):
@@ -139,8 +142,7 @@ class Main(object):
             sql_statements_executed.append(sql)
 
         if self.config.get("show_sql") or self.config.get("show_sql_only"):
-            self.cli.msg("__________ SQL statements executed __________", "YELLOW")
+            self.execution_log("__________ SQL statements executed __________", "YELLOW", log_level_limit=1)
             for sql in sql_statements_executed:
-                self.cli.msg(sql, "YELLOW")
-            self.cli.msg("_____________________________________________", "YELLOW")
-
+                self.execution_log(sql, "YELLOW", log_level_limit=1)
+            self.execution_log("_____________________________________________", "YELLOW", log_level_limit=1)

@@ -173,12 +173,11 @@ class MySQL(object):
         cursor.execute("select id, version, name, sql_up, sql_down from %s order by id;" % self.__version_table)
         all_migrations = cursor.fetchall()
         for migration_db in all_migrations:
-            migration = Migration()
-            migration.id = int(migration_db[0])
-            migration.version = str(migration_db[1])
-            migration.file_name = str(migration_db[2])
-            migration.sql_up = str(migration_db[3])
-            migration.sql_down = str(migration_db[4])
+            migration = Migration(id = int(migration_db[0]),
+                                  version = str(migration_db[1]),
+                                  file_name = str(migration_db[2]),
+                                  sql_up = str(migration_db[3]),
+                                  sql_down = str(migration_db[4]))
             migrations.append(migration)
         db.close()
         return migrations

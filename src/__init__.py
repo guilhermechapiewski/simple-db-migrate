@@ -31,14 +31,15 @@ def run():
         config.put('new_migration', options.new_migration)
         config.put('drop_db_first', options.drop_db_first)
         config.put('paused_mode', options.paused_mode)
-        
+        config.put('log_dir', options.log_dir)
+
         # paused mode forces log_level to 2
         log_level = int(options.log_level)
         if options.paused_mode:
             log_level = 2
-        
+
         config.put('log_level', log_level)
-        
+
         # Ask the password for user if configured
         if config.get('db_password') == '<<ask_me>>':
             cli.msg('\nPlease inform password to connect to database "%s@%s:%s"' % (config.get('db_user'), config.get('db_host'), config.get('db_name')))
@@ -52,6 +53,6 @@ def run():
         cli.info_and_exit("\nExecution interrupted by user...")
     except Exception, e:
         cli.error_and_exit(str(e))
-        
+
 if __name__ == '__main__':
     run()
