@@ -33,7 +33,9 @@ class Config(object):
     def _parse_migrations_dir(self, dirs, config_dir=''):
         abs_dirs = []
         for dir in dirs.split(':'):
-            if config_dir == '':
+            if os.path.isabs(dir):
+                abs_dirs.append(dir)
+            elif config_dir == '':
                 abs_dirs.append(os.path.abspath(dir))
             else:
                 abs_dirs.append(os.path.abspath('%s/%s' % (config_dir, dir)))
