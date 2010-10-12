@@ -69,7 +69,7 @@ class MainTest(unittest.TestCase):
         core.Migration.is_file_name_valid('%s_some_new_migration.migration' % strftime("%Y%m%d%H%M%S")).AndReturn(True)
         core.Migration.create("some_new_migration")
 
-        config_mock = {"new_migration":"some_new_migration"}
+        config_mock = {"new_migration":"some_new_migration", "migrations_dir":"."}
         mysql_mock = mox.CreateMockAnything()
         db_migrate_mock = mox.CreateMockAnything()
 
