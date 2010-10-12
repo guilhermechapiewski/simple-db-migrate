@@ -65,10 +65,8 @@ class MainTest(unittest.TestCase):
         from time import strftime
 
         mox = Mox()
-        core.Migration = mox.CreateMockAnything()
-        core.Migration.TEMPLATE = ""
-        core.Migration.MIGRATION_FILES_EXTENSION = ''
-        core.Migration.is_file_name_valid('%s_some_new_migration' % strftime("%Y%m%d%H%M%S")).AndReturn(True)
+        core.Migration = mox.CreateMock(Migration)
+        core.Migration.is_file_name_valid('%s_some_new_migration.migration' % strftime("%Y%m%d%H%M%S")).AndReturn(True)
         core.Migration.create("some_new_migration")
 
         config_mock = {"new_migration":"some_new_migration"}
