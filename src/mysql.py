@@ -59,7 +59,7 @@ class MySQL(object):
     def __change_db_version(self, version, migration_file_name, sql_up, sql_down, up=True):
         if up:
             # moving up and storing history
-            sql = "insert into %s (version, name, sql_up, sql_down) values (\"%s\", \"%s\", \"%s\", \"%s\");" % (self.__version_table, str(version), str(migration_file_name), str(sql_up), str(sql_down))
+            sql = "insert into %s (version, name, sql_up, sql_down) values (\"%s\", \"%s\", \"%s\", \"%s\");" % (self.__version_table, str(version), migration_file_name, sql_up.replace('"', '\\"'), sql_down.replace('"', '\\"'))
         else:
             # moving down and deleting from history
             sql = "delete from %s where version = \"%s\";" % (self.__version_table, str(version))
@@ -162,9 +162,10 @@ class MySQL(object):
         db = self.__mysql_connect()
         cursor = db.cursor()
         cursor.execute("select id from %s where version = '%s';" % (self.__version_table, version))
-        id = cursor.fetchone()[0]
+        result = cursor.fetchone()
+        id = result and int(result[0]) or None
         db.close()
-        return int(id)
+        return id
 
     def get_all_schema_migrations(self):
         migrations = []

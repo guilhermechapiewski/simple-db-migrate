@@ -568,5 +568,73 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         mox.VerifyAll()
 
+    def test_it_should_get_none_for_a_non_existent_version_in_database(self):
+        mox = Mox()
+
+        config_mock = self.create_config_mock(mox)
+
+        cursor_mock = mox.CreateMockAnything()
+        cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))')
+        cursor_mock.close()
+
+        db_mock = mox.CreateMockAnything()
+        db_mock.set_character_set('utf8')
+        db_mock.query('create database if not exists migration_test;')
+        db_mock.close()
+
+        db_mock.set_character_set('utf8')
+        db_mock.select_db('migration_test')
+
+        db_mock.cursor().AndReturn(cursor_mock)
+
+        db_mock.commit()
+        db_mock.close()
+
+        db_mock.set_character_set('utf8')
+        db_mock.select_db('migration_test')
+        db_mock.cursor().AndReturn(cursor_mock)
+
+        cursor_mock.execute('select id from __db_version__;')
+        cursor_mock.close()
+
+        db_mock.close()
+
+        db_mock.set_character_set('utf8')
+        db_mock.select_db('migration_test')
+        db_mock.cursor().AndReturn(cursor_mock)
+
+        cursor_mock.execute('select count(*) from __db_version__;')
+        cursor_mock.fetchone().AndReturn([1])
+
+        db_mock.close()
+
+        db_mock.set_character_set('utf8')
+        db_mock.select_db('migration_test')
+        db_mock.cursor().AndReturn(cursor_mock)
+
+        cursor_mock.execute('select id from __db_version__ where version = \'xxx\';')
+        cursor_mock.fetchone().AndReturn(None)
+
+        db_mock.close()
+
+        mysql_driver_mock = mox.CreateMockAnything()
+        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
+        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
+        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
+        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
+        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
+
+        mox.ReplayAll()
+
+        mysql = MySQL(config_mock, mysql_driver_mock)
+
+        ret = mysql.get_version_id_from_version_number('xxx')
+
+        assert None == ret, 'expected %s, got %s' % (None, ret)
+
+        mox.VerifyAll()
+
+
+
 if __name__ == "__main__":
     unittest.main()
