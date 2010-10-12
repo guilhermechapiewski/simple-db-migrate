@@ -31,8 +31,8 @@ class Main(object):
         self.execution_log("\nDone.\n", "PINK", log_level_limit=1)
 
     def create_migration(self):
-        # TODO: create file in the migrations directory, not in current
-        new_file = Migration.create(self.config.get("new_migration"))
+        migrations_dir = self.config.get("migrations_dir")
+        new_file = Migration.create(self.config.get("new_migration"), migrations_dir[0], self.config.get("db_script_encoding", "utf-8"))
         self.execution_log("- Created file '%s'" % (new_file), log_level_limit=1)
 
     def migrate(self):
