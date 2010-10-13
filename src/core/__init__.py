@@ -41,8 +41,8 @@ class Migration(object):
 
         try:
             mod = imp.load_source(self.file_name, self.abspath)
-            SQL_UP = self._check_sql_unicode(mod.SQL_UP)
-            SQL_DOWN = self._check_sql_unicode(mod.SQL_DOWN)
+            SQL_UP = Migration.check_sql_unicode(mod.SQL_UP, self.script_encoding)
+            SQL_DOWN = Migration.check_sql_unicode(mod.SQL_DOWN, self.script_encoding)
         except Exception:
             try:
                 f = open(self.abspath, "rU")
@@ -56,8 +56,8 @@ class Migration(object):
 
                 mod = imp.load_source(self.file_name, temp_abspath)
 
-                SQL_UP = self._check_sql_unicode(mod.SQL_UP)
-                SQL_DOWN = self._check_sql_unicode(mod.SQL_DOWN)
+                SQL_UP = Migration.check_sql_unicode(mod.SQL_UP, self.script_encoding)
+                SQL_DOWN = Migration.check_sql_unicode(mod.SQL_DOWN, self.script_encoding)
 
             except Exception:
                 f = codecs.open(self.abspath, "rU", self.script_encoding)
@@ -90,9 +90,13 @@ class Migration(object):
 
         return SQL_UP, SQL_DOWN
 
-    def _check_sql_unicode(self, sql):
+    @staticmethod
+    def check_sql_unicode(sql, script_encoding):
+        if not sql or not script_encoding:
+            return ""
+
         try:
-            sql = unicode(sql.decode(self.script_encoding))
+            sql = unicode(sql.decode(script_encoding))
         except UnicodeEncodeError:
             sql = unicode(sql)
         return sql

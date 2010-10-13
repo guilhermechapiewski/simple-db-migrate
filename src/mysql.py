@@ -177,8 +177,8 @@ class MySQL(object):
             migration = Migration(id = int(migration_db[0]),
                                   version = str(migration_db[1]),
                                   file_name = str(migration_db[2]),
-                                  sql_up = str(migration_db[3]),
-                                  sql_down = str(migration_db[4]))
+                                  sql_up = Migration.check_sql_unicode(migration_db[3], self.__mysql_script_encoding),
+                                  sql_down = Migration.check_sql_unicode(migration_db[4], self.__mysql_script_encoding))
             migrations.append(migration)
         db.close()
         return migrations
