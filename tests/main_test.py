@@ -1,8 +1,8 @@
 from mox import Mox
 import unittest
 
-from main import *
-from core import Migration
+from simple_db_migrate.main import *
+from simple_db_migrate.core import Migration
 
 class MainTest(unittest.TestCase):
 
@@ -61,7 +61,7 @@ class MainTest(unittest.TestCase):
         mox.VerifyAll()
 
     def test_it_should_create_new_migration(self):
-        import core
+        from simple_db_migrate import core
         from time import strftime
 
         mox = Mox()

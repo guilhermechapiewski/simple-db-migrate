@@ -1,7 +1,7 @@
 import codecs
 import unittest
 
-from config import *
+from simple_db_migrate.config import *
 
 class ConfigTest(unittest.TestCase):
     

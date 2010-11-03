@@ -2,8 +2,8 @@ from mox import Mox, MockObject
 import os
 import unittest
 
-from config import *
-from mysql import *
+from simple_db_migrate.config import *
+from simple_db_migrate.mysql import *
 
 class MySQLTest(unittest.TestCase):
 

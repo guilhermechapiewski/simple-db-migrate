@@ -4,8 +4,8 @@ import os
 import stubs
 import unittest
 
-from config import *
-from core import *
+from simple_db_migrate.config import *
+from simple_db_migrate.core import *
 
 def create_file(file_name, content=None):
     f = codecs.open(file_name, 'w', 'utf-8')

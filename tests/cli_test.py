@@ -1,6 +1,6 @@
 import unittest
 
-from cli import *
+from simple_db_migrate.cli import *
 
 class CLITest(unittest.TestCase):
 

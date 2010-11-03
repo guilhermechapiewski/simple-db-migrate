@@ -14,21 +14,21 @@ help:
 
 clean:
 	@echo "Cleaning..."
-	@rm -rf build dist src/simple_db_migrate.egg-info simple_db_migrate.egg-info *.pyc **/*.pyc *~ *.migration *.foo
+	@rm -rf build dist simple_db_migrate.egg-info *.pyc **/*.pyc *~ *.migration *.foo
 	@#removing test temp files
 	@rm -rf `date +%Y`*
 
 compile: clean
 	@echo "Compiling source code..."
-	@rm -rf src/*.pyc
+	@rm -rf simple_db_migrate/*.pyc
 	@rm -rf tests/*.pyc
-	@python -tt -m compileall src
+	@python -tt -m compileall simple_db_migrate
 	@python -tt -m compileall tests
 
 test: compile
 	@make clean
 	@echo "Starting tests..."
-	@nosetests -s --verbose --with-coverage --cover-erase --cover-package=cli,config,core,helpers,main,mysql tests/*
+	@nosetests -s --verbose --with-coverage --cover-erase --cover-package=simple_db_migrate tests
 	@make clean
 
 install:

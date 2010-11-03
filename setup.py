@@ -1,13 +1,12 @@
 from setuptools import setup, find_packages
 import re
 
-import src
+import simple_db_migrate
 
 setup(
     name = "simple-db-migrate",
-    version = src.SIMPLE_DB_MIGRATE_VERSION,
-    packages = ["simple_db_migrate", "simple_db_migrate.core"],
-    package_dir = {"simple_db_migrate": "src"},
+    version = simple_db_migrate.SIMPLE_DB_MIGRATE_VERSION,
+    packages = find_packages(),
     author = "Guilherme Chapiewski",
     author_email = "guilherme.chapiewski@gmail.com",
     description = "simple-db-migrate is a database versioning and migration tool inspired on Rails Migrations.",
