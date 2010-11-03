@@ -123,6 +123,7 @@ class InPlaceConfigTest(unittest.TestCase):
         self.assertEquals(config.get('db_name'), 'db')
         self.assertEquals(config.get('db_version_table'), Config.DB_VERSION_TABLE)
         self.assertEquals(config.get('migrations_dir'), [os.path.abspath('dir')])
+        self.assertEquals(config.get('log_dir'), '')
     
     def test_it_should_stop_execution_when_an_invalid_key_is_requested(self):
         config = InPlaceConfig('localhost', 'user', 'passwd', 'db', 'dir')
@@ -148,6 +149,7 @@ class InPlaceConfigTest(unittest.TestCase):
         config = InPlaceConfig('localhost', 'user', 'passwd', 'db', 'dir')
         config.put('sample_config', 'TEST')
         self.assertRaises(Exception, config.put, 'sample_config', 'TEST')
+        
 
 if __name__ == '__main__':
     unittest.main()
