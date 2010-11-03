@@ -173,10 +173,8 @@ class MigrationTest(unittest.TestCase):
         assert migration.abspath == os.path.abspath('./20090727104700_sample_migration.migration')
 
     def test_it_should_get_basic_properties_when_path_is_relative3(self):
-        # dir changes depending on where you run the tests from (make or TextMate) :(
-        dir = 'tests' if os.path.abspath('.').endswith('tests') else 'simple-db-migrate'
-        
-        migration = Migration(file='../%s/20090727104700_sample_migration.migration' % dir)
+        here = os.path.dirname(os.path.relpath(__file__))
+        migration = Migration(file='%s/../../20090727104700_sample_migration.migration' % here)
         assert migration.version == '20090727104700'
         assert migration.file_name == '20090727104700_sample_migration.migration'
         assert migration.abspath == os.path.abspath('./20090727104700_sample_migration.migration')
