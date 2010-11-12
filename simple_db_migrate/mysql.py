@@ -56,14 +56,27 @@ class MySQL(object):
 
         return execution_log
 
-    def __change_db_version(self, version, migration_file_name, sql_up, sql_down, up=True):
+    def __change_db_version(self, version, migration_file_name, sql_up, sql_down, up=True, execution_log=None):
         if up:
             # moving up and storing history
             sql = "insert into %s (version, name, sql_up, sql_down) values (\"%s\", \"%s\", \"%s\", \"%s\");" % (self.__version_table, str(version), migration_file_name, sql_up.replace('"', '\\"'), sql_down.replace('"', '\\"'))
         else:
             # moving down and deleting from history
             sql = "delete from %s where version = \"%s\";" % (self.__version_table, str(version))
-        self.__execute(sql)
+
+        db = self.__mysql_connect()
+        cursor = db.cursor()
+        cursor._defer_warnings = True
+        try:
+            cursor.execute(sql.encode(self.__mysql_script_encoding))
+            if execution_log:
+                execution_log("migration %s registered\n" % (migration_file_name))
+        except Exception, e:
+            raise MigrationException("error logging migration: %s" % e, migration_file_name)
+        finally:
+            cursor.close()
+            db.commit()
+            db.close()
 
     def _parse_sql_statements(self, migration_sql):
         all_statements = []
@@ -136,7 +149,7 @@ class MySQL(object):
 
     def change(self, sql, new_db_version, migration_file_name, sql_up, sql_down, up=True, execution_log=None):
         self.__execute(sql, execution_log)
-        self.__change_db_version(new_db_version, migration_file_name, sql_up, sql_down, up)
+        self.__change_db_version(new_db_version, migration_file_name, sql_up, sql_down, up, execution_log)
 
     def get_current_schema_version(self):
         db = self.__mysql_connect()

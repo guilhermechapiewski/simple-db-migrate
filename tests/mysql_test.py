@@ -191,7 +191,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         db_mock.select_db('migration_test')
         db_mock.cursor().AndReturn(cursor_mock)
 
-        cursor_mock.execute('insert into __db_version__ (version, name, sql_up, sql_down) values ("20090212112104", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam();", "drop table spam;")')
+        cursor_mock.execute('insert into __db_version__ (version, name, sql_up, sql_down) values ("20090212112104", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam();", "drop table spam;");')
         cursor_mock.close()
 
         db_mock.commit()
@@ -265,7 +265,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         db_mock.select_db('migration_test')
         db_mock.cursor().AndReturn(cursor_mock)
 
-        cursor_mock.execute('delete from __db_version__ where version = "20090212112104"')
+        cursor_mock.execute('delete from __db_version__ where version = "20090212112104";')
         cursor_mock.close()
 
         db_mock.commit()
