@@ -46,6 +46,12 @@ class CLI(object):
                 default=None,
                 help="Directory to save the log files of execution")
 
+        self.__parser.add_option("--force-files", "--force-use-files-on-down",
+                action="store_true",
+                dest="force_use_files_on_down",
+                default=False,
+                help="Forces the use of the migration files instead of using the field sql_down stored on the version table in database downgrade operations ")
+
         self.__parser.add_option("-m", "--migration",
                 dest="schema_version",
                 default=None,

@@ -66,8 +66,9 @@ class Main(object):
         destination_version_id = self.mysql.get_version_id_from_version_number(destination_version)
         migrations = self.mysql.get_all_schema_migrations()
         down_migrations_to_execute = [migration for migration in migrations if migration.id > destination_version_id]
+        force_files = self.config.get("force_use_files_on_down", False)
         for migration in down_migrations_to_execute:
-            if not migration.sql_down:
+            if not migration.sql_down or force_files:
                 if migration.version not in migration_versions:
                     raise Exception("impossible to migrate down: one of the versions was not found (%s)" % migration.version)
                 migration_tmp = self.db_migrate.get_migration_from_version_number(migration.version)
