@@ -47,7 +47,7 @@ class Main(object):
         if destination_version is None:
             destination_version = self.db_migrate.latest_version_available()
 
-        if destination_version is not '0' and not self.db_migrate.check_if_version_exists(destination_version):
+        if destination_version is not '0' and not (self.db_migrate.check_if_version_exists(destination_version) or self.mysql.get_version_id_from_version_number(destination_version)):
             raise Exception("version not found (%s)" % destination_version)
 
         return destination_version

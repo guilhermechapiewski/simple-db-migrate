@@ -156,6 +156,7 @@ class MainTest(unittest.TestCase):
     def test_it_should_raise_exception_when_get_destination_version_and_version_does_not_exist(self):
         mox = Mox()
         mysql_mock = mox.CreateMockAnything()
+        mysql_mock.get_version_id_from_version_number('20090810170300').AndReturn(None)
         db_migrate_mock = mox.CreateMockAnything()
         db_migrate_mock.latest_version_available().AndReturn("20090810170300")
         db_migrate_mock.check_if_version_exists("20090810170300").AndReturn(False)
@@ -163,7 +164,13 @@ class MainTest(unittest.TestCase):
         mox.ReplayAll()
 
         main = Main(config={}, mysql=mysql_mock, db_migrate=db_migrate_mock)
-        self.assertRaises(Exception, main.get_destination_version)
+        try:
+            main.get_destination_version()
+            self.fail("it should not pass here")
+        except AssertionError, e:
+            raise e
+        except Exception, e:
+            self.assertEqual(str(e), "version not found (20090810170300)")
 
         mox.VerifyAll()
 
@@ -288,7 +295,7 @@ class MainTest(unittest.TestCase):
 
         mox.VerifyAll()
 
-    def test_it_should_show_an_error_message_if_tries_to_migrate_down_and_migration_file_does_not_exists(self):
+    def test_it_should_show_an_error_message_if_tries_to_migrate_down_and_migration_file_does_not_exists_and_is_on_database_with_sql_down_empty(self):
         database_versions = self.database_versions
         migration_files_versions = [] #empty
         is_migration_up = False
@@ -297,19 +304,147 @@ class MainTest(unittest.TestCase):
         mox = Mox()
         mysql_mock = mox.CreateMockAnything()
         mysql_mock.get_all_schema_versions().AndReturn(database_versions)
+        mysql_mock.get_version_id_from_version_number('20090211120001').AndReturn(1)
+        migration = Migration(id=12, version="20090212120000", file_name="20090212120000", sql_up="sql_up", sql_down="")
+        mysql_mock.get_all_schema_migrations().AndReturn([migration])
 
         db_migrate_mock = mox.CreateMockAnything()
         db_migrate_mock.get_all_migration_versions().AndReturn(migration_files_versions)
 
         mox.ReplayAll()
-        main = Main(mysql=mysql_mock, db_migrate=db_migrate_mock)
 
-        # execute stuff
+        main = Main(mysql=mysql_mock, db_migrate=db_migrate_mock)
         try:
-            migrations_to_be_executed = main.get_migration_files_to_be_executed("20090212120000", "20090211120001", is_migration_up)
+            main.get_migration_files_to_be_executed("20090212120000", "20090211120001", is_migration_up)
             self.fail("it should not pass here")
-        except:
-            pass
+        except AssertionError, e:
+            raise e
+        except Exception, e:
+            self.assertEqual(str(e), "impossible to migrate down: one of the versions was not found (20090212120000)")
+
+        mox.VerifyAll()
+
+    def test_it_should_fail_if_try_to_do_migration_to_a_non_existing_migration_file_or_database_version(self):
+        config_mock = {"schema_version":"20090211120006"}
+
+        # mocking stuff
+        mox = Mox()
+        mysql_mock = mox.CreateMockAnything()
+        mysql_mock.get_version_id_from_version_number('20090211120006').AndReturn(None)
+
+        db_migrate_mock = mox.CreateMockAnything()
+        db_migrate_mock.check_if_version_exists('20090211120006').AndReturn(False)
+
+        mox.ReplayAll()
+
+        main = Main(config=config_mock, mysql=mysql_mock, db_migrate=db_migrate_mock)
+        try:
+            main.execute()
+            self.fail("it should not pass here")
+        except AssertionError, e:
+            raise e
+        except Exception, e:
+            self.assertEqual(str(e), "version not found (20090211120006)")
+
+        mox.VerifyAll()
+
+    def test_it_should_success_if_try_to_do_migration_up_to_a_existing_migration_file(self):
+        config_mock = {"schema_version":"20090212120006"}
+        database_versions = self.database_versions
+        migration_files_versions = database_versions[:]
+        migration_files_versions.append("20090212120006")
+
+        class MainMock(Main):
+            def get_migration_files_to_be_executed(self, current_version, destination_version, is_migration_up):
+                assert current_version == "20090212120000"
+                assert destination_version == "20090212120006"
+                assert is_migration_up == True
+
+        # mocking stuff
+        mox = Mox()
+        mysql_mock = mox.CreateMockAnything()
+        mysql_mock.get_current_schema_version().AndReturn("20090212120000")
+        mysql_mock.get_version_id_from_version_number('20090212120006').AndReturn(None)
+
+        db_migrate_mock = mox.CreateMockAnything()
+        db_migrate_mock.check_if_version_exists('20090212120006').AndReturn(True)
+
+        mox.ReplayAll()
+
+        main = MainMock(config=config_mock, mysql=mysql_mock, db_migrate=db_migrate_mock)
+        main.execute()
+
+        mox.VerifyAll()
+
+    def test_it_should_fail_if_try_to_do_migration_down_and_one_of_the_migrations_to_execute_is_a_non_existing_migration_file_and_is_on_database_with_sql_down_empty(self):
+        config_mock = {"schema_version":"20090211120003"}
+
+        database_versions = self.database_versions
+        is_migration_up = True
+
+        migration_files_versions = []
+
+        # mocking stuff
+        mox = Mox()
+        mysql_mock = mox.CreateMockAnything()
+        mysql_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
+        mysql_mock.get_current_schema_version().AndReturn("20090211120005")
+        mysql_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
+        mysql_mock.get_version_id_from_version_number('20090211120005').AndReturn(self.migration_20090211120005.id)
+        mysql_mock.get_all_schema_versions().AndReturn(database_versions)
+        mysql_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
+
+        migration3 = Migration(id=13, version="20090211120003", sql_down=None)
+        migration5 = Migration(id=15, version="20090211120005", sql_down=None)
+        mysql_mock.get_all_schema_migrations().AndReturn([migration3, migration5])
+
+        db_migrate_mock = mox.CreateMockAnything()
+        db_migrate_mock.check_if_version_exists('20090211120003').AndReturn(False)
+        db_migrate_mock.get_all_migration_versions().AndReturn(migration_files_versions)
+
+        mox.ReplayAll()
+
+        main = Main(config=config_mock, mysql=mysql_mock, db_migrate=db_migrate_mock)
+        try:
+            main.execute()
+            self.fail("it should not pass here")
+        except AssertionError, e:
+            raise e
+        except Exception, e:
+            self.assertEqual(str(e), "impossible to migrate down: one of the versions was not found (20090211120005)")
+
+        mox.VerifyAll()
+
+    def test_it_should_pass_if_try_to_do_migration_down_to_a_non_existing_migration_file_wich_is_on_database_with_sql_down_empty(self):
+        config_mock = {"schema_version":"20090211120003", "show_sql_only":True}
+
+        database_versions = self.database_versions
+        is_migration_up = True
+
+        migration_files_versions = []
+
+        # mocking stuff
+        mox = Mox()
+        mysql_mock = mox.CreateMockAnything()
+        mysql_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
+        mysql_mock.get_current_schema_version().AndReturn("20090211120005")
+        mysql_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
+        mysql_mock.get_version_id_from_version_number('20090211120005').AndReturn(self.migration_20090211120005.id)
+        mysql_mock.get_all_schema_versions().AndReturn(database_versions)
+        mysql_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
+
+        migration3 = Migration(id=13, version="20090211120003", sql_down=None)
+        migration5 = Migration(id=15, version="20090211120005", sql_down="sql_down")
+        mysql_mock.get_all_schema_migrations().AndReturn([migration3, migration5])
+
+        db_migrate_mock = mox.CreateMockAnything()
+        db_migrate_mock.check_if_version_exists('20090211120003').AndReturn(False)
+        db_migrate_mock.get_all_migration_versions().AndReturn(migration_files_versions)
+
+        mox.ReplayAll()
+
+        main = Main(config=config_mock, mysql=mysql_mock, db_migrate=db_migrate_mock)
+        main.execute()
 
         mox.VerifyAll()
 
