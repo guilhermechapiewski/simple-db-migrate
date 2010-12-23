@@ -53,6 +53,8 @@ class Main(object):
         return destination_version
 
     def get_migration_files_to_be_executed(self, current_version, destination_version, is_migration_up):
+        if current_version == destination_version and not self.config.get("force_execute_old_migrations_versions", False):
+            return []
         mysql_versions = self.mysql.get_all_schema_versions()
         migration_versions = self.db_migrate.get_all_migration_versions()
 

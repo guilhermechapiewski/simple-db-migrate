@@ -46,6 +46,12 @@ class CLI(object):
                 default=None,
                 help="Directory to save the log files of execution")
 
+        self.__parser.add_option("--force-old-migrations", "--force-execute-old-migrations-versions",
+                action="store_true",
+                dest="force_execute_old_migrations_versions",
+                default=False,
+                help="Forces the use of the old migration files even if the destination version is the same as current destination ")
+
         self.__parser.add_option("--force-files", "--force-use-files-on-down",
                 action="store_true",
                 dest="force_use_files_on_down",

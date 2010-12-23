@@ -208,7 +208,33 @@ class MainTest(unittest.TestCase):
 
         mox.VerifyAll()
 
+    def test_it_should_not_get_any_migration_files_to_be_executed_considering_database_version_when_migrating_up_and_current_destination_versions_are_the_same(self):
+        database_versions = self.database_versions
+        is_migration_up = True
+
+        migration_files_versions = database_versions[:]
+        migration_files_versions.append("20090211120005")
+        migration_files_versions.append("20090211120006")
+
+        # mocking stuff
+        mox = Mox()
+        mysql_mock = mox.CreateMockAnything()
+
+        db_migrate_mock = mox.CreateMockAnything()
+
+        mox.ReplayAll()
+
+        main = Main(mysql=mysql_mock, db_migrate=db_migrate_mock)
+
+        # execute stuff
+        migrations_to_be_executed = main.get_migration_files_to_be_executed("20090212120000", "20090212120000", is_migration_up)
+
+        self.assertEquals(len(migrations_to_be_executed), 0)
+
+        mox.VerifyAll()
+
     def test_it_should_get_all_migration_files_that_must_be_executed_considering_database_version_when_migrating_up_and_current_destination_versions_are_the_same(self):
+        config_mock = {"force_execute_old_migrations_versions": True}
         database_versions = self.database_versions
         is_migration_up = True
 
@@ -228,7 +254,7 @@ class MainTest(unittest.TestCase):
 
         mox.ReplayAll()
 
-        main = Main(mysql=mysql_mock, db_migrate=db_migrate_mock)
+        main = Main(config=config_mock, mysql=mysql_mock, db_migrate=db_migrate_mock)
 
         # execute stuff
         migrations_to_be_executed = main.get_migration_files_to_be_executed("20090212120000", "20090212120000", is_migration_up)
@@ -250,10 +276,8 @@ class MainTest(unittest.TestCase):
         # mocking stuff
         mox = Mox()
         mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_all_schema_versions().AndReturn(database_versions)
 
         db_migrate_mock = mox.CreateMockAnything()
-        db_migrate_mock.get_all_migration_versions().AndReturn(migration_files_versions)
 
         mox.ReplayAll()
 

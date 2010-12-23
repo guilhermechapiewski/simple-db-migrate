@@ -6,7 +6,7 @@ from cli import CLI
 from config import FileConfig
 from main import Main
 
-SIMPLE_DB_MIGRATE_VERSION = '1.3.9.4'
+SIMPLE_DB_MIGRATE_VERSION = '1.3.9.5'
 
 # fixing print in non-utf8 terminals
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
@@ -33,6 +33,7 @@ def run():
         config.put('paused_mode', options.paused_mode)
         config.put('log_dir', options.log_dir)
         config.put('force_use_files_on_down', options.force_use_files_on_down)
+        config.put('force_execute_old_migrations_versions', options.force_execute_old_migrations_versions)
 
         # paused mode forces log_level to 2
         log_level = int(options.log_level)
