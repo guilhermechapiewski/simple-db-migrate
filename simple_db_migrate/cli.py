@@ -104,6 +104,10 @@ class CLI(object):
                 default=False,
                 help="Show all SQL statements that would be executed but DON'T execute them in the database.")
 
+        self.__parser.add_option("--label",
+                dest="label_version",
+                help="Give this label the last migration executed or execute a down to him.")
+
     def get_parser(self):
         return self.__parser
 
