@@ -144,6 +144,14 @@ class MySQL(object):
             # update version table
             sql = "alter table %s add column id int(11)  not null auto_increment first, add column name varchar(255), add column sql_up longtext, add column sql_down longtext, add primary key (id);" % self.__version_table
             self.__execute(sql)
+
+        try:
+            cursor.execute("select label from %s;" % self.__version_table)
+        except Exception:
+            # update version table
+            sql = "alter table %s add column label varchar(255) after version;" % self.__version_table
+            self.__execute(sql)
+
         cursor.close()
         db.close()
 
