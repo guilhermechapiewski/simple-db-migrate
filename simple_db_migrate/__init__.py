@@ -32,6 +32,7 @@ def run():
         config.put('drop_db_first', options.drop_db_first)
         config.put('paused_mode', options.paused_mode)
         config.put('log_dir', options.log_dir)
+        config.put('label_version', options.label_version)
         config.put('force_use_files_on_down', options.force_use_files_on_down)
         config.put('force_execute_old_migrations_versions', options.force_execute_old_migrations_versions)
 
