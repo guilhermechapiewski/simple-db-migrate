@@ -56,10 +56,14 @@ class MySQL(object):
 
         return execution_log
 
-    def __change_db_version(self, version, migration_file_name, sql_up, sql_down, up=True, execution_log=None):
+    def __change_db_version(self, version, migration_file_name, sql_up, sql_down, up=True, execution_log=None, label_version=None):
         if up:
+            if not label_version:
+                label_version = "NULL"
+            else:
+                label_version = "\"%s\"" % (str(label_version))
             # moving up and storing history
-            sql = "insert into %s (version, name, sql_up, sql_down) values (\"%s\", \"%s\", \"%s\", \"%s\");" % (self.__version_table, str(version), migration_file_name, sql_up.replace('"', '\\"'), sql_down.replace('"', '\\"'))
+            sql = "insert into %s (version, label, name, sql_up, sql_down) values (\"%s\", %s, \"%s\", \"%s\", \"%s\");" % (self.__version_table, str(version), label_version, migration_file_name, sql_up.replace('"', '\\"'), sql_down.replace('"', '\\"'))
         else:
             # moving down and deleting from history
             sql = "delete from %s where version = \"%s\";" % (self.__version_table, str(version))
@@ -149,15 +153,15 @@ class MySQL(object):
             cursor.execute("select label from %s;" % self.__version_table)
         except Exception:
             # update version table
-            sql = "alter table %s add column label varchar(255) after version;" % self.__version_table
+            sql = "alter table %s add column label varchar(255) after version, add unique key (label);" % self.__version_table
             self.__execute(sql)
 
         cursor.close()
         db.close()
 
-    def change(self, sql, new_db_version, migration_file_name, sql_up, sql_down, up=True, execution_log=None):
+    def change(self, sql, new_db_version, migration_file_name, sql_up, sql_down, up=True, execution_log=None, label_version=None):
         self.__execute(sql, execution_log)
-        self.__change_db_version(new_db_version, migration_file_name, sql_up, sql_down, up, execution_log)
+        self.__change_db_version(new_db_version, migration_file_name, sql_up, sql_down, up, execution_log, label_version)
 
     def get_current_schema_version(self):
         db = self.__mysql_connect()
@@ -188,18 +192,28 @@ class MySQL(object):
         db.close()
         return id
 
+    def get_version_number_from_label(self, label):
+        db = self.__mysql_connect()
+        cursor = db.cursor()
+        cursor.execute("select version from %s where label = '%s';" % (self.__version_table, label))
+        result = cursor.fetchone()
+        version = result and result[0] or None
+        db.close()
+        return version
+
     def get_all_schema_migrations(self):
         migrations = []
         db = self.__mysql_connect()
         cursor = db.cursor()
-        cursor.execute("select id, version, name, sql_up, sql_down from %s order by id;" % self.__version_table)
+        cursor.execute("select id, version, label, name, sql_up, sql_down from %s order by id;" % self.__version_table)
         all_migrations = cursor.fetchall()
         for migration_db in all_migrations:
             migration = Migration(id = int(migration_db[0]),
-                                  version = str(migration_db[1]),
-                                  file_name = str(migration_db[2]),
-                                  sql_up = Migration.check_sql_unicode(migration_db[3], self.__mysql_script_encoding),
-                                  sql_down = Migration.check_sql_unicode(migration_db[4], self.__mysql_script_encoding))
+                                  version = migration_db[1] and str(migration_db[1]) or None,
+                                  label = migration_db[2] and str(migration_db[2]) or None,
+                                  file_name = migration_db[3] and str(migration_db[3]) or None,
+                                  sql_up = Migration.check_sql_unicode(migration_db[4], self.__mysql_script_encoding),
+                                  sql_down = Migration.check_sql_unicode(migration_db[5], self.__mysql_script_encoding))
             migrations.append(migration)
         db.close()
         return migrations

@@ -142,7 +142,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         self.db_mock.commit()
         self.db_mock.close()
 
-        self.cursor_mock.execute('insert into __db_version__ (version, name, sql_up, sql_down) values ("20090212112104", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam();", "drop table spam;");')
+        self.cursor_mock.execute('insert into __db_version__ (version, label, name, sql_up, sql_down) values ("20090212112104", NULL, "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam();", "drop table spam;");')
         self.cursor_mock.close()
 
         self.db_mock.set_character_set('utf8')
@@ -224,6 +224,36 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         self.assertEquals(len(expected_versions), len(schema_versions))
         for version in schema_versions:
             self.assertTrue(version in expected_versions)
+
+        self.mox.VerifyAll()
+
+    def test_it_should_get_all_schema_migrations(self):
+        expected_versions = []
+        expected_versions.append([1, "0", None, None, None, None])
+        expected_versions.append([2, "20090211120001", "label", "20090211120001_name", "sql_up", "sql_down"])
+
+        self.cursor_mock.execute('select id, version, label, name, sql_up, sql_down from __db_version__ order by id;')
+        self.cursor_mock.fetchall().AndReturn(tuple(expected_versions))
+
+        self.db_mock.set_character_set('utf8')
+        self.db_mock.select_db('migration_test')
+        self.db_mock.cursor().AndReturn(self.cursor_mock)
+        self.db_mock.close()
+
+        self.mox.ReplayAll()
+
+        mysql = MySQL(self.config_mock, self.mysql_driver_mock)
+
+        schema_migrations = mysql.get_all_schema_migrations()
+
+        self.assertEquals(len(expected_versions), len(schema_migrations))
+        for index, migration in enumerate(schema_migrations):
+            self.assertEqual(migration.id, expected_versions[index][0])
+            self.assertEqual(migration.version, expected_versions[index][1])
+            self.assertEqual(migration.label, expected_versions[index][2])
+            self.assertEqual(migration.file_name, expected_versions[index][3])
+            self.assertEqual(migration.sql_up, expected_versions[index][4] and expected_versions[index][4] or "")
+            self.assertEqual(migration.sql_down, expected_versions[index][5] and expected_versions[index][5] or "")
 
         self.mox.VerifyAll()
 
@@ -385,7 +415,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         cursor_mock.execute('select label from __db_version__;').AndRaise(Exception("Don't have label field"))
 
-        cursor_mock.execute('alter table __db_version__ add column label varchar(255) after version')
+        cursor_mock.execute('alter table __db_version__ add column label varchar(255) after version, add unique key (label)')
         cursor_mock.close()
 
         db_mock.set_character_set('utf8')
