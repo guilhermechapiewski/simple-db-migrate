@@ -11,11 +11,12 @@ class Config(object):
     def __repr__(self):
         return str(self._config)
 
-    def get(self, config_key, default_value=None):
+    #default_value was assigned as !@#$%&* to be more easy to check when the default value is None, empty string or False
+    def get(self, config_key, default_value='!@#$%&*'):
         try:
             return self._config[config_key]
         except KeyError:
-            if default_value:
+            if default_value != '!@#$%&*':
                 return default_value
             raise Exception("invalid configuration key ('%s')" % config_key)
 
