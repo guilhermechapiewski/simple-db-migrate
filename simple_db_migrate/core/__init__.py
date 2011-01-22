@@ -13,13 +13,14 @@ class Migration(object):
     MIGRATION_FILES_MASK = r"[0-9]{14}\w+%s$" % MIGRATION_FILES_EXTENSION
     TEMPLATE = '#-*- coding:%s -*-\nSQL_UP = u"""\n\n"""\n\nSQL_DOWN = u"""\n\n"""\n'
 
-    def __init__(self, file=None, id=0, file_name="", version="", sql_up="", sql_down="", script_encoding="utf-8"):
+    def __init__(self, file=None, id=0, file_name="", version="", label=None, sql_up="", sql_down="", script_encoding="utf-8"):
         self.id = id
         self.file_name = file_name
         self.version = version
         self.sql_up = sql_up
         self.sql_down = sql_down
         self.script_encoding = script_encoding
+        self.label = label
         if file:
             file_name = os.path.split(file)[1]
             if not Migration.is_file_name_valid(file_name):
