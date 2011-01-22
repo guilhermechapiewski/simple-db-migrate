@@ -120,7 +120,7 @@ class MySQL(object):
 
     def _create_version_table_if_not_exists(self):
         # create version table
-        sql = "create table if not exists %s ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default \"0\", name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id));" % self.__version_table
+        sql = "create table if not exists %s ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default \"0\", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id), UNIQUE KEY (label));" % self.__version_table
         self.__execute(sql)
 
         self._check_version_table_if_is_updated()
@@ -215,5 +215,6 @@ class MySQL(object):
                                   sql_up = Migration.check_sql_unicode(migration_db[4], self.__mysql_script_encoding),
                                   sql_down = Migration.check_sql_unicode(migration_db[5], self.__mysql_script_encoding))
             migrations.append(migration)
+        cursor.close()
         db.close()
         return migrations

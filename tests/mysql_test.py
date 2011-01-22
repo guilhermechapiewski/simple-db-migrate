@@ -36,7 +36,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         db_mock.close()
 
         cursor_mock = mox.CreateMockAnything()
-        cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))')
+        cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id), UNIQUE KEY (label))')
         cursor_mock.close()
 
         db_mock.set_character_set('utf8')
@@ -90,7 +90,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         db_mock.query('create database if not exists migration_test;')
         db_mock.close()
 
-        cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))')
+        cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id), UNIQUE KEY (label))')
         cursor_mock.close()
 
         db_mock.set_character_set('utf8')
@@ -234,6 +234,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         self.cursor_mock.execute('select id, version, label, name, sql_up, sql_down from __db_version__ order by id;')
         self.cursor_mock.fetchall().AndReturn(tuple(expected_versions))
+        self.cursor_mock.close()
 
         self.db_mock.set_character_set('utf8')
         self.db_mock.select_db('migration_test')
@@ -335,7 +336,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         db_mock.close()
 
         cursor_mock = mox.CreateMockAnything()
-        cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))')
+        cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id), UNIQUE KEY (label))')
         cursor_mock.close()
 
         db_mock.set_character_set('utf8')
@@ -398,7 +399,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         db_mock.close()
 
         cursor_mock = mox.CreateMockAnything()
-        cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))')
+        cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id), UNIQUE KEY (label))')
         cursor_mock.close()
 
         db_mock.set_character_set('utf8')
@@ -463,7 +464,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         db_mock.query('create database if not exists migration_test;')
         db_mock.close()
 
-        cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))')
+        cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id), UNIQUE KEY (label))')
         cursor_mock.close()
 
         db_mock.set_character_set('utf8')

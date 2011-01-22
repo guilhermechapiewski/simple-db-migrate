@@ -6,25 +6,27 @@ from mysql import MySQL
 
 class Main(object):
 
-    def __init__(self, config=None, mysql=None, db_migrate=None):
+    def __init__(self, config=None, mysql=None, db_migrate=None, execution_log=None):
         self.cli = CLI()
         self.config = config or {}
-        self.log = LOG(self.config.get("log_dir"))
+        self.log = LOG(self.config.get("log_dir", None))
 
         self.mysql = mysql
-        if self.mysql is None and not self.config.get("new_migration"):
+        if self.mysql is None and not self.config.get("new_migration", None):
             self.mysql = MySQL(config)
 
         self.db_migrate = db_migrate or SimpleDBMigrate(config)
+        if execution_log:
+            self.execution_log = execution_log
 
     def execution_log(self, msg, color="CYAN", log_level_limit=2):
-        if self.config.get("log_level") >= log_level_limit:
+        if self.config.get("log_level", 1) >= log_level_limit:
             self.cli.msg(msg)
         self.log.debug(msg)
 
     def execute(self):
         self.execution_log("\nStarting DB migration...", "PINK", log_level_limit=1)
-        if self.config.get("new_migration"):
+        if self.config.get("new_migration", None):
             self.create_migration()
         else:
             self.migrate()
@@ -32,7 +34,7 @@ class Main(object):
 
     def create_migration(self):
         migrations_dir = self.config.get("migrations_dir")
-        new_file = Migration.create(self.config.get("new_migration"), migrations_dir[0], self.config.get("db_script_encoding", "utf-8"))
+        new_file = Migration.create(self.config.get("new_migration", None), migrations_dir[0], self.config.get("db_script_encoding", "utf-8"))
         self.execution_log("- Created file '%s'" % (new_file), log_level_limit=1)
 
     def migrate(self):
@@ -43,9 +45,46 @@ class Main(object):
         self.execute_migrations(current_version, destination_version)
 
     def get_destination_version(self):
-        destination_version = self.config.get("schema_version")
-        if destination_version is None:
-            destination_version = self.db_migrate.latest_version_available()
+        label_version = self.config.get("label_version", None)
+        schema_version = self.config.get("schema_version", None)
+
+        destination_version = None
+        destination_version_by_label = None
+        destination_version_by_schema = None
+
+        if label_version is not None:
+            destination_version_by_label = self.mysql.get_version_number_from_label(label_version)
+            """
+            if specified label exists at database and schema version was not specified,
+            is equivalent to run simple-db-migrate with schema_version equals to the version with specified label
+            """
+            if destination_version_by_label is not None and schema_version is None:
+                schema_version = destination_version_by_label
+                self.config.remove("schema_version")
+                self.config.put("schema_version", destination_version_by_label)
+
+
+        if schema_version is not None and self.mysql.get_version_id_from_version_number(schema_version):
+            destination_version_by_schema = schema_version
+
+        if label_version is None:
+            if schema_version is None:
+                destination_version = self.db_migrate.latest_version_available()
+            elif destination_version_by_schema is None:
+                destination_version = schema_version
+            else:
+                destination_version = destination_version_by_schema
+        else:
+            if schema_version is None:
+                destination_version = self.db_migrate.latest_version_available()
+            elif (destination_version_by_label is None) or (destination_version_by_schema == destination_version_by_label):
+                destination_version = schema_version
+
+        if (destination_version_by_schema is not None) and (destination_version_by_label is not None) and (destination_version_by_schema != destination_version_by_label):
+            raise Exception("label (%s) and schema_version (%s) don't correspond to the same version at database" % (label_version, schema_version))
+
+        if (schema_version is not None and label_version is not None) and ((destination_version_by_schema is not None and destination_version_by_label is None) or (destination_version_by_schema is None and destination_version_by_label is not None)):
+            raise Exception("label (%s) or schema_version (%s), only one of them exists in the database" % (label_version, schema_version))
 
         if destination_version is not '0' and not (self.db_migrate.check_if_version_exists(destination_version) or self.mysql.get_version_id_from_version_number(destination_version)):
             raise Exception("version not found (%s)" % destination_version)
@@ -119,32 +158,33 @@ class Main(object):
         self.execution_log("- Destination version is: %s" % (is_migration_up and migrations_to_be_executed[-1].version or destination_version), "GREEN", log_level_limit=1)
 
         up_down_label = is_migration_up and "up" or "down"
-        if self.config.get("show_sql_only"):
+        if self.config.get("show_sql_only", False):
             self.execution_log("\nWARNING: database migrations are not being executed ('--showsqlonly' activated)", "YELLOW", log_level_limit=1)
         else:
             self.execution_log("\nStarting migration %s!" % up_down_label, log_level_limit=1)
 
-        if self.config.get("log_level") >= 1:
-            self.execution_log("*** versions: %s\n" % ([ migration.version for migration in migrations_to_be_executed]), "CYAN", log_level_limit=1)
+        self.execution_log("*** versions: %s\n" % ([ migration.version for migration in migrations_to_be_executed]), "CYAN", log_level_limit=1)
 
         sql_statements_executed = []
         for migration in migrations_to_be_executed:
             sql = is_migration_up and migration.sql_up or migration.sql_down
 
-            if not self.config.get("show_sql_only"):
-                if self.config.get("log_level") >= 1:
-                    self.execution_log("===== executing %s (%s) =====" % (migration.file_name, up_down_label), log_level_limit=1)
+            if not self.config.get("show_sql_only", False):
+                self.execution_log("===== executing %s (%s) =====" % (migration.file_name, up_down_label), log_level_limit=1)
 
-                self.mysql.change(sql, migration.version, migration.file_name, migration.sql_up, migration.sql_down, is_migration_up, execution_log=self.execution_log)
+                label = None
+                if is_migration_up and (migrations_to_be_executed[-1].version ==  migration.version):
+                    label = self.config.get("label_version", None)
+                self.mysql.change(sql, migration.version, migration.file_name, migration.sql_up, migration.sql_down, is_migration_up, self.execution_log, label)
 
                 # paused mode
-                if self.config.get("paused_mode"):
+                if self.config.get("paused_mode", False):
                     raw_input("* press <enter> to continue... ")
 
             # recording the last statement executed
             sql_statements_executed.append(sql)
 
-        if self.config.get("show_sql") or self.config.get("show_sql_only"):
+        if self.config.get("show_sql", False) or self.config.get("show_sql_only", False):
             self.execution_log("__________ SQL statements executed __________", "YELLOW", log_level_limit=1)
             for sql in sql_statements_executed:
                 self.execution_log(sql, "YELLOW", log_level_limit=1)
