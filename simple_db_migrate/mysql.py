@@ -7,7 +7,6 @@ class MySQL(object):
     def __init__(self, config=None, mysql_driver=None):
         self.__mysql_script_encoding = config.get("db_script_encoding", "utf8")
         self.__mysql_encoding = config.get("db_encoding", "utf8")
-        self.__mysql_driver = mysql_driver
         self.__mysql_host = config.get("db_host")
         self.__mysql_user = config.get("db_user")
         self.__mysql_passwd = config.get("db_password")
@@ -47,7 +46,7 @@ class MySQL(object):
                 curr_statement = statement
                 affected_rows = cursor.execute(statement.encode(self.__mysql_script_encoding))
                 if execution_log:
-                    execution_log("%s\n-- %d row(s) affected\n" % (statement, affected_rows))
+                    execution_log("%s\n-- %d row(s) affected\n" % (statement, affected_rows and int(affected_rows) or 0))
             cursor.close()
             db.commit()
             db.close()
@@ -130,6 +129,7 @@ class MySQL(object):
         cursor = db.cursor()
         cursor.execute("select count(*) from %s;" % self.__version_table)
         count = cursor.fetchone()[0]
+        cursor.close()
         db.close()
 
         # if there is not a version register, insert one
@@ -168,6 +168,7 @@ class MySQL(object):
         cursor = db.cursor()
         cursor.execute("select version from %s order by id desc limit 0,1;" % self.__version_table)
         version = cursor.fetchone()[0]
+        cursor.close()
         db.close()
         return version
 
@@ -179,6 +180,7 @@ class MySQL(object):
         all_versions = cursor.fetchall()
         for version in all_versions:
             versions.append(version[0])
+        cursor.close()
         db.close()
         versions.sort()
         return versions
@@ -189,6 +191,7 @@ class MySQL(object):
         cursor.execute("select id from %s where version = '%s';" % (self.__version_table, version))
         result = cursor.fetchone()
         id = result and int(result[0]) or None
+        cursor.close()
         db.close()
         return id
 
@@ -198,6 +201,7 @@ class MySQL(object):
         cursor.execute("select version from %s where label = '%s';" % (self.__version_table, label))
         result = cursor.fetchone()
         version = result and result[0] or None
+        cursor.close()
         db.close()
         return version
 

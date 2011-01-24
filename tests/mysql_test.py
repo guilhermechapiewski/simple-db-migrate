@@ -56,6 +56,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         cursor_mock.execute('select count(*) from __db_version__;')
         cursor_mock.fetchone().AndReturn([1])
+        cursor_mock.close()
 
         db_mock.set_character_set('utf8')
         db_mock.select_db('migration_test')
@@ -110,6 +111,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         cursor_mock.execute('select count(*) from __db_version__;')
         cursor_mock.fetchone().AndReturn([1])
+        cursor_mock.close()
 
         db_mock.set_character_set('utf8')
         db_mock.select_db('migration_test')
@@ -158,7 +160,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         self.mox.VerifyAll()
 
     def test_it_should_execute_migration_down_and_update_schema_version(self):
-        self.cursor_mock.execute('create table spam()')
+        self.cursor_mock.execute('drop table spam')
         self.cursor_mock.close()
 
         self.db_mock.set_character_set('utf8')
@@ -179,13 +181,14 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         self.mox.ReplayAll()
 
         mysql = MySQL(self.config_mock, self.mysql_driver_mock)
-        mysql.change("create table spam();", "20090212112104", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam();", "drop table spam;", False)
+        mysql.change("drop table spam;", "20090212112104", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam();", "drop table spam;", False)
 
         self.mox.VerifyAll()
 
     def test_it_should_get_current_schema_version(self):
         self.cursor_mock.execute("select version from __db_version__ order by id desc limit 0,1;")
         self.cursor_mock.fetchone().AndReturn("0")
+        self.cursor_mock.close()
 
         self.db_mock.set_character_set('utf8')
         self.db_mock.select_db('migration_test')
@@ -209,6 +212,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         self.cursor_mock.execute('select version from __db_version__ order by id;')
         self.cursor_mock.fetchall().AndReturn(tuple(zip(expected_versions)))
+        self.cursor_mock.close()
 
         self.db_mock.set_character_set('utf8')
         self.db_mock.select_db('migration_test')
@@ -309,6 +313,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         self.cursor_mock.execute('select id from __db_version__ where version = \'xxx\';')
         self.cursor_mock.fetchone().AndReturn(None)
+        self.cursor_mock.close()
 
         self.db_mock.set_character_set('utf8')
         self.db_mock.select_db('migration_test')
@@ -368,6 +373,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         cursor_mock.execute('select count(*) from __db_version__;')
         cursor_mock.fetchone().AndReturn([1])
+        cursor_mock.close()
 
         db_mock.set_character_set('utf8')
         db_mock.select_db('migration_test')
@@ -431,6 +437,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         cursor_mock.execute('select count(*) from __db_version__;')
         cursor_mock.fetchone().AndReturn([1])
+        cursor_mock.close()
 
         db_mock.set_character_set('utf8')
         db_mock.select_db('migration_test')
@@ -484,6 +491,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         cursor_mock.execute('select count(*) from __db_version__;')
         cursor_mock.fetchone().AndReturn([1])
+        cursor_mock.close()
 
         db_mock.set_character_set('utf8')
         db_mock.select_db('migration_test')
