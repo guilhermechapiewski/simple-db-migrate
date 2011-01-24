@@ -2,18 +2,22 @@ from cli import CLI
 from log import LOG
 from core import Migration, SimpleDBMigrate
 from helpers import Lists
-from mysql import MySQL
 
 class Main(object):
 
-    def __init__(self, config=None, mysql=None, db_migrate=None, execution_log=None):
+    def __init__(self, config=None, sgdb=None, db_migrate=None, execution_log=None):
         self.cli = CLI()
         self.config = config or {}
         self.log = LOG(self.config.get("log_dir", None))
 
-        self.mysql = mysql
-        if self.mysql is None and not self.config.get("new_migration", None):
-            self.mysql = MySQL(config)
+        self.sgdb = sgdb
+        if self.sgdb is None and not self.config.get("new_migration", None):
+            if self.config.get("db_engine") is 'mysql':
+                from mysql import MySQL
+                self.sgdb = MySQL(config)
+            elif self.config.get("db_engine") is 'oracle':
+                from oracle import Oracle
+                self.sgdb = Oracle(config)
 
         self.db_migrate = db_migrate or SimpleDBMigrate(config)
         if execution_log:
@@ -39,7 +43,7 @@ class Main(object):
 
     def migrate(self):
         destination_version = self.get_destination_version()
-        current_version = self.mysql.get_current_schema_version()
+        current_version = self.sgdb.get_current_schema_version()
 
         # do it!
         self.execute_migrations(current_version, destination_version)
@@ -53,7 +57,7 @@ class Main(object):
         destination_version_by_schema = None
 
         if label_version is not None:
-            destination_version_by_label = self.mysql.get_version_number_from_label(label_version)
+            destination_version_by_label = self.sgdb.get_version_number_from_label(label_version)
             """
             if specified label exists at database and schema version was not specified,
             is equivalent to run simple-db-migrate with schema_version equals to the version with specified label
@@ -64,7 +68,7 @@ class Main(object):
                 self.config.put("schema_version", destination_version_by_label)
 
 
-        if schema_version is not None and self.mysql.get_version_id_from_version_number(schema_version):
+        if schema_version is not None and self.sgdb.get_version_id_from_version_number(schema_version):
             destination_version_by_schema = schema_version
 
         if label_version is None:
@@ -86,7 +90,7 @@ class Main(object):
         if (schema_version is not None and label_version is not None) and ((destination_version_by_schema is not None and destination_version_by_label is None) or (destination_version_by_schema is None and destination_version_by_label is not None)):
             raise Exception("label (%s) or schema_version (%s), only one of them exists in the database" % (label_version, schema_version))
 
-        if destination_version is not '0' and not (self.db_migrate.check_if_version_exists(destination_version) or self.mysql.get_version_id_from_version_number(destination_version)):
+        if destination_version is not '0' and not (self.db_migrate.check_if_version_exists(destination_version) or self.sgdb.get_version_id_from_version_number(destination_version)):
             raise Exception("version not found (%s)" % destination_version)
 
         return destination_version
@@ -94,18 +98,18 @@ class Main(object):
     def get_migration_files_to_be_executed(self, current_version, destination_version, is_migration_up):
         if current_version == destination_version and not self.config.get("force_execute_old_migrations_versions", False):
             return []
-        mysql_versions = self.mysql.get_all_schema_versions()
+        schema_versions = self.sgdb.get_all_schema_versions()
         migration_versions = self.db_migrate.get_all_migration_versions()
 
         # migration up
         if is_migration_up:
-            remaining_versions_to_execute = Lists.subtract(migration_versions, mysql_versions)
+            remaining_versions_to_execute = Lists.subtract(migration_versions, schema_versions)
             remaining_migrations_to_execute = [self.db_migrate.get_migration_from_version_number(version) for version in remaining_versions_to_execute if version <= destination_version]
             return remaining_migrations_to_execute
 
         # migration down...
-        destination_version_id = self.mysql.get_version_id_from_version_number(destination_version)
-        migrations = self.mysql.get_all_schema_migrations()
+        destination_version_id = self.sgdb.get_version_id_from_version_number(destination_version)
+        migrations = self.sgdb.get_all_schema_migrations()
         down_migrations_to_execute = [migration for migration in migrations if migration.id > destination_version_id]
         force_files = self.config.get("force_use_files_on_down", False)
         for migration in down_migrations_to_execute:
@@ -134,9 +138,9 @@ class Main(object):
         # check if a version was passed to the program
         if self.config.get("schema_version"):
             # if was passed and this version is present in the database, check if is older than the current version
-            destination_version_id = self.mysql.get_version_id_from_version_number(destination_version)
+            destination_version_id = self.sgdb.get_version_id_from_version_number(destination_version)
             if destination_version_id:
-                current_version_id = self.mysql.get_version_id_from_version_number(current_version)
+                current_version_id = self.sgdb.get_version_id_from_version_number(current_version)
                 # if this version is previous to the current version in database, then will be done a migration down to this version
                 if current_version_id > destination_version_id:
                     is_migration_up = False
@@ -175,8 +179,9 @@ class Main(object):
                 label = None
                 if is_migration_up and (migrations_to_be_executed[-1].version ==  migration.version):
                     label = self.config.get("label_version", None)
+
                 try:
-                    self.mysql.change(sql, migration.version, migration.file_name, migration.sql_up, migration.sql_down, is_migration_up, self.execution_log, label)
+                    self.sgdb.change(sql, migration.version, migration.file_name, migration.sql_up, migration.sql_down, is_migration_up, self.execution_log, label)
                 except Exception, e:
                     self.execution_log("===== ERROR executing %s/%s (%s) =====" % (migration.abspath, migration.file_name, up_down_label), log_level_limit=1)
                     raise e

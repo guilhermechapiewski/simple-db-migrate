@@ -1,6 +1,7 @@
 from mox import Mox
 import mox as module_mox
 import unittest
+import os
 
 from simple_db_migrate.main import *
 from simple_db_migrate.core import Migration, SimpleDBMigrate
@@ -51,12 +52,12 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         self.config.put("new_migration","some_new_migration")
 
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
+        sgdb_mock = mox.CreateMockAnything()
         db_migrate_mock = mox.CreateMockAnything()
 
         mox.ReplayAll()
 
-        main = MainMock(config=self.config, mysql=mysql_mock, db_migrate=db_migrate_mock)
+        main = MainMock(config=self.config, sgdb=sgdb_mock, db_migrate=db_migrate_mock)
         main.execute()
 
         mox.VerifyAll()
@@ -69,12 +70,12 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
                 assert True
 
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
+        sgdb_mock = mox.CreateMockAnything()
         db_migrate_mock = mox.CreateMockAnything()
 
         mox.ReplayAll()
 
-        main = MainMock(config={}, mysql=mysql_mock, db_migrate=db_migrate_mock)
+        main = MainMock(config={}, sgdb=sgdb_mock, db_migrate=db_migrate_mock)
         main.execute()
 
         mox.VerifyAll()
@@ -93,12 +94,12 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
             self.config.put("new_migration","some_new_migration")
 
-            mysql_mock = mox.CreateMockAnything()
+            sgdb_mock = mox.CreateMockAnything()
             db_migrate_mock = mox.CreateMockAnything()
 
             mox.ReplayAll()
 
-            main = Main(config=self.config, mysql=mysql_mock, db_migrate=db_migrate_mock, execution_log = self.log)
+            main = Main(config=self.config, sgdb=sgdb_mock, db_migrate=db_migrate_mock, execution_log = self.log)
             main.execute()
 
             mox.VerifyAll()
@@ -116,14 +117,14 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
                 assert destination_version == "20090810170301"
 
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_current_schema_version().AndReturn("20090810170300")
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_current_schema_version().AndReturn("20090810170300")
 
         db_migrate_mock = mox.CreateMockAnything()
 
         mox.ReplayAll()
 
-        main = MainMock(config={}, mysql=mysql_mock, db_migrate=db_migrate_mock)
+        main = MainMock(config={}, sgdb=sgdb_mock, db_migrate=db_migrate_mock)
         main.execute()
 
         mox.VerifyAll()
@@ -137,14 +138,14 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
                 assert destination_version == "20080810170300"
 
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_current_schema_version().AndReturn("20090810170300")
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_current_schema_version().AndReturn("20090810170300")
 
         db_migrate_mock = mox.CreateMockAnything()
 
         mox.ReplayAll()
 
-        main = MainMock(config={}, mysql=mysql_mock, db_migrate=db_migrate_mock)
+        main = MainMock(config={}, sgdb=sgdb_mock, db_migrate=db_migrate_mock)
         main.execute()
 
         mox.VerifyAll()
@@ -153,14 +154,14 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         self.config.put("schema_version","20090810170300")
 
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_version_id_from_version_number('20090810170300').AndReturn(None)
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_version_id_from_version_number('20090810170300').AndReturn(None)
         db_migrate_mock = mox.CreateMockAnything()
         db_migrate_mock.check_if_version_exists("20090810170300").AndReturn(True)
 
         mox.ReplayAll()
 
-        main = Main(config=self.config, mysql=mysql_mock, db_migrate=db_migrate_mock, execution_log = self.log)
+        main = Main(config=self.config, sgdb=sgdb_mock, db_migrate=db_migrate_mock, execution_log = self.log)
         destination_version = main.get_destination_version()
         assert destination_version == "20090810170300"
 
@@ -169,7 +170,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
     def test_it_should_get_destination_version_when_user_does_not_inform_a_specific_version(self):
 
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
+        sgdb_mock = mox.CreateMockAnything()
 
         db_migrate_mock = mox.CreateMockAnything()
         db_migrate_mock.latest_version_available().AndReturn("20090810170300")
@@ -177,7 +178,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         mox.ReplayAll()
 
-        main = Main(config={}, mysql=mysql_mock, db_migrate=db_migrate_mock)
+        main = Main(config={}, sgdb=sgdb_mock, db_migrate=db_migrate_mock)
         destination_version = main.get_destination_version()
         assert destination_version == "20090810170300"
 
@@ -185,15 +186,15 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
     def test_it_should_raise_exception_when_get_destination_version_and_version_does_not_exist(self):
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_version_id_from_version_number('20090810170300').AndReturn(None)
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_version_id_from_version_number('20090810170300').AndReturn(None)
         db_migrate_mock = mox.CreateMockAnything()
         db_migrate_mock.latest_version_available().AndReturn("20090810170300")
         db_migrate_mock.check_if_version_exists("20090810170300").AndReturn(False)
 
         mox.ReplayAll()
 
-        main = Main(config={}, mysql=mysql_mock, db_migrate=db_migrate_mock)
+        main = Main(config={}, sgdb=sgdb_mock, db_migrate=db_migrate_mock)
         try:
             main.get_destination_version()
             self.fail("it should not pass here")
@@ -215,8 +216,8 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_all_schema_versions().AndReturn(database_versions)
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_all_schema_versions().AndReturn(database_versions)
 
         db_migrate_mock = mox.CreateMockAnything()
         db_migrate_mock.get_all_migration_versions().AndReturn(migration_files_versions)
@@ -226,7 +227,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         mox.ReplayAll()
 
-        main = Main(mysql=mysql_mock, db_migrate=db_migrate_mock)
+        main = Main(sgdb=sgdb_mock, db_migrate=db_migrate_mock)
 
         # execute stuff
         migrations_to_be_executed = main.get_migration_files_to_be_executed("20090212120000", "20090212120005", is_migration_up)
@@ -248,13 +249,13 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
+        sgdb_mock = mox.CreateMockAnything()
 
         db_migrate_mock = mox.CreateMockAnything()
 
         mox.ReplayAll()
 
-        main = Main(mysql=mysql_mock, db_migrate=db_migrate_mock)
+        main = Main(sgdb=sgdb_mock, db_migrate=db_migrate_mock)
 
         # execute stuff
         migrations_to_be_executed = main.get_migration_files_to_be_executed("20090212120000", "20090212120000", is_migration_up)
@@ -274,8 +275,8 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_all_schema_versions().AndReturn(database_versions)
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_all_schema_versions().AndReturn(database_versions)
 
         db_migrate_mock = mox.CreateMockAnything()
         db_migrate_mock.get_all_migration_versions().AndReturn(migration_files_versions)
@@ -284,7 +285,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         mox.ReplayAll()
 
-        main = Main(config=self.config, mysql=mysql_mock, db_migrate=db_migrate_mock, execution_log = self.log)
+        main = Main(config=self.config, sgdb=sgdb_mock, db_migrate=db_migrate_mock, execution_log = self.log)
 
         # execute stuff
         migrations_to_be_executed = main.get_migration_files_to_be_executed("20090212120000", "20090212120000", is_migration_up)
@@ -305,13 +306,13 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
+        sgdb_mock = mox.CreateMockAnything()
 
         db_migrate_mock = mox.CreateMockAnything()
 
         mox.ReplayAll()
 
-        main = Main(mysql=mysql_mock, db_migrate=db_migrate_mock)
+        main = Main(sgdb=sgdb_mock, db_migrate=db_migrate_mock)
 
         # execute stuff
         migrations_to_be_executed = main.get_migration_files_to_be_executed("20090212120000", "20090212120000", is_migration_up)
@@ -327,17 +328,17 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_all_schema_versions().AndReturn(database_versions)
-        mysql_mock.get_version_id_from_version_number('20090211120001').AndReturn(3)
-        mysql_mock.get_all_schema_migrations().AndReturn([self.migration_20090211120002, self.migration_20090211120003, self.migration_20090212120000])
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_all_schema_versions().AndReturn(database_versions)
+        sgdb_mock.get_version_id_from_version_number('20090211120001').AndReturn(3)
+        sgdb_mock.get_all_schema_migrations().AndReturn([self.migration_20090211120002, self.migration_20090211120003, self.migration_20090212120000])
 
         db_migrate_mock = mox.CreateMockAnything()
         db_migrate_mock.get_all_migration_versions().AndReturn(migration_files_versions)
 
         mox.ReplayAll()
 
-        main = Main(mysql=mysql_mock, db_migrate=db_migrate_mock)
+        main = Main(sgdb=sgdb_mock, db_migrate=db_migrate_mock)
 
         # execute stuff
         migrations_to_be_executed = main.get_migration_files_to_be_executed("20090212120000", "20090211120001", is_migration_up)
@@ -356,18 +357,18 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_all_schema_versions().AndReturn(database_versions)
-        mysql_mock.get_version_id_from_version_number('20090211120001').AndReturn(1)
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_all_schema_versions().AndReturn(database_versions)
+        sgdb_mock.get_version_id_from_version_number('20090211120001').AndReturn(1)
         migration = Migration(id=12, version="20090212120000", file_name="20090212120000", sql_up="sql_up", sql_down="")
-        mysql_mock.get_all_schema_migrations().AndReturn([migration])
+        sgdb_mock.get_all_schema_migrations().AndReturn([migration])
 
         db_migrate_mock = mox.CreateMockAnything()
         db_migrate_mock.get_all_migration_versions().AndReturn(migration_files_versions)
 
         mox.ReplayAll()
 
-        main = Main(mysql=mysql_mock, db_migrate=db_migrate_mock)
+        main = Main(sgdb=sgdb_mock, db_migrate=db_migrate_mock)
         try:
             main.get_migration_files_to_be_executed("20090212120000", "20090211120001", is_migration_up)
             self.fail("it should not pass here")
@@ -383,16 +384,16 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_version_id_from_version_number('20090211120006').AndReturn(None)
-        mysql_mock.get_version_id_from_version_number('20090211120006').AndReturn(None)
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_version_id_from_version_number('20090211120006').AndReturn(None)
+        sgdb_mock.get_version_id_from_version_number('20090211120006').AndReturn(None)
 
         db_migrate_mock = mox.CreateMockAnything()
         db_migrate_mock.check_if_version_exists('20090211120006').AndReturn(False)
 
         mox.ReplayAll()
 
-        main = Main(config=self.config, mysql=mysql_mock, db_migrate=db_migrate_mock, execution_log = self.log)
+        main = Main(config=self.config, sgdb=sgdb_mock, db_migrate=db_migrate_mock, execution_log = self.log)
         try:
             main.execute()
             self.fail("it should not pass here")
@@ -417,17 +418,17 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_version_id_from_version_number('20090212120006').AndReturn(None)
-        mysql_mock.get_current_schema_version().AndReturn("20090212120000")
-        mysql_mock.get_version_id_from_version_number('20090212120006').AndReturn(None)
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_version_id_from_version_number('20090212120006').AndReturn(None)
+        sgdb_mock.get_current_schema_version().AndReturn("20090212120000")
+        sgdb_mock.get_version_id_from_version_number('20090212120006').AndReturn(None)
 
         db_migrate_mock = mox.CreateMockAnything()
         db_migrate_mock.check_if_version_exists('20090212120006').AndReturn(True)
 
         mox.ReplayAll()
 
-        main = MainMock(config=self.config, mysql=mysql_mock, db_migrate=db_migrate_mock)
+        main = MainMock(config=self.config, sgdb=sgdb_mock, db_migrate=db_migrate_mock)
         main.execute()
 
         mox.VerifyAll()
@@ -441,18 +442,18 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
-        mysql_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
-        mysql_mock.get_current_schema_version().AndReturn("20090211120005")
-        mysql_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
-        mysql_mock.get_version_id_from_version_number('20090211120005').AndReturn(self.migration_20090211120005.id)
-        mysql_mock.get_all_schema_versions().AndReturn(database_versions)
-        mysql_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
+        sgdb_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
+        sgdb_mock.get_current_schema_version().AndReturn("20090211120005")
+        sgdb_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
+        sgdb_mock.get_version_id_from_version_number('20090211120005').AndReturn(self.migration_20090211120005.id)
+        sgdb_mock.get_all_schema_versions().AndReturn(database_versions)
+        sgdb_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
 
         migration3 = Migration(id=13, version="20090211120003", sql_down=None)
         migration5 = Migration(id=15, version="20090211120005", sql_down=None)
-        mysql_mock.get_all_schema_migrations().AndReturn([migration3, migration5])
+        sgdb_mock.get_all_schema_migrations().AndReturn([migration3, migration5])
 
         db_migrate_mock = mox.CreateMockAnything()
         db_migrate_mock.check_if_version_exists('20090211120003').AndReturn(False)
@@ -460,7 +461,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         mox.ReplayAll()
 
-        main = Main(config=self.config, mysql=mysql_mock, db_migrate=db_migrate_mock, execution_log = self.log)
+        main = Main(config=self.config, sgdb=sgdb_mock, db_migrate=db_migrate_mock, execution_log = self.log)
         try:
             main.execute()
             self.fail("it should not pass here")
@@ -481,18 +482,18 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
-        mysql_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
-        mysql_mock.get_current_schema_version().AndReturn("20090211120005")
-        mysql_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
-        mysql_mock.get_version_id_from_version_number('20090211120005').AndReturn(self.migration_20090211120005.id)
-        mysql_mock.get_all_schema_versions().AndReturn(database_versions)
-        mysql_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
+        sgdb_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
+        sgdb_mock.get_current_schema_version().AndReturn("20090211120005")
+        sgdb_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
+        sgdb_mock.get_version_id_from_version_number('20090211120005').AndReturn(self.migration_20090211120005.id)
+        sgdb_mock.get_all_schema_versions().AndReturn(database_versions)
+        sgdb_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
 
         migration3 = Migration(id=13, version="20090211120003", sql_down=None)
         migration5 = Migration(id=15, version="20090211120005", sql_down="sql_down")
-        mysql_mock.get_all_schema_migrations().AndReturn([migration3, migration5])
+        sgdb_mock.get_all_schema_migrations().AndReturn([migration3, migration5])
 
         db_migrate_mock = mox.CreateMockAnything()
         db_migrate_mock.check_if_version_exists('20090211120003').AndReturn(False)
@@ -500,7 +501,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         mox.ReplayAll()
 
-        main = Main(config=self.config, mysql=mysql_mock, db_migrate=db_migrate_mock, execution_log = self.log)
+        main = Main(config=self.config, sgdb=sgdb_mock, db_migrate=db_migrate_mock, execution_log = self.log)
         main.execute()
 
         mox.VerifyAll()
@@ -517,12 +518,12 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_version_number_from_label('experimental_version').AndReturn(None)
-        mysql_mock.get_current_schema_version().AndReturn(database_versions[-1])
-        mysql_mock.get_all_schema_versions().AndReturn(database_versions)
-        mysql_mock.change(module_mox.IsA(str), "20090211120006", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, None)
-        mysql_mock.change(module_mox.IsA(str), "20090212120005", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, "experimental_version")
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_version_number_from_label('experimental_version').AndReturn(None)
+        sgdb_mock.get_current_schema_version().AndReturn(database_versions[-1])
+        sgdb_mock.get_all_schema_versions().AndReturn(database_versions)
+        sgdb_mock.change(module_mox.IsA(str), "20090211120006", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, None)
+        sgdb_mock.change(module_mox.IsA(str), "20090212120005", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, "experimental_version")
 
         db_migrate_mock = mox.CreateMock(SimpleDBMigrate)
         db_migrate_mock.latest_version_available().AndReturn(migration_files_versions[-1])
@@ -533,7 +534,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         mox.ReplayAll()
 
-        main = Main(config=self.config, mysql=mysql_mock, db_migrate=db_migrate_mock, execution_log = self.log)
+        main = Main(config=self.config, sgdb=sgdb_mock, db_migrate=db_migrate_mock, execution_log = self.log)
         main.execute()
 
         mox.VerifyAll()
@@ -553,12 +554,12 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_version_number_from_label('experimental_version').AndReturn(None)
-        mysql_mock.get_current_schema_version().AndReturn(database_versions[-1])
-        mysql_mock.get_all_schema_versions().AndReturn(database_versions)
-        mysql_mock.change(module_mox.IsA(str), '20090211120002', module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, None)
-        mysql_mock.change(module_mox.IsA(str), '20090211120003', module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, "experimental_version")
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_version_number_from_label('experimental_version').AndReturn(None)
+        sgdb_mock.get_current_schema_version().AndReturn(database_versions[-1])
+        sgdb_mock.get_all_schema_versions().AndReturn(database_versions)
+        sgdb_mock.change(module_mox.IsA(str), '20090211120002', module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, None)
+        sgdb_mock.change(module_mox.IsA(str), '20090211120003', module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, "experimental_version")
 
 
         db_migrate_mock = mox.CreateMock(SimpleDBMigrate)
@@ -570,7 +571,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         mox.ReplayAll()
 
-        main = Main(config=self.config, mysql=mysql_mock, db_migrate=db_migrate_mock, execution_log = self.log)
+        main = Main(config=self.config, sgdb=sgdb_mock, db_migrate=db_migrate_mock, execution_log = self.log)
         main.execute()
 
         mox.VerifyAll()
@@ -589,18 +590,18 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_version_number_from_label('labeled_version').AndReturn(self.migration_20090211120002.version)
-        mysql_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
-        mysql_mock.get_current_schema_version().AndReturn(database_versions[-1])
-        mysql_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
-        mysql_mock.get_version_id_from_version_number('20090212120000').AndReturn(self.migration_20090212120000.id)
-        mysql_mock.get_all_schema_versions().AndReturn(database_versions)
-        mysql_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_version_number_from_label('labeled_version').AndReturn(self.migration_20090211120002.version)
+        sgdb_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
+        sgdb_mock.get_current_schema_version().AndReturn(database_versions[-1])
+        sgdb_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
+        sgdb_mock.get_version_id_from_version_number('20090212120000').AndReturn(self.migration_20090212120000.id)
+        sgdb_mock.get_all_schema_versions().AndReturn(database_versions)
+        sgdb_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
 
-        mysql_mock.get_all_schema_migrations().AndReturn([self.migration_20090211120002, self.migration_20090211120003, self.migration_20090212120000])
-        mysql_mock.change(module_mox.IsA(str), "20090212120000", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), False, self.log, None)
-        mysql_mock.change(module_mox.IsA(str), "20090211120003", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), False, self.log, None)
+        sgdb_mock.get_all_schema_migrations().AndReturn([self.migration_20090211120002, self.migration_20090211120003, self.migration_20090212120000])
+        sgdb_mock.change(module_mox.IsA(str), "20090212120000", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), False, self.log, None)
+        sgdb_mock.change(module_mox.IsA(str), "20090211120003", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), False, self.log, None)
 
         db_migrate_mock = mox.CreateMock(SimpleDBMigrate)
         db_migrate_mock.check_if_version_exists('20090211120002').AndReturn(True)
@@ -608,7 +609,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         mox.ReplayAll()
 
-        main = Main(config=self.config, mysql=mysql_mock, db_migrate=db_migrate_mock, execution_log = self.log)
+        main = Main(config=self.config, sgdb=sgdb_mock, db_migrate=db_migrate_mock, execution_log = self.log)
         main.execute()
 
         mox.VerifyAll()
@@ -630,18 +631,18 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_version_number_from_label('labeled_version').AndReturn(self.migration_20090211120002.version)
-        mysql_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
-        mysql_mock.get_current_schema_version().AndReturn(database_versions[-1])
-        mysql_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
-        mysql_mock.get_version_id_from_version_number('20090212120000').AndReturn(self.migration_20090212120000.id)
-        mysql_mock.get_all_schema_versions().AndReturn(database_versions)
-        mysql_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_version_number_from_label('labeled_version').AndReturn(self.migration_20090211120002.version)
+        sgdb_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
+        sgdb_mock.get_current_schema_version().AndReturn(database_versions[-1])
+        sgdb_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
+        sgdb_mock.get_version_id_from_version_number('20090212120000').AndReturn(self.migration_20090212120000.id)
+        sgdb_mock.get_all_schema_versions().AndReturn(database_versions)
+        sgdb_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
 
-        mysql_mock.get_all_schema_migrations().AndReturn([self.migration_20090211120002, self.migration_20090211120003, self.migration_20090212120000])
-        mysql_mock.change(module_mox.IsA(str), "20090212120000", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), False, self.log, None)
-        mysql_mock.change(module_mox.IsA(str), "20090211120003", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), False, self.log, None)
+        sgdb_mock.get_all_schema_migrations().AndReturn([self.migration_20090211120002, self.migration_20090211120003, self.migration_20090212120000])
+        sgdb_mock.change(module_mox.IsA(str), "20090212120000", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), False, self.log, None)
+        sgdb_mock.change(module_mox.IsA(str), "20090211120003", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), False, self.log, None)
 
         db_migrate_mock = mox.CreateMock(SimpleDBMigrate)
         db_migrate_mock.check_if_version_exists('20090211120002').AndReturn(True)
@@ -649,7 +650,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         mox.ReplayAll()
 
-        main = Main(config=self.config, mysql=mysql_mock, db_migrate=db_migrate_mock, execution_log = self.log)
+        main = Main(config=self.config, sgdb=sgdb_mock, db_migrate=db_migrate_mock, execution_log = self.log)
         main.execute()
 
         mox.VerifyAll()
@@ -672,15 +673,15 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_version_number_from_label('experimental_version').AndReturn(None)
-        mysql_mock.get_version_id_from_version_number('20090211120006').AndReturn(None)
-        mysql_mock.get_current_schema_version().AndReturn(database_versions[-1])
-        mysql_mock.get_version_id_from_version_number('20090211120006').AndReturn(None)
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_version_number_from_label('experimental_version').AndReturn(None)
+        sgdb_mock.get_version_id_from_version_number('20090211120006').AndReturn(None)
+        sgdb_mock.get_current_schema_version().AndReturn(database_versions[-1])
+        sgdb_mock.get_version_id_from_version_number('20090211120006').AndReturn(None)
 
-        mysql_mock.get_all_schema_versions().AndReturn(database_versions)
-        mysql_mock.change(module_mox.IsA(str), "20090211120005", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, None)
-        mysql_mock.change(module_mox.IsA(str), "20090211120006", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, "experimental_version")
+        sgdb_mock.get_all_schema_versions().AndReturn(database_versions)
+        sgdb_mock.change(module_mox.IsA(str), "20090211120005", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, None)
+        sgdb_mock.change(module_mox.IsA(str), "20090211120006", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, "experimental_version")
 
         db_migrate_mock = mox.CreateMock(SimpleDBMigrate)
         db_migrate_mock.check_if_version_exists('20090211120006').AndReturn(True)
@@ -691,7 +692,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         mox.ReplayAll()
 
-        main = Main(config=self.config, mysql=mysql_mock, db_migrate=db_migrate_mock, execution_log = self.log)
+        main = Main(config=self.config, sgdb=sgdb_mock, db_migrate=db_migrate_mock, execution_log = self.log)
         main.execute()
 
         mox.VerifyAll()
@@ -714,16 +715,16 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_version_number_from_label('experimental_version').AndReturn(None)
-        mysql_mock.get_version_id_from_version_number('20090211120006').AndReturn(None)
-        mysql_mock.get_current_schema_version().AndReturn(database_versions[-1])
-        mysql_mock.get_version_id_from_version_number('20090211120006').AndReturn(None)
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_version_number_from_label('experimental_version').AndReturn(None)
+        sgdb_mock.get_version_id_from_version_number('20090211120006').AndReturn(None)
+        sgdb_mock.get_current_schema_version().AndReturn(database_versions[-1])
+        sgdb_mock.get_version_id_from_version_number('20090211120006').AndReturn(None)
 
-        mysql_mock.get_all_schema_versions().AndReturn(database_versions)
-        mysql_mock.change(module_mox.IsA(str), "20090211120002", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, None)
-        mysql_mock.change(module_mox.IsA(str), "20090211120005", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, None)
-        mysql_mock.change(module_mox.IsA(str), "20090211120006", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, "experimental_version")
+        sgdb_mock.get_all_schema_versions().AndReturn(database_versions)
+        sgdb_mock.change(module_mox.IsA(str), "20090211120002", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, None)
+        sgdb_mock.change(module_mox.IsA(str), "20090211120005", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, None)
+        sgdb_mock.change(module_mox.IsA(str), "20090211120006", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, "experimental_version")
 
         db_migrate_mock = mox.CreateMock(SimpleDBMigrate)
         db_migrate_mock.check_if_version_exists('20090211120006').AndReturn(True)
@@ -735,7 +736,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         mox.ReplayAll()
 
-        main = Main(config=self.config, mysql=mysql_mock, db_migrate=db_migrate_mock, execution_log = self.log)
+        main = Main(config=self.config, sgdb=sgdb_mock, db_migrate=db_migrate_mock, execution_log = self.log)
         main.execute()
 
         mox.VerifyAll()
@@ -754,18 +755,18 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_version_number_from_label('labeled_version').AndReturn(self.migration_20090211120002.version)
-        mysql_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
-        mysql_mock.get_current_schema_version().AndReturn(database_versions[-1])
-        mysql_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
-        mysql_mock.get_version_id_from_version_number('20090212120000').AndReturn(self.migration_20090212120000.id)
-        mysql_mock.get_all_schema_versions().AndReturn(database_versions)
-        mysql_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_version_number_from_label('labeled_version').AndReturn(self.migration_20090211120002.version)
+        sgdb_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
+        sgdb_mock.get_current_schema_version().AndReturn(database_versions[-1])
+        sgdb_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
+        sgdb_mock.get_version_id_from_version_number('20090212120000').AndReturn(self.migration_20090212120000.id)
+        sgdb_mock.get_all_schema_versions().AndReturn(database_versions)
+        sgdb_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
 
-        mysql_mock.get_all_schema_migrations().AndReturn([self.migration_20090211120002, self.migration_20090211120003, self.migration_20090212120000])
-        mysql_mock.change(module_mox.IsA(str), "20090212120000", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), False, self.log, None)
-        mysql_mock.change(module_mox.IsA(str), "20090211120003", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), False, self.log, None)
+        sgdb_mock.get_all_schema_migrations().AndReturn([self.migration_20090211120002, self.migration_20090211120003, self.migration_20090212120000])
+        sgdb_mock.change(module_mox.IsA(str), "20090212120000", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), False, self.log, None)
+        sgdb_mock.change(module_mox.IsA(str), "20090211120003", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), False, self.log, None)
 
         db_migrate_mock = mox.CreateMock(SimpleDBMigrate)
         db_migrate_mock.check_if_version_exists('20090211120002').AndReturn(True)
@@ -773,7 +774,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         mox.ReplayAll()
 
-        main = Main(config=self.config, mysql=mysql_mock, db_migrate=db_migrate_mock, execution_log = self.log)
+        main = Main(config=self.config, sgdb=sgdb_mock, db_migrate=db_migrate_mock, execution_log = self.log)
         main.execute()
 
         mox.VerifyAll()
@@ -795,18 +796,18 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_version_number_from_label('labeled_version').AndReturn(self.migration_20090211120002.version)
-        mysql_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
-        mysql_mock.get_current_schema_version().AndReturn(database_versions[-1])
-        mysql_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
-        mysql_mock.get_version_id_from_version_number('20090212120000').AndReturn(self.migration_20090212120000.id)
-        mysql_mock.get_all_schema_versions().AndReturn(database_versions)
-        mysql_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_version_number_from_label('labeled_version').AndReturn(self.migration_20090211120002.version)
+        sgdb_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
+        sgdb_mock.get_current_schema_version().AndReturn(database_versions[-1])
+        sgdb_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
+        sgdb_mock.get_version_id_from_version_number('20090212120000').AndReturn(self.migration_20090212120000.id)
+        sgdb_mock.get_all_schema_versions().AndReturn(database_versions)
+        sgdb_mock.get_version_id_from_version_number('20090211120002').AndReturn(self.migration_20090211120002.id)
 
-        mysql_mock.get_all_schema_migrations().AndReturn([self.migration_20090211120002, self.migration_20090211120003, self.migration_20090212120000])
-        mysql_mock.change(module_mox.IsA(str), "20090212120000", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), False, self.log, None)
-        mysql_mock.change(module_mox.IsA(str), "20090211120003", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), False, self.log, None)
+        sgdb_mock.get_all_schema_migrations().AndReturn([self.migration_20090211120002, self.migration_20090211120003, self.migration_20090212120000])
+        sgdb_mock.change(module_mox.IsA(str), "20090212120000", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), False, self.log, None)
+        sgdb_mock.change(module_mox.IsA(str), "20090211120003", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), False, self.log, None)
 
         db_migrate_mock = mox.CreateMock(SimpleDBMigrate)
         db_migrate_mock.check_if_version_exists('20090211120002').AndReturn(True)
@@ -814,7 +815,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         mox.ReplayAll()
 
-        main = Main(config=self.config, mysql=mysql_mock, db_migrate=db_migrate_mock, execution_log = self.log)
+        main = Main(config=self.config, sgdb=sgdb_mock, db_migrate=db_migrate_mock, execution_log = self.log)
         main.execute()
 
         mox.VerifyAll()
@@ -833,15 +834,15 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_version_number_from_label('labeled_version').AndReturn(self.migration_20090211120002.version)
-        mysql_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_version_number_from_label('labeled_version').AndReturn(self.migration_20090211120002.version)
+        sgdb_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
 
         db_migrate_mock = mox.CreateMock(SimpleDBMigrate)
 
         mox.ReplayAll()
 
-        main = Main(config=self.config, mysql=mysql_mock, db_migrate=db_migrate_mock, execution_log = self.log)
+        main = Main(config=self.config, sgdb=sgdb_mock, db_migrate=db_migrate_mock, execution_log = self.log)
         try:
             main.execute()
             self.fail("it should not pass here")
@@ -870,15 +871,15 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_version_number_from_label('labeled_version').AndReturn(self.migration_20090211120002.version)
-        mysql_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_version_number_from_label('labeled_version').AndReturn(self.migration_20090211120002.version)
+        sgdb_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
 
         db_migrate_mock = mox.CreateMock(SimpleDBMigrate)
 
         mox.ReplayAll()
 
-        main = Main(config=self.config, mysql=mysql_mock, db_migrate=db_migrate_mock, execution_log = self.log)
+        main = Main(config=self.config, sgdb=sgdb_mock, db_migrate=db_migrate_mock, execution_log = self.log)
         try:
             main.execute()
             self.fail("it should not pass here")
@@ -903,15 +904,15 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_version_number_from_label('labeled_version').AndReturn(self.migration_20090211120002.version)
-        mysql_mock.get_version_id_from_version_number('20090211120003').AndReturn(None)
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_version_number_from_label('labeled_version').AndReturn(self.migration_20090211120002.version)
+        sgdb_mock.get_version_id_from_version_number('20090211120003').AndReturn(None)
 
         db_migrate_mock = mox.CreateMock(SimpleDBMigrate)
 
         mox.ReplayAll()
 
-        main = Main(config=self.config, mysql=mysql_mock, db_migrate=db_migrate_mock, execution_log = self.log)
+        main = Main(config=self.config, sgdb=sgdb_mock, db_migrate=db_migrate_mock, execution_log = self.log)
         try:
             main.execute()
             self.fail("it should not pass here")
@@ -939,15 +940,15 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_version_number_from_label('labeled_version').AndReturn(self.migration_20090211120002.version)
-        mysql_mock.get_version_id_from_version_number('20090211120003').AndReturn(None)
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_version_number_from_label('labeled_version').AndReturn(self.migration_20090211120002.version)
+        sgdb_mock.get_version_id_from_version_number('20090211120003').AndReturn(None)
 
         db_migrate_mock = mox.CreateMock(SimpleDBMigrate)
 
         mox.ReplayAll()
 
-        main = Main(config=self.config, mysql=mysql_mock, db_migrate=db_migrate_mock, execution_log = self.log)
+        main = Main(config=self.config, sgdb=sgdb_mock, db_migrate=db_migrate_mock, execution_log = self.log)
         try:
             main.execute()
             self.fail("it should not pass here")
@@ -972,15 +973,15 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_version_number_from_label('labeled_version').AndReturn(None)
-        mysql_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_version_number_from_label('labeled_version').AndReturn(None)
+        sgdb_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
 
         db_migrate_mock = mox.CreateMock(SimpleDBMigrate)
 
         mox.ReplayAll()
 
-        main = Main(config=self.config, mysql=mysql_mock, db_migrate=db_migrate_mock, execution_log = self.log)
+        main = Main(config=self.config, sgdb=sgdb_mock, db_migrate=db_migrate_mock, execution_log = self.log)
         try:
             main.execute()
             self.fail("it should not pass here")
@@ -1009,15 +1010,15 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         # mocking stuff
         mox = Mox()
-        mysql_mock = mox.CreateMockAnything()
-        mysql_mock.get_version_number_from_label('labeled_version').AndReturn(None)
-        mysql_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
+        sgdb_mock = mox.CreateMockAnything()
+        sgdb_mock.get_version_number_from_label('labeled_version').AndReturn(None)
+        sgdb_mock.get_version_id_from_version_number('20090211120003').AndReturn(self.migration_20090211120003.id)
 
         db_migrate_mock = mox.CreateMock(SimpleDBMigrate)
 
         mox.ReplayAll()
 
-        main = Main(config=self.config, mysql=mysql_mock, db_migrate=db_migrate_mock, execution_log = self.log)
+        main = Main(config=self.config, sgdb=sgdb_mock, db_migrate=db_migrate_mock, execution_log = self.log)
         try:
             main.execute()
             self.fail("it should not pass here")
