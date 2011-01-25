@@ -1,0 +1,12 @@
+SQL_UP = u"""
+CREATE TABLE chimps (
+  id number(11) NOT NULL,
+  first_name varchar2(255) default NULL,
+  PRIMARY KEY  (id)
+);
+INSERT INTO chimps (id, first_name) VALUES (1, 'Tião');
+"""
+
+SQL_DOWN = u"""
+DROP TABLE chimps;
+"""
