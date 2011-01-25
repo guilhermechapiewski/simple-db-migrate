@@ -21,6 +21,7 @@ class Migration(object):
         self.sql_down = sql_down
         self.script_encoding = script_encoding
         self.label = label
+        self.abspath = ""
         if file:
             file_name = os.path.split(file)[1]
             if not Migration.is_file_name_valid(file_name):
