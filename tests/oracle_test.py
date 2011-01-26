@@ -362,8 +362,16 @@ DATABASE_ENGINE = os.getenv("DB_ENGINE") or "oracle"
         self.db_mock.commit()
         self.db_mock.close()
 
+        var_mock = self.mox.CreateMockAnything()
+        var_mock.setvalue(0, "create table spam();")
+        var_mock.setvalue(0, "drop table spam;")
+
+        self.oracle_driver_mock.CLOB = 'X'
+        self.cursor_mock.var('X', len("create table spam();")).AndReturn(var_mock)
+        self.cursor_mock.var('X', len("drop table spam;")).AndReturn(var_mock)
+
         #update database version
-        self.cursor_mock.execute("insert into db_version (id, version, label, name, sql_up, sql_down) values (db_version_seq.nextval, '20090212112104', NULL, '20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration', 'create table spam();', 'drop table spam;')")
+        self.cursor_mock.execute('insert into db_version (id, version, label, name, sql_up, sql_down) values (db_version_seq.nextval, :version, :label, :migration_file_name, :sql_up, :sql_down)', {'label': None, 'sql_up': 'create table spam();', 'version': '20090212112104', 'sql_down': 'drop table spam;', 'migration_file_name': '20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration'})
         self.cursor_mock.close()
 
         self.db_mock.cursor().AndReturn(self.cursor_mock)
@@ -386,7 +394,7 @@ DATABASE_ENGINE = os.getenv("DB_ENGINE") or "oracle"
         self.db_mock.close()
 
         #update database version
-        self.cursor_mock.execute("delete from db_version where version = '20090212112104'")
+        self.cursor_mock.execute('delete from db_version where version = :version', {'version': '20090212112104'})
         self.cursor_mock.close()
 
         self.db_mock.cursor().AndReturn(self.cursor_mock)

@@ -66,21 +66,33 @@ class Oracle(object):
         return execution_log
 
     def __change_db_version(self, version, migration_file_name, sql_up, sql_down, up=True, execution_log=None, label_version=None):
-        if up:
-            if not label_version:
-                label_version = "NULL"
-            else:
-                label_version = "'%s'" % (str(label_version))
-            # moving up and storing history
-            sql = "insert into %s (id, version, label, name, sql_up, sql_down) values (%s_seq.nextval, '%s', %s, '%s', '%s', '%s')" % (self.__version_table, self.__version_table, str(version), label_version, migration_file_name, len(sql_up.replace("'", "''")) < 4000 and sql_up.replace("'", "''") or None, len(sql_down.replace("'", "''")) < 4000 and sql_down.replace("'", "''") or None)
-        else:
-            # moving down and deleting from history
-            sql = "delete from %s where version = '%s'" % (self.__version_table, str(version))
+        params = {}
+        params['version'] = version
 
         conn = self.__connect()
         cursor = conn.cursor()
+
+        if up:
+            # moving up and storing history
+            sql = "insert into %s (id, version, label, name, sql_up, sql_down) values (%s_seq.nextval, :version, :label, :migration_file_name, :sql_up, :sql_down)" % (self.__version_table, self.__version_table)
+            sql_up = sql_up and sql_up.encode(self.__script_encoding) or ""
+            v_sql_up = cursor.var( self.__driver.CLOB, len(sql_up))
+            v_sql_up.setvalue( 0, sql_up )
+            params['sql_up'] = sql_up
+
+            sql_down = sql_down and sql_down.encode(self.__script_encoding) or ""
+            v_sql_down = cursor.var( self.__driver.CLOB, len(sql_down))
+            v_sql_down.setvalue( 0, sql_down )
+            params['sql_down'] = sql_down
+
+            params['migration_file_name'] = migration_file_name
+            params['label'] = label_version
+        else:
+            # moving down and deleting from history
+            sql = "delete from %s where version = :version" % (self.__version_table)
+
         try:
-            cursor.execute(sql.encode(self.__script_encoding))
+            cursor.execute(sql.encode(self.__script_encoding), params)
             if execution_log:
                 execution_log("migration %s registered\n" % (migration_file_name))
         except Exception, e:
