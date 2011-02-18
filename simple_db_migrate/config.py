@@ -112,7 +112,7 @@ class FileConfig(Config):
 
 class InPlaceConfig(Config):
 
-    def __init__(self, db_host, db_user, db_password, db_name, migrations_dir, db_version_table='', log_dir=''):
+    def __init__(self, db_host, db_user, db_password, db_name, migrations_dir, db_version_table='', log_dir='', db_engine='mysql'):
         if not db_version_table or db_version_table == '':
             db_version_table = self.DB_VERSION_TABLE
         self._config = {
@@ -122,5 +122,6 @@ class InPlaceConfig(Config):
             "db_name": db_name,
             "db_version_table": db_version_table,
             "migrations_dir": self._parse_migrations_dir(migrations_dir),
-            "log_dir": log_dir
+            "log_dir": log_dir,
+            "db_engine" : db_engine
         }
