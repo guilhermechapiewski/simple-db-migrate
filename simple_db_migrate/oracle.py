@@ -212,7 +212,7 @@ class Oracle(object):
             sql = "select version from %s" % self.__version_table
             self.__execute(sql)
         except Exception:
-            sql = "create table %s ( id number(11) not null, version varchar2(20) default '0' NOT NULL, label varchar2(255), name varchar2(255), sql_up clob, sql_down clob, CONSTRAINT %s_pk PRIMARY KEY (id) ENABLE, CONSTRAINT %s_uk_label UNIQUE (label) ENABLE)" % (self.__version_table, self.__version_table, self.__version_table)
+            sql = "create table %s ( id number(11) not null, version varchar2(20) default '0' NOT NULL, label varchar2(255), name varchar2(255), sql_up clob, sql_down clob, CONSTRAINT %s_pk PRIMARY KEY (id) ENABLE)" % (self.__version_table, self.__version_table)
             self.__execute(sql)
             try:
                 self.__execute("drop sequence %s_seq" % self.__version_table)
@@ -263,8 +263,13 @@ class Oracle(object):
             cursor.execute("select label from %s" % self.__version_table)
         except Exception, e:
             # update version table
-            sql = "alter table %s add (label varchar2(255)) add constraint %s_uk_label unique (label);" % (self.__version_table, self.__version_table)
+            sql = "alter table %s add (label varchar2(255));" % (self.__version_table)
             self.__execute(sql)
+
+        try:
+            cursor.execute("alter table %s drop constraint %s_uk_label" % (self.__version_table, self.__version_table))
+        except Exception, e:
+            pass
 
         cursor.close()
         db.close()
@@ -308,7 +313,7 @@ class Oracle(object):
     def get_version_number_from_label(self, label):
         conn = self.__connect()
         cursor = conn.cursor()
-        cursor.execute("select version from %s where label = '%s'" % (self.__version_table, label))
+        cursor.execute("select version from %s where label = '%s' order by id desc" % (self.__version_table, label))
         result = cursor.fetchone()
         version = result and result[0] or None
         cursor.close()

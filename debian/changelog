@@ -1,3 +1,9 @@
+python-simple-db-migrate (1.4.1.1) stable; urgency=low
+  * Improvment: label will be registred for all migrations executed, not only for the last
+
+python-simple-db-migrate (1.4.1) stable; urgency=low
+  * Bug fix: optional parameter db_engine on InPlaceConfig, with default value as mysql
+
 python-simple-db-migrate (1.4) stable; urgency=low
   * New release. Added support to Oracle.
 

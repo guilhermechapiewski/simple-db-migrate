@@ -177,7 +177,7 @@ class Main(object):
                 self.execution_log("===== executing %s (%s) =====" % (migration.file_name, up_down_label), log_level_limit=1)
 
                 label = None
-                if is_migration_up and (migrations_to_be_executed[-1].version ==  migration.version):
+                if is_migration_up:
                     label = self.config.get("label_version", None)
 
                 try:

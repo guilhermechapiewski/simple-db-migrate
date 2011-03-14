@@ -506,7 +506,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         mox.VerifyAll()
 
-    def test_it_should_label_last_executed_migration_if_a_label_was_specified_and_a_version_was_not_specified_and_label_is_not_present_at_database(self):
+    def test_it_should_label_all_executed_migration_if_a_label_was_specified_and_a_version_was_not_specified_and_label_is_not_present_at_database(self):
         self.config.put("label_version","experimental_version")
         self.config.put("schema_version",None)
 
@@ -522,7 +522,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         sgdb_mock.get_version_number_from_label('experimental_version').AndReturn(None)
         sgdb_mock.get_current_schema_version().AndReturn(database_versions[-1])
         sgdb_mock.get_all_schema_versions().AndReturn(database_versions)
-        sgdb_mock.change(module_mox.IsA(str), "20090211120006", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, None)
+        sgdb_mock.change(module_mox.IsA(str), "20090211120006", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, "experimental_version")
         sgdb_mock.change(module_mox.IsA(str), "20090212120005", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, "experimental_version")
 
         db_migrate_mock = mox.CreateMock(SimpleDBMigrate)
@@ -539,7 +539,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         mox.VerifyAll()
 
-    def test_it_should_label_last_executed_migration_if_a_label_was_specified_and_a_version_was_not_specified_and_label_is_not_present_at_database_and_force_execute_old_migrations_versions_is_setted(self):
+    def test_it_should_label_all_executed_migration_if_a_label_was_specified_and_a_version_was_not_specified_and_label_is_not_present_at_database_and_force_execute_old_migrations_versions_is_setted(self):
         self.config.put("label_version","experimental_version")
         self.config.put("schema_version",None)
         self.config.put("force_execute_old_migrations_versions",True)
@@ -558,7 +558,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         sgdb_mock.get_version_number_from_label('experimental_version').AndReturn(None)
         sgdb_mock.get_current_schema_version().AndReturn(database_versions[-1])
         sgdb_mock.get_all_schema_versions().AndReturn(database_versions)
-        sgdb_mock.change(module_mox.IsA(str), '20090211120002', module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, None)
+        sgdb_mock.change(module_mox.IsA(str), '20090211120002', module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, "experimental_version")
         sgdb_mock.change(module_mox.IsA(str), '20090211120003', module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, "experimental_version")
 
 
@@ -655,7 +655,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         mox.VerifyAll()
 
-    def test_it_should_label_last_executed_migration_if_a_label_and_a_version_were_specified_and_neither_them_are_present_at_database(self):
+    def test_it_should_label_all_executed_migration_if_a_label_and_a_version_were_specified_and_neither_them_are_present_at_database(self):
         self.config.put("label_version","experimental_version")
         self.config.put("schema_version","20090211120006")
 
@@ -680,7 +680,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         sgdb_mock.get_version_id_from_version_number('20090211120006').AndReturn(None)
 
         sgdb_mock.get_all_schema_versions().AndReturn(database_versions)
-        sgdb_mock.change(module_mox.IsA(str), "20090211120005", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, None)
+        sgdb_mock.change(module_mox.IsA(str), "20090211120005", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, "experimental_version")
         sgdb_mock.change(module_mox.IsA(str), "20090211120006", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, "experimental_version")
 
         db_migrate_mock = mox.CreateMock(SimpleDBMigrate)
@@ -697,7 +697,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         mox.VerifyAll()
 
-    def test_it_should_label_last_executed_migration_if_a_label_and_a_version_were_specified_and_neither_them_are_present_at_database_and_force_execute_old_migrations_versions_is_setted(self):
+    def test_it_should_label_all_executed_migration_if_a_label_and_a_version_were_specified_and_neither_them_are_present_at_database_and_force_execute_old_migrations_versions_is_setted(self):
         self.config.put("label_version","experimental_version")
         self.config.put("schema_version","20090211120006")
         self.config.put("force_execute_old_migrations_versions",True)
@@ -722,8 +722,8 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         sgdb_mock.get_version_id_from_version_number('20090211120006').AndReturn(None)
 
         sgdb_mock.get_all_schema_versions().AndReturn(database_versions)
-        sgdb_mock.change(module_mox.IsA(str), "20090211120002", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, None)
-        sgdb_mock.change(module_mox.IsA(str), "20090211120005", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, None)
+        sgdb_mock.change(module_mox.IsA(str), "20090211120002", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, "experimental_version")
+        sgdb_mock.change(module_mox.IsA(str), "20090211120005", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, "experimental_version")
         sgdb_mock.change(module_mox.IsA(str), "20090211120006", module_mox.IsA(str), module_mox.IsA(str), module_mox.IsA(str), True, self.log, "experimental_version")
 
         db_migrate_mock = mox.CreateMock(SimpleDBMigrate)

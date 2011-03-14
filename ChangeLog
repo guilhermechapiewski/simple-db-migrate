@@ -1,3 +1,6 @@
+### 1.4.1.1 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Mon, 14 Mar 2011 10:30:00 -0300
+- Improvment: label will be registred for all migrations executed, not only for the last
+
 ### 1.4.1 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Fri, 18 Feb 2011 17:00:00 -0300
 - Bug fix: optional parameter db_engine on InPlaceConfig, with default value as mysql
 

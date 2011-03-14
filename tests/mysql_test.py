@@ -36,7 +36,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         db_mock.close()
 
         cursor_mock = mox.CreateMockAnything()
-        cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id), UNIQUE KEY (label))')
+        cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))')
         cursor_mock.close()
 
         db_mock.set_character_set('utf8')
@@ -47,6 +47,8 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         cursor_mock.execute('select id from __db_version__;')
         cursor_mock.execute('select label from __db_version__;')
+        cursor_mock.execute("show index from __db_version__ where key_name = 'label';")
+        cursor_mock.fetchone().AndReturn(None)
         cursor_mock.close()
 
         db_mock.set_character_set('utf8')
@@ -91,7 +93,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         db_mock.query('create database if not exists migration_test;')
         db_mock.close()
 
-        cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id), UNIQUE KEY (label))')
+        cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))')
         cursor_mock.close()
 
         db_mock.set_character_set('utf8')
@@ -102,6 +104,8 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         cursor_mock.execute('select id from __db_version__;')
         cursor_mock.execute('select label from __db_version__;')
+        cursor_mock.execute("show index from __db_version__ where key_name = 'label';")
+        cursor_mock.fetchone().AndReturn(None)
         cursor_mock.close()
 
         db_mock.set_character_set('utf8')
@@ -341,7 +345,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         db_mock.close()
 
         cursor_mock = mox.CreateMockAnything()
-        cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id), UNIQUE KEY (label))')
+        cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))')
         cursor_mock.close()
 
         db_mock.set_character_set('utf8')
@@ -366,6 +370,8 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         db_mock.close()
 
         cursor_mock.execute('select label from __db_version__;')
+        cursor_mock.execute("show index from __db_version__ where key_name = 'label';")
+        cursor_mock.fetchone().AndReturn(None)
 
         #these two are referent to cursor which raise an exception
         cursor_mock.close()
@@ -405,7 +411,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         db_mock.close()
 
         cursor_mock = mox.CreateMockAnything()
-        cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id), UNIQUE KEY (label))')
+        cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))')
         cursor_mock.close()
 
         db_mock.set_character_set('utf8')
@@ -422,8 +428,80 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         cursor_mock.execute('select label from __db_version__;').AndRaise(Exception("Don't have label field"))
 
-        cursor_mock.execute('alter table __db_version__ add column label varchar(255) after version, add unique key (label)')
+        cursor_mock.execute('alter table __db_version__ add column label varchar(255) after version')
         cursor_mock.close()
+
+        cursor_mock.execute("show index from __db_version__ where key_name = 'label';")
+        cursor_mock.fetchone().AndReturn(None)
+
+        db_mock.set_character_set('utf8')
+        db_mock.select_db('migration_test')
+        db_mock.cursor().AndReturn(cursor_mock)
+        db_mock.commit()
+        db_mock.close()
+
+        #these two are referent to cursor which raise an exception
+        cursor_mock.close()
+        db_mock.close()
+
+        cursor_mock.execute('select count(*) from __db_version__;')
+        cursor_mock.fetchone().AndReturn([1])
+        cursor_mock.close()
+
+        db_mock.set_character_set('utf8')
+        db_mock.select_db('migration_test')
+        db_mock.cursor().AndReturn(cursor_mock)
+        db_mock.close()
+
+        mysql_driver_mock = mox.CreateMockAnything()
+        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
+        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
+        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
+        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
+        mysql_driver_mock.connect(host='localhost', passwd='', user='root').AndReturn(db_mock)
+
+
+        mox.ReplayAll()
+
+        mysql = MySQL(config_mock, mysql_driver_mock)
+
+        mox.VerifyAll()
+
+    def test_it_should_update_version_table_on_init_dropping_label_constraint_if_still_have_it(self):
+        mox = Mox()
+
+        config_mock = self.create_config_mock(mox)
+
+        db_mock = mox.CreateMockAnything()
+        db_mock.set_character_set('utf8')
+        db_mock.query('create database if not exists migration_test;')
+        db_mock.close()
+
+        cursor_mock = mox.CreateMockAnything()
+        cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))')
+        cursor_mock.close()
+
+        db_mock.set_character_set('utf8')
+        db_mock.select_db('migration_test')
+        db_mock.cursor().AndReturn(cursor_mock)
+        db_mock.commit()
+        db_mock.close()
+
+        cursor_mock.execute('select id from __db_version__;')
+
+        db_mock.set_character_set('utf8')
+        db_mock.select_db('migration_test')
+        db_mock.cursor().AndReturn(cursor_mock)
+
+        cursor_mock.execute('select label from __db_version__;').AndRaise(Exception("Don't have label field"))
+
+        cursor_mock.execute('alter table __db_version__ add column label varchar(255) after version')
+        cursor_mock.close()
+
+        cursor_mock.execute("show index from __db_version__ where key_name = 'label';")
+        cursor_mock.fetchone().AndReturn(('__db_version__', 0L, 'label', 1L, 'label', 'A', None, None, None, 'YES', 'BTREE', ''))
+
+        cursor_mock.execute("alter table __db_version__ drop index label;")
 
         db_mock.set_character_set('utf8')
         db_mock.select_db('migration_test')
@@ -471,7 +549,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         db_mock.query('create database if not exists migration_test;')
         db_mock.close()
 
-        cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id), UNIQUE KEY (label))')
+        cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))')
         cursor_mock.close()
 
         db_mock.set_character_set('utf8')
@@ -482,6 +560,8 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         cursor_mock.execute('select id from __db_version__;')
         cursor_mock.execute('select label from __db_version__;')
+        cursor_mock.execute("show index from __db_version__ where key_name = 'label';")
+        cursor_mock.fetchone().AndReturn(None)
         cursor_mock.close()
 
         db_mock.set_character_set('utf8')

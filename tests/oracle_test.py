@@ -69,7 +69,7 @@ DATABASE_ENGINE = os.getenv("DB_ENGINE") or "oracle"
         oracle_driver_mock.connect(dsn='SID', user='root', password='').AndReturn(db_mock)
 
         #create version table
-        cursor_mock.execute("create table db_version ( id number(11) not null, version varchar2(20) default '0' NOT NULL, label varchar2(255), name varchar2(255), sql_up clob, sql_down clob, CONSTRAINT db_version_pk PRIMARY KEY (id) ENABLE, CONSTRAINT db_version_uk_label UNIQUE (label) ENABLE)").AndReturn(0)
+        cursor_mock.execute("create table db_version ( id number(11) not null, version varchar2(20) default '0' NOT NULL, label varchar2(255), name varchar2(255), sql_up clob, sql_down clob, CONSTRAINT db_version_pk PRIMARY KEY (id) ENABLE)").AndReturn(0)
         cursor_mock.close()
 
         db_mock.cursor().AndReturn(cursor_mock)
@@ -101,6 +101,7 @@ DATABASE_ENGINE = os.getenv("DB_ENGINE") or "oracle"
         #check if has id and label field
         cursor_mock.execute("select id from db_version").AndReturn([])
         cursor_mock.execute("select label from db_version").AndReturn([])
+        cursor_mock.execute("alter table db_version drop constraint db_version_uk_label")
         cursor_mock.close()
 
         db_mock.cursor().AndReturn(cursor_mock)
@@ -160,7 +161,7 @@ DATABASE_ENGINE = os.getenv("DB_ENGINE") or "oracle"
         oracle_driver_mock.connect(dsn='SID', user='root', password='').AndReturn(db_mock)
 
         #create version table
-        cursor_mock.execute("create table db_version ( id number(11) not null, version varchar2(20) default '0' NOT NULL, label varchar2(255), name varchar2(255), sql_up clob, sql_down clob, CONSTRAINT db_version_pk PRIMARY KEY (id) ENABLE, CONSTRAINT db_version_uk_label UNIQUE (label) ENABLE)").AndReturn(0)
+        cursor_mock.execute("create table db_version ( id number(11) not null, version varchar2(20) default '0' NOT NULL, label varchar2(255), name varchar2(255), sql_up clob, sql_down clob, CONSTRAINT db_version_pk PRIMARY KEY (id) ENABLE)").AndReturn(0)
         cursor_mock.close()
 
         db_mock.cursor().AndReturn(cursor_mock)
@@ -192,6 +193,7 @@ DATABASE_ENGINE = os.getenv("DB_ENGINE") or "oracle"
         #check if has id and label fields
         cursor_mock.execute("select id from db_version").AndReturn([])
         cursor_mock.execute("select label from db_version").AndReturn([])
+        cursor_mock.execute("alter table db_version drop constraint db_version_uk_label")
         cursor_mock.close()
 
         db_mock.cursor().AndReturn(cursor_mock)
@@ -283,7 +285,7 @@ DATABASE_ENGINE = os.getenv("DB_ENGINE") or "oracle"
         oracle_driver_mock.connect(dsn='SID', user='root', password='').AndReturn(db_mock)
 
         #create version table
-        cursor_mock.execute("create table db_version ( id number(11) not null, version varchar2(20) default '0' NOT NULL, label varchar2(255), name varchar2(255), sql_up clob, sql_down clob, CONSTRAINT db_version_pk PRIMARY KEY (id) ENABLE, CONSTRAINT db_version_uk_label UNIQUE (label) ENABLE)").AndReturn(0)
+        cursor_mock.execute("create table db_version ( id number(11) not null, version varchar2(20) default '0' NOT NULL, label varchar2(255), name varchar2(255), sql_up clob, sql_down clob, CONSTRAINT db_version_pk PRIMARY KEY (id) ENABLE)").AndReturn(0)
         cursor_mock.close()
 
         db_mock.cursor().AndReturn(cursor_mock)
@@ -315,6 +317,7 @@ DATABASE_ENGINE = os.getenv("DB_ENGINE") or "oracle"
         #check if has id and label fields
         cursor_mock.execute("select id from db_version").AndReturn([])
         cursor_mock.execute("select label from db_version").AndReturn([])
+        cursor_mock.execute("alter table db_version drop constraint db_version_uk_label")
         cursor_mock.close()
 
         db_mock.cursor().AndReturn(cursor_mock)
@@ -745,6 +748,7 @@ DATABASE_ENGINE = os.getenv("DB_ENGINE") or "oracle"
         oracle_driver_mock.connect(dsn='SID', user='root', password='').AndReturn(db_mock)
 
         cursor_mock.execute('select label from db_version')
+        cursor_mock.execute("alter table db_version drop constraint db_version_uk_label")
 
         #these two are referent to cursor which raise an exception
         cursor_mock.close()
@@ -793,13 +797,13 @@ DATABASE_ENGINE = os.getenv("DB_ENGINE") or "oracle"
 
         cursor_mock.execute('select id from db_version').AndReturn([])
         cursor_mock.execute('select label from db_version').AndRaise(Exception("Don't have label field"))
-
         db_mock.cursor().AndReturn(cursor_mock)
 
         oracle_driver_mock.connect(dsn='SID', user='root', password='').AndReturn(db_mock)
 
-        cursor_mock.execute('alter table db_version add (label varchar2(255)) add constraint db_version_uk_label unique (label)')
+        cursor_mock.execute('alter table db_version add (label varchar2(255))')
         cursor_mock.close()
+        cursor_mock.execute("alter table db_version drop constraint db_version_uk_label")
 
         db_mock.cursor().AndReturn(cursor_mock)
         db_mock.commit()
@@ -849,7 +853,7 @@ DATABASE_ENGINE = os.getenv("DB_ENGINE") or "oracle"
         db_mock.close()
 
         #create version table
-        cursor_mock.execute("create table db_version ( id number(11) not null, version varchar2(20) default '0' NOT NULL, label varchar2(255), name varchar2(255), sql_up clob, sql_down clob, CONSTRAINT db_version_pk PRIMARY KEY (id) ENABLE, CONSTRAINT db_version_uk_label UNIQUE (label) ENABLE)").AndReturn(0)
+        cursor_mock.execute("create table db_version ( id number(11) not null, version varchar2(20) default '0' NOT NULL, label varchar2(255), name varchar2(255), sql_up clob, sql_down clob, CONSTRAINT db_version_pk PRIMARY KEY (id) ENABLE)").AndReturn(0)
         cursor_mock.close()
 
         db_mock.cursor().AndReturn(cursor_mock)
@@ -875,6 +879,7 @@ DATABASE_ENGINE = os.getenv("DB_ENGINE") or "oracle"
         #check if has id and label fields
         cursor_mock.execute("select id from db_version").AndReturn([])
         cursor_mock.execute("select label from db_version").AndReturn([])
+        cursor_mock.execute("alter table db_version drop constraint db_version_uk_label")
         cursor_mock.close()
 
         db_mock.cursor().AndReturn(cursor_mock)

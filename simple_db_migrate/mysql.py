@@ -119,7 +119,7 @@ class MySQL(object):
 
     def _create_version_table_if_not_exists(self):
         # create version table
-        sql = "create table if not exists %s ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default \"0\", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id), UNIQUE KEY (label));" % self.__version_table
+        sql = "create table if not exists %s ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default \"0\", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id));" % self.__version_table
         self.__execute(sql)
 
         self._check_version_table_if_is_updated()
@@ -153,8 +153,15 @@ class MySQL(object):
             cursor.execute("select label from %s;" % self.__version_table)
         except Exception:
             # update version table
-            sql = "alter table %s add column label varchar(255) after version, add unique key (label);" % self.__version_table
+            sql = "alter table %s add column label varchar(255) after version;" % self.__version_table
             self.__execute(sql)
+
+        try:
+            cursor.execute("show index from %s where key_name = 'label';" % self.__version_table)
+            if cursor.fetchone():
+                cursor.execute("alter table %s drop index label;" % self.__version_table)
+        except Exception:
+            pass
 
         cursor.close()
         db.close()
@@ -198,7 +205,7 @@ class MySQL(object):
     def get_version_number_from_label(self, label):
         db = self.__mysql_connect()
         cursor = db.cursor()
-        cursor.execute("select version from %s where label = '%s';" % (self.__version_table, label))
+        cursor.execute("select version from %s where label = '%s' order by id desc" % (self.__version_table, label))
         result = cursor.fetchone()
         version = result and result[0] or None
         cursor.close()
