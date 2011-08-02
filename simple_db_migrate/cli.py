@@ -108,6 +108,10 @@ class CLI(object):
                 dest="label_version",
                 help="Give this label the last migration executed or execute a down to him.")
 
+        self.__parser.add_option("--password",
+                dest="password",
+                help="Use this password to connect to database, to auto.")
+
     def get_parser(self):
         return self.__parser
 
