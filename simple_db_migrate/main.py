@@ -183,7 +183,7 @@ class Main(object):
                 try:
                     self.sgdb.change(sql, migration.version, migration.file_name, migration.sql_up, migration.sql_down, is_migration_up, self.execution_log, label)
                 except Exception, e:
-                    self.execution_log("===== ERROR executing %s/%s (%s) =====" % (migration.abspath, migration.file_name, up_down_label), log_level_limit=1)
+                    self.execution_log("===== ERROR executing %s (%s) =====" % (migration.abspath, up_down_label), log_level_limit=1)
                     raise e
 
                 # paused mode
