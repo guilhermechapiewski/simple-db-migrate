@@ -32,7 +32,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         db_mock = mox.CreateMockAnything()
         db_mock.set_character_set('utf8')
-        db_mock.query('create database if not exists migration_test;')
+        db_mock.query('create database if not exists `migration_test`;')
         db_mock.close()
 
         cursor_mock = mox.CreateMockAnything()
@@ -90,7 +90,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         db_mock.close()
 
         db_mock.set_character_set('utf8')
-        db_mock.query('create database if not exists migration_test;')
+        db_mock.query('create database if not exists `migration_test`;')
         db_mock.close()
 
         cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))')
@@ -341,7 +341,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         db_mock = mox.CreateMockAnything()
         db_mock.set_character_set('utf8')
-        db_mock.query('create database if not exists migration_test;')
+        db_mock.query('create database if not exists `migration_test`;')
         db_mock.close()
 
         cursor_mock = mox.CreateMockAnything()
@@ -407,7 +407,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         db_mock = mox.CreateMockAnything()
         db_mock.set_character_set('utf8')
-        db_mock.query('create database if not exists migration_test;')
+        db_mock.query('create database if not exists `migration_test`;')
         db_mock.close()
 
         cursor_mock = mox.CreateMockAnything()
@@ -474,7 +474,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         db_mock = mox.CreateMockAnything()
         db_mock.set_character_set('utf8')
-        db_mock.query('create database if not exists migration_test;')
+        db_mock.query('create database if not exists `migration_test`;')
         db_mock.close()
 
         cursor_mock = mox.CreateMockAnything()
@@ -546,7 +546,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
         mysql_driver_mock = mox.CreateMockAnything()
 
         db_mock.set_character_set('utf8')
-        db_mock.query('create database if not exists migration_test;')
+        db_mock.query('create database if not exists `migration_test`;')
         db_mock.close()
 
         cursor_mock.execute('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))')
