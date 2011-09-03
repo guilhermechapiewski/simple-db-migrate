@@ -107,6 +107,50 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
             core.Migration = original_migration_module
             if file_created and os.path.isfile(file_created):
                 os.remove(file_created)
+                
+    def test_it_should_create_new_migration_with_utc_timestamp(self):
+        from simple_db_migrate import core
+        from time import strftime, gmtime
+
+        config_file = """
+HOST = os.getenv("DB_HOST") or "localhost"
+USERNAME = os.getenv("DB_USERNAME") or "root"
+PASSWORD = os.getenv("DB_PASSWORD") or ""
+DATABASE = os.getenv("DB_DATABASE") or "migration_test"
+MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
+UTC_TIMESTAMP = os.getenv("UTC_TIMESTAMP") or True
+"""
+        f = open("test_utc.conf", "w")
+        f.write(config_file)
+        f.close()
+
+        config = FileConfig("test_utc.conf")
+        config.put('log_dir', None)
+
+        original_migration_module = core.Migration
+        file_created = None
+        try:
+            mox = Mox()
+            core.Migration = mox.CreateMock(Migration)
+            file_created = '%s_some_new_migration.migration' % strftime("%Y%m%d%H%M%S", gmtime())
+            core.Migration.is_file_name_valid(file_created).AndReturn(True)
+
+            config.put("new_migration","some_new_migration")
+
+            sgdb_mock = mox.CreateMockAnything()
+            db_migrate_mock = mox.CreateMockAnything()
+
+            mox.ReplayAll()
+
+            main = Main(config=config, sgdb=sgdb_mock, db_migrate=db_migrate_mock, execution_log = self.log)
+            main.execute()
+
+            mox.VerifyAll()
+        finally:
+            core.Migration = original_migration_module
+            if file_created and os.path.isfile(file_created):
+                os.remove(file_created)
+            os.remove("test_utc.conf")
 
     def test_it_should_migrate_database_with_migration_is_up(self):
         class MainMock(Main):

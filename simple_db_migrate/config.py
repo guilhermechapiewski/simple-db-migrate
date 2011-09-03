@@ -85,6 +85,8 @@ class FileConfig(Config):
         self.put("db_engine", self.get_variable(settings, 'DATABASE_ENGINE', 'ENGINE', 'mysql'))
         self.put("db_version_table", self.get_variable(settings, 'DATABASE_VERSION_TABLE', 'VERSION_TABLE', self.DB_VERSION_TABLE))
 
+        self.put("utc_timestamp", self.get_variable(settings, 'UTC_TIMESTAMP', None, False))
+
         self.get_custom_variables(settings, ['DATABASE_HOST', 'DATABASE_USER', 'DATABASE_PASSWORD', 'DATABASE_NAME', 'DATABASE_ENGINE', 'DATABASE_VERSION_TABLE', 'DATABASE_MIGRATIONS_DIR'])
 
         migrations_dir = self.get_variable(settings, 'DATABASE_MIGRATIONS_DIR', 'MIGRATIONS_DIR')
@@ -112,7 +114,7 @@ class FileConfig(Config):
 
 class InPlaceConfig(Config):
 
-    def __init__(self, db_host, db_user, db_password, db_name, migrations_dir, db_version_table='', log_dir='', db_engine='mysql'):
+    def __init__(self, db_host, db_user, db_password, db_name, migrations_dir, db_version_table='', log_dir='', db_engine='mysql', utc_timestamp=False):
         if not db_version_table or db_version_table == '':
             db_version_table = self.DB_VERSION_TABLE
         self._config = {
@@ -123,5 +125,6 @@ class InPlaceConfig(Config):
             "db_version_table": db_version_table,
             "migrations_dir": self._parse_migrations_dir(migrations_dir),
             "log_dir": log_dir,
-            "db_engine" : db_engine
+            "db_engine" : db_engine,
+            "utc_timestamp" : utc_timestamp
         }

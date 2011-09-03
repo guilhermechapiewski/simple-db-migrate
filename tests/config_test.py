@@ -47,6 +47,7 @@ USERNAME = os.getenv('DB_USERNAME') or 'root'
 PASSWORD = os.getenv('DB_PASSWORD') or ''
 DATABASE = os.getenv('DB_DATABASE') or 'migration_example'
 MIGRATIONS_DIR = os.getenv('MIGRATIONS_DIR') or 'example'
+UTC_TIMESTAMP = os.getenv("UTC_TIMESTAMP") or True
 '''
         f = open('sample.conf', 'w')
         f.write(config_file)
@@ -64,6 +65,7 @@ MIGRATIONS_DIR = os.getenv('MIGRATIONS_DIR') or 'example'
         self.assertEquals(config.get('db_name'), 'migration_example')
         self.assertEquals(config.get('db_version_table'), Config.DB_VERSION_TABLE)
         self.assertEquals(config.get('migrations_dir'), [os.path.abspath('example')])
+        self.assertEquals(config.get('utc_timestamp'), True)
 
     def test_it_should_stop_execution_when_an_invalid_key_is_requested(self):
         config_path = os.path.abspath('sample.conf')
@@ -124,6 +126,7 @@ class InPlaceConfigTest(unittest.TestCase):
         self.assertEquals(config.get('db_version_table'), Config.DB_VERSION_TABLE)
         self.assertEquals(config.get('migrations_dir'), [os.path.abspath('dir')])
         self.assertEquals(config.get('log_dir'), '')
+        self.assertEquals(config.get('utc_timestamp'), False)
     
     def test_it_should_stop_execution_when_an_invalid_key_is_requested(self):
         config = InPlaceConfig('localhost', 'user', 'passwd', 'db', 'dir')
