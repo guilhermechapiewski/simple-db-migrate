@@ -1,4 +1,4 @@
-from time import strftime
+from time import strftime, gmtime, localtime
 import codecs
 import os
 import shutil
@@ -120,8 +120,8 @@ class Migration(object):
         return match != None
 
     @staticmethod
-    def create(migration_name, migration_dir='.', script_encoding='utf-8'):
-        timestamp = strftime("%Y%m%d%H%M%S")
+    def create(migration_name, migration_dir='.', script_encoding='utf-8', utc_timestamp = False):
+        timestamp = strftime("%Y%m%d%H%M%S", gmtime() if utc_timestamp else localtime())
         file_name = "%s_%s%s" % (timestamp, migration_name, Migration.MIGRATION_FILES_EXTENSION)
 
         if not Migration.is_file_name_valid(file_name):

@@ -20,14 +20,15 @@ def create_migration_file(file_name, sql_up='', sql_down=''):
     f.close()
     return file_name
     
-def create_config(host='localhost', username='root', password='', database='migration_example', migrations_dir='.'):
+def create_config(host='localhost', username='root', password='', database='migration_example', migrations_dir='.', utc_timestamp=False):
     config_file = '''
 HOST = os.getenv('DB_HOST') or '%s'
 USERNAME = os.getenv('DB_USERNAME') or '%s'
 PASSWORD = os.getenv('DB_PASSWORD') or '%s'
 DATABASE = os.getenv('DB_DATABASE') or '%s'
 MIGRATIONS_DIR = os.getenv('MIGRATIONS_DIR') or '%s'
-''' % (host, username, password, database, migrations_dir)
+UTC_TIMESTAMP = os.getenv("UTC_TIMESTAMP") or %s
+''' % (host, username, password, database, migrations_dir, utc_timestamp)
     f = open('test_config_file.conf', 'w')
     f.write(config_file)
     f.close()
