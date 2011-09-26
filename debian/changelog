@@ -1,3 +1,8 @@
+python-simple-db-migrate (1.4.2) stable; urgency=low
+  * Added: password parameter
+  * Added: backtick on database name
+  * Added: parameter to create migrations using GMT
+
 python-simple-db-migrate (1.4.1.1) stable; urgency=low
   * Improvment: label will be registred for all migrations executed, not only for the last
 
