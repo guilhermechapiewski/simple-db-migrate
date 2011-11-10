@@ -24,7 +24,7 @@ def run():
             CLI.show_colors()
 
         # Create config
-        config = FileConfig(options.config_file)
+        config = FileConfig(options.config_file, options.environment)
         config.put('schema_version', options.schema_version)
         config.put('show_sql', options.show_sql)
         config.put('show_sql_only', options.show_sql_only)

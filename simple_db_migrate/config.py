@@ -72,25 +72,25 @@ class FileConfig(Config):
 
             return locals()
 
-    def __init__(self, config_file="simple-db-migrate.conf"):
+    def __init__(self, config_file="simple-db-migrate.conf", environment=''):
         self._config = {}
 
         # read configuration
         settings = FileConfig.SettingsFile.import_file(config_file)
 
-        self.put("db_host", self.get_variable(settings, 'DATABASE_HOST', 'HOST'))
-        self.put("db_user", self.get_variable(settings, 'DATABASE_USER', 'USERNAME'))
-        self.put("db_password", self.get_variable(settings, 'DATABASE_PASSWORD', 'PASSWORD'))
-        self.put("db_name", self.get_variable(settings, 'DATABASE_NAME', 'DATABASE'))
+        self.put("db_host", self.get_variable(settings, 'DATABASE_HOST', 'HOST', environment=environment))
+        self.put("db_user", self.get_variable(settings, 'DATABASE_USER', 'USERNAME', environment=environment))
+        self.put("db_password", self.get_variable(settings, 'DATABASE_PASSWORD', 'PASSWORD', environment=environment))
+        self.put("db_name", self.get_variable(settings, 'DATABASE_NAME', 'DATABASE', environment=environment))
 
-        self.put("db_engine", self.get_variable(settings, 'DATABASE_ENGINE', 'ENGINE', 'mysql'))
-        self.put("db_version_table", self.get_variable(settings, 'DATABASE_VERSION_TABLE', 'VERSION_TABLE', self.DB_VERSION_TABLE))
+        self.put("db_engine", self.get_variable(settings, 'DATABASE_ENGINE', 'ENGINE', 'mysql', environment))
+        self.put("db_version_table", self.get_variable(settings, 'DATABASE_VERSION_TABLE', 'VERSION_TABLE', self.DB_VERSION_TABLE, environment))
 
-        self.put("utc_timestamp", ast.literal_eval(str(self.get_variable(settings, 'UTC_TIMESTAMP', None, 'False'))))
+        self.put("utc_timestamp", ast.literal_eval(str(self.get_variable(settings, 'UTC_TIMESTAMP', None, 'False', environment))))
 
         self.get_custom_variables(settings, ['DATABASE_HOST', 'DATABASE_USER', 'DATABASE_PASSWORD', 'DATABASE_NAME', 'DATABASE_ENGINE', 'DATABASE_VERSION_TABLE', 'DATABASE_MIGRATIONS_DIR'])
 
-        migrations_dir = self.get_variable(settings, 'DATABASE_MIGRATIONS_DIR', 'MIGRATIONS_DIR')
+        migrations_dir = self.get_variable(settings, 'DATABASE_MIGRATIONS_DIR', 'MIGRATIONS_DIR', environment=environment)
         config_dir = os.path.split(config_file)[0]
         self.put("migrations_dir", self._parse_migrations_dir(migrations_dir, config_dir))
 
@@ -102,10 +102,17 @@ class FileConfig(Config):
         for key in settings.keys():
             m_key = p.match(key)
             if m_key and key not in default_variables:
-                self.put("db_%s" % m_key.group('name').lower(), self.get_variable(settings, key,  m_key.group('name')))
+                self.put("db_%s" % m_key.group('name').lower(), self.get_variable(settings, key,  m_key.group('name'), environment=environment))
 
     #default_value was assigned as !@#$%&* to be more easy to check when the default value is None, empty string or False
-    def get_variable(self, settings, name, old_name, default_value='!@#$%&*'):
+    def get_variable(self, settings, name, old_name, default_value='!@#$%&*', environment=''):
+        if environment:
+            environment = environment.upper()
+            env_name = environment + "_" + name if name else None
+            env_old_name = environment + "_" + old_name if old_name else None
+            if env_name in settings or env_old_name in settings:
+                return settings.get(env_name, settings.get(env_old_name))
+
         if name in settings or old_name in settings:
             return settings.get(name, settings.get(old_name))
         else:

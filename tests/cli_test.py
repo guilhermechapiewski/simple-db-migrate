@@ -50,6 +50,8 @@ class CLITest(unittest.TestCase):
 
         self.assertTrue(parser.has_option("--password"))
 
+        self.assertTrue(parser.has_option("--env"))
+
     def test_it_should_show_error_message_and_exit(self):
         cli = CLI()
         try:

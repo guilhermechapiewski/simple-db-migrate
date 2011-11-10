@@ -112,6 +112,11 @@ class CLI(object):
                 dest="password",
                 help="Use this password to connect to database, to auto.")
 
+        self.__parser.add_option("--env",
+                dest="environment",
+                default="",
+                help="Use this environment to get specific configurations.")
+
     def get_parser(self):
         return self.__parser
 
