@@ -86,7 +86,7 @@ class FileConfig(Config):
         self.put("db_engine", self.get_variable(settings, 'DATABASE_ENGINE', 'ENGINE', 'mysql'))
         self.put("db_version_table", self.get_variable(settings, 'DATABASE_VERSION_TABLE', 'VERSION_TABLE', self.DB_VERSION_TABLE))
 
-        self.put("utc_timestamp", ast.literal_eval(self.get_variable(settings, 'UTC_TIMESTAMP', None, 'False')))
+        self.put("utc_timestamp", ast.literal_eval(str(self.get_variable(settings, 'UTC_TIMESTAMP', None, 'False'))))
 
         self.get_custom_variables(settings, ['DATABASE_HOST', 'DATABASE_USER', 'DATABASE_PASSWORD', 'DATABASE_NAME', 'DATABASE_ENGINE', 'DATABASE_VERSION_TABLE', 'DATABASE_MIGRATIONS_DIR'])
 
