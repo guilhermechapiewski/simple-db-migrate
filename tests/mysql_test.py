@@ -86,7 +86,7 @@ MIGRATIONS_DIR = os.getenv("MIGRATIONS_DIR") or "."
 
         db_mock = mox.CreateMockAnything()
         db_mock.set_character_set('utf8')
-        db_mock.query("set foreign_key_checks=0; drop database if exists migration_test;")
+        db_mock.query("set foreign_key_checks=0; drop database if exists `migration_test`;")
         db_mock.close()
 
         db_mock.set_character_set('utf8')
