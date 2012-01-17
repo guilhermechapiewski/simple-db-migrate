@@ -25,23 +25,23 @@ def run(args=None, getpass=getpass):
 
         # Create config
         config = FileConfig(options.config_file, options.environment)
-        config.put('schema_version', options.schema_version)
-        config.put('show_sql', options.show_sql)
-        config.put('show_sql_only', options.show_sql_only)
-        config.put('new_migration', options.new_migration)
-        config.put('drop_db_first', options.drop_db_first)
-        config.put('paused_mode', options.paused_mode)
-        config.put('log_dir', options.log_dir)
-        config.put('label_version', options.label_version)
-        config.put('force_use_files_on_down', options.force_use_files_on_down)
-        config.put('force_execute_old_migrations_versions', options.force_execute_old_migrations_versions)
+        config.update('schema_version', options.schema_version)
+        config.update('show_sql', options.show_sql)
+        config.update('show_sql_only', options.show_sql_only)
+        config.update('new_migration', options.new_migration)
+        config.update('drop_db_first', options.drop_db_first)
+        config.update('paused_mode', options.paused_mode)
+        config.update('log_dir', options.log_dir)
+        config.update('label_version', options.label_version)
+        config.update('force_use_files_on_down', options.force_use_files_on_down)
+        config.update('force_execute_old_migrations_versions', options.force_execute_old_migrations_versions)
 
         # paused mode forces log_level to 2
         log_level = int(options.log_level)
         if options.paused_mode:
             log_level = 2
 
-        config.put('log_level', log_level)
+        config.update('log_level', log_level)
 
         # Ask the password for user if configured
         if config.get('db_password') == '<<ask_me>>':

@@ -149,5 +149,14 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
         config_used = main_mock.call_args[0][0]
         self.assertEqual('xpto_pass', config_used.get('db_password'))
 
+    @patch.object(simple_db_migrate.main.Main, 'execute')
+    @patch.object(simple_db_migrate.main.Main, '__init__', return_value=None)
+    @patch.object(simple_db_migrate.config.FileConfig, '_import_file', return_value = {'force_execute_old_migrations_versions':True, 'label_version':'label', 'HOST':'host', 'USERNAME': 'root', 'PASSWORD':'', 'DATABASE':'database', 'MIGRATIONS_DIR':'.'})
+    def test_it_should_use_values_from_config_file_in_replacement_for_command_line(self, import_file_mock, main_mock, execute_mock):
+        simple_db_migrate.run(["-c", os.path.abspath('sample.conf')])
+        config_used = main_mock.call_args[0][0]
+        self.assertEqual('label', config_used.get('label_version'))
+        self.assertEqual(True, config_used.get('force_execute_old_migrations_versions'))
+
 if __name__ == '__main__':
     unittest.main()

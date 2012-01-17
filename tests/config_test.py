@@ -69,7 +69,7 @@ class ConfigTest(unittest.TestCase):
         except Exception, e:
             self.assertEqual("invalid key ('ANOTHER_KEY')", str(e))
 
-    def test_it_should_accept_noe_empty_stringand_false_as_default_value(self):
+    def test_it_should_accept_non_empty_stringand_false_as_default_value(self):
         dict = {"some_key": "some_value"}
         self.assertEqual(None, Config._get(dict,"ANOTHER_KEY", None))
         self.assertEqual("", Config._get(dict,"ANOTHER_KEY", ""))
@@ -123,12 +123,33 @@ class ConfigTest(unittest.TestCase):
         except Exception, e:
             self.assertEqual("invalid key ('ANOTHER_KEY')", str(e))
 
-    def test_it_should_accept_noe_empty_string_and_false_as_default_value(self):
+    def test_it_should_accept_non_empty_string_and_false_as_default_value(self):
         config = Config()
         config.put("some_key", "some_value")
         self.assertEqual(None, config.get("ANOTHER_KEY", None))
         self.assertEqual("", config.get("ANOTHER_KEY", ""))
         self.assertEqual(False, config.get("ANOTHER_KEY", False))
+
+    def test_it_should_update_value_to_a_non_existing_key(self):
+        config = Config()
+        config.update("some_key", "some_value")
+        self.assertEqual("some_value", config.get("some_key"))
+
+    def test_it_should_update_value_to_a_existing_key(self):
+        config = Config()
+        config.put("some_key", "original_value")
+        config.update("some_key", "some_value")
+        self.assertEqual("some_value", config.get("some_key"))
+
+    def test_it_should_update_value_to_a_existing_key_keeping_original_value_if_new_value_is_none_false_or_empty_string(self):
+        config = Config()
+        config.put("some_key", "original_value")
+        config.update("some_key", None)
+        self.assertEqual("original_value", config.get("some_key"))
+        config.update("some_key", False)
+        self.assertEqual("original_value", config.get("some_key"))
+        config.update("some_key", "")
+        self.assertEqual("original_value", config.get("some_key"))
 
 class FileConfigTest(unittest.TestCase):
 
@@ -309,6 +330,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
         config_path = os.path.abspath('sample.conf')
         config = FileConfig(config_path, "env1")
         self.assertEquals(config.get('db_name'), 'migration_example_env1')
+        self.assertEquals(config.get('db_user'), 'root')
 
     def test_it_should_stop_execution_when_an_invalid_key_is_requested(self):
         config_path = os.path.abspath('sample.conf')

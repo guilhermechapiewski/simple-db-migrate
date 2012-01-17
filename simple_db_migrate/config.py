@@ -22,6 +22,13 @@ class Config(object):
             raise Exception("the configuration key '%s' already exists and you cannot override any configuration" % config_key)
         self._config[config_key] = config_value
 
+    def update(self, config_key, config_value):
+        if config_key in self._config:
+            value = self.get(config_key)
+            self.remove(config_key)
+            config_value = config_value or value
+        self.put(config_key, config_value)
+
     def remove(self, config_key):
         try:
             del self._config[config_key]
@@ -69,6 +76,7 @@ class FileConfig(Config):
         self.put("utc_timestamp", ast.literal_eval(str(FileConfig._get_variable(settings, 'UTC_TIMESTAMP', None, 'False', environment))))
 
         self._get_custom_variables(settings, ['DATABASE_HOST', 'DATABASE_USER', 'DATABASE_PASSWORD', 'DATABASE_NAME', 'DATABASE_ENGINE', 'DATABASE_VERSION_TABLE', 'DATABASE_MIGRATIONS_DIR'], environment=environment)
+        self._get_general_variables(settings, environment=environment)
 
         migrations_dir = FileConfig._get_variable(settings, 'DATABASE_MIGRATIONS_DIR', 'MIGRATIONS_DIR', environment=environment)
         config_dir = os.path.split(config_file)[0]
@@ -83,6 +91,16 @@ class FileConfig(Config):
             m_key = p.match(key)
             if m_key and key not in default_variables:
                 self.put("db_%s" % m_key.group('name').lower(), FileConfig._get_variable(settings, key,  m_key.group('name'), environment=environment))
+
+    def _get_general_variables(self, settings, environment=''):
+        """
+        Put on config var all variables present in config file wich not starts with DATABASE_
+        """
+        p = re.compile("^(DATABASE_.*|os|MIGRATIONS_DIR|migrations_dir|UTC_TIMESTAMP|utc_timestamp)$")
+        for key in settings.keys():
+            m_key = p.match(key)
+            if not m_key:
+                self.put(key.lower(), FileConfig._get_variable(settings, key, None, environment=environment))
 
     #default_value was assigned as !@#$%&* to be more easy to check when the default value is None, empty string or False
     @staticmethod
