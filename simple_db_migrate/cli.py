@@ -106,22 +106,21 @@ class CLI(object):
 
         self.__parser.add_option("--label",
                 dest="label_version",
-                help="Give this label the last migration executed or execute a down to him.")
+                default=None,
+                help="Give this label the migrations executed or execute a down to him.")
 
         self.__parser.add_option("--password",
                 dest="password",
+                default=None,
                 help="Use this password to connect to database, to auto.")
 
-        self.__parser.add_option("--env",
+        self.__parser.add_option("--env", "--environment",
                 dest="environment",
                 default="",
                 help="Use this environment to get specific configurations.")
 
-    def get_parser(self):
-        return self.__parser
-
-    def parse(self):
-        return self.__parser.parse_args()
+    def parse(self, args=None):
+        return self.__parser.parse_args(args)
 
     def error_and_exit(self, msg):
         self.msg("[ERROR] %s\n" % msg, "RED")
