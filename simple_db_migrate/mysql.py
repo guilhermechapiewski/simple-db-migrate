@@ -42,16 +42,18 @@ class MySQL(object):
         cursor._defer_warnings = True
         curr_statement = None
         try:
-            for statement in self._parse_sql_statements(sql):
+            for statement in MySQL._parse_sql_statements(sql):
                 curr_statement = statement
                 affected_rows = cursor.execute(statement.encode(self.__mysql_script_encoding))
                 if execution_log:
                     execution_log("%s\n-- %d row(s) affected\n" % (statement, affected_rows and int(affected_rows) or 0))
             cursor.close()
             db.commit()
-            db.close()
         except Exception, e:
+            db.rollback()
             raise MigrationException("error executing migration: %s" % e, curr_statement)
+        finally:
+            db.close()
 
         return execution_log
 
@@ -72,16 +74,18 @@ class MySQL(object):
         cursor._defer_warnings = True
         try:
             cursor.execute(sql.encode(self.__mysql_script_encoding))
+            cursor.close()
+            db.commit()
             if execution_log:
                 execution_log("migration %s registered\n" % (migration_file_name))
         except Exception, e:
+            db.rollback()
             raise MigrationException("error logging migration: %s" % e, migration_file_name)
         finally:
-            cursor.close()
-            db.commit()
             db.close()
 
-    def _parse_sql_statements(self, migration_sql):
+    @classmethod
+    def _parse_sql_statements(cls, migration_sql):
         all_statements = []
         last_statement = ''
 
@@ -111,7 +115,8 @@ class MySQL(object):
             db.query("set foreign_key_checks=0; drop database if exists `%s`;" % self.__mysql_db)
         except Exception:
             raise Exception("can't drop database '%s'; database doesn't exist" % self.__mysql_db)
-        db.close()
+        finally:
+            db.close()
 
     def _create_database_if_not_exists(self):
         db = self.__mysql_connect(False)
@@ -157,12 +162,9 @@ class MySQL(object):
             sql = "alter table %s add column label varchar(255) after version;" % self.__version_table
             self.__execute(sql)
 
-        try:
-            cursor.execute("show index from %s where key_name = 'label';" % self.__version_table)
-            if cursor.fetchone():
-                cursor.execute("alter table %s drop index label;" % self.__version_table)
-        except Exception:
-            pass
+        cursor.execute("show index from %s where key_name = 'label';" % self.__version_table)
+        if cursor.fetchone():
+            cursor.execute("alter table %s drop index label;" % self.__version_table)
 
         cursor.close()
         db.close()
