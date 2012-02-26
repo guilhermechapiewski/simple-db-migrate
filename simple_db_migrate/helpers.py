@@ -7,10 +7,8 @@ class Lists(object):
 class Utils(object):
 
     @classmethod
-    def how_many(self, string, match):
-        if not match or len(match) != 1:
-            raise Exception("match should be a char")
+    def count_occurrences(self, string):
         count = {}
         for char in string:
             count[char] = count.get(char, 0) + 1
-        return count.get(match, 0)
+        return count

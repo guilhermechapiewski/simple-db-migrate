@@ -91,10 +91,11 @@ class MySQL(object):
             else:
                 curr_statement = statement
 
-            single_quotes = Utils.how_many(curr_statement, "'")
-            double_quotes = Utils.how_many(curr_statement, '"')
-            left_parenthesis = Utils.how_many(curr_statement, '(')
-            right_parenthesis = Utils.how_many(curr_statement, ')')
+            count = Utils.count_occurrences(curr_statement)
+            single_quotes = count.get("'", 0)
+            double_quotes = count.get('"', 0)
+            left_parenthesis = count.get('(', 0)
+            right_parenthesis = count.get(')', 0)
 
             if single_quotes % 2 == 0 and double_quotes % 2 == 0 and left_parenthesis == right_parenthesis:
                 all_statements.append(curr_statement)
