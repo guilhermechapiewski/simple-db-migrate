@@ -6,15 +6,15 @@ from cli import CLI
 from config import FileConfig
 from main import Main
 
-SIMPLE_DB_MIGRATE_VERSION = '1.4.2.1'
+SIMPLE_DB_MIGRATE_VERSION = '1.4.3'
 
 # fixing print in non-utf8 terminals
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 
-def run():
+def run(args=None, getpass=getpass):
     cli = CLI()
     try:
-        (options, args) = cli.parse()
+        (options, args) = cli.parse(args)
 
         if options.simple_db_migrate_version:
             msg = 'simple-db-migrate v%s' % SIMPLE_DB_MIGRATE_VERSION
