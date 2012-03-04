@@ -140,9 +140,12 @@ class SimpleDBMigrate(object):
     def __init__(self, config=None):
         self._migrations_dir = config.get("migrations_dir")
         self._script_encoding=config.get("db_script_encoding", "utf-8")
-        self.all_migrations = self.get_all_migrations()
+        self.all_migrations = None
 
     def get_all_migrations(self):
+        if self.all_migrations:
+            return self.all_migrations
+
         migrations = []
 
         for dir in self._migrations_dir:
@@ -162,7 +165,8 @@ class SimpleDBMigrate(object):
         if len(migrations) == 0:
             raise Exception("no migration files found")
 
-        return Migration.sort_migrations_list(migrations)
+        self.all_migrations = Migration.sort_migrations_list(migrations)
+        return self.all_migrations
 
     def get_all_migration_versions(self):
         return [migration.version for migration in self.get_all_migrations()]
@@ -179,7 +183,7 @@ class SimpleDBMigrate(object):
         return all_migrations[0].version
 
     def get_migration_from_version_number(self, version):
-        migrations = [migration for migration in self.all_migrations if migration.version == version]
+        migrations = [migration for migration in self.get_all_migrations() if migration.version == version]
         if len(migrations) > 0:
             return migrations[0]
         return None
