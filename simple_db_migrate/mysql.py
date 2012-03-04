@@ -226,8 +226,8 @@ class MySQL(object):
                                   version = migration_db[1] and str(migration_db[1]) or None,
                                   label = migration_db[2] and str(migration_db[2]) or None,
                                   file_name = migration_db[3] and str(migration_db[3]) or None,
-                                  sql_up = Migration.check_sql_unicode(migration_db[4], self.__mysql_script_encoding),
-                                  sql_down = Migration.check_sql_unicode(migration_db[5], self.__mysql_script_encoding))
+                                  sql_up = Migration.ensure_sql_unicode(migration_db[4], self.__mysql_script_encoding),
+                                  sql_down = Migration.ensure_sql_unicode(migration_db[5], self.__mysql_script_encoding))
             migrations.append(migration)
         cursor.close()
         db.close()

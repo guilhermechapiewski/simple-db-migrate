@@ -333,8 +333,8 @@ class Oracle(object):
                                   version = migration_db[1] and str(migration_db[1]) or None,
                                   label = migration_db[2] and str(migration_db[2]) or None,
                                   file_name = migration_db[3] and str(migration_db[3]) or None,
-                                  sql_up = Migration.check_sql_unicode(migration_db[4] and migration_db[4].read() or None, self.__script_encoding),
-                                  sql_down = Migration.check_sql_unicode(migration_db[5] and migration_db[5].read() or None, self.__script_encoding))
+                                  sql_up = Migration.ensure_sql_unicode(migration_db[4] and migration_db[4].read() or None, self.__script_encoding),
+                                  sql_down = Migration.ensure_sql_unicode(migration_db[5] and migration_db[5].read() or None, self.__script_encoding))
             migrations.append(migration)
         cursor.close()
         conn.close()

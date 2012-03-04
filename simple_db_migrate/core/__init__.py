@@ -36,15 +36,13 @@ class Migration(object):
             self.sql_up, self.sql_down = self._get_commands()
 
     def _get_commands(self):
-        SQL_UP = ''
-        SQL_DOWN = ''
         mod = None
         temp_abspath = None
 
         try:
             mod = imp.load_source(self.file_name, self.abspath)
-            SQL_UP = Migration.check_sql_unicode(mod.SQL_UP, self.script_encoding)
-            SQL_DOWN = Migration.check_sql_unicode(mod.SQL_DOWN, self.script_encoding)
+            SQL_UP = Migration.ensure_sql_unicode(mod.SQL_UP, self.script_encoding)
+            SQL_DOWN = Migration.ensure_sql_unicode(mod.SQL_DOWN, self.script_encoding)
         except Exception:
             try:
                 f = open(self.abspath, "rU")
@@ -58,9 +56,8 @@ class Migration(object):
 
                 mod = imp.load_source(self.file_name, temp_abspath)
 
-                SQL_UP = Migration.check_sql_unicode(mod.SQL_UP, self.script_encoding)
-                SQL_DOWN = Migration.check_sql_unicode(mod.SQL_DOWN, self.script_encoding)
-
+                SQL_UP = Migration.ensure_sql_unicode(mod.SQL_UP, self.script_encoding)
+                SQL_DOWN = Migration.ensure_sql_unicode(mod.SQL_DOWN, self.script_encoding)
             except Exception:
                 f = codecs.open(self.abspath, "rU", self.script_encoding)
                 exec(f.read())
@@ -92,17 +89,6 @@ class Migration(object):
 
         return SQL_UP, SQL_DOWN
 
-    @staticmethod
-    def check_sql_unicode(sql, script_encoding):
-        if not sql or not script_encoding:
-            return ""
-
-        try:
-            sql = unicode(sql.decode(script_encoding))
-        except UnicodeEncodeError:
-            sql = unicode(sql)
-        return sql
-
     def compare_to(self, another_migration):
         if self.version < another_migration.version:
             return -1
@@ -113,6 +99,17 @@ class Migration(object):
     @staticmethod
     def sort_migrations_list(migrations, reverse=False):
         return sorted(migrations, cmp=lambda x,y: x.compare_to(y), reverse=reverse)
+
+    @staticmethod
+    def ensure_sql_unicode(sql, script_encoding):
+        if not sql or not script_encoding:
+            return ""
+
+        try:
+            sql = unicode(sql.decode(script_encoding))
+        except UnicodeEncodeError:
+            sql = unicode(sql)
+        return sql
 
     @staticmethod
     def is_file_name_valid(file_name):
