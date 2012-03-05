@@ -75,7 +75,6 @@ class ConfigTest(unittest.TestCase):
         self.assertEqual("", Config._get(dict,"ANOTHER_KEY", ""))
         self.assertEqual(False, Config._get(dict,"ANOTHER_KEY", False))
 
-
     def test_it_should_save_config_values(self):
         config = Config()
         initial = str(config)
@@ -108,6 +107,10 @@ class ConfigTest(unittest.TestCase):
     def test_it_should_return_previous_saved_config_values(self):
         config = Config()
         config.put("some_key", "some_value")
+        self.assertEqual("some_value", config.get("some_key"))
+
+    def test_it_should_accept_initial_values_as_configuration(self):
+        config = Config({"some_key": "some_value"})
         self.assertEqual("some_value", config.get("some_key"))
 
     def test_it_should_return_default_value_for_an_inexistent_config_value(self):

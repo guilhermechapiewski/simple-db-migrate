@@ -7,8 +7,8 @@ class Config(object):
 
     DB_VERSION_TABLE = "__db_version__"
 
-    def __init__(self):
-        self._config = {}
+    def __init__(self, inital_config=None):
+        self._config = inital_config or {}
 
     def __repr__(self):
         return str(self._config)
