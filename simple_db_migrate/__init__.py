@@ -50,8 +50,7 @@ def run(args=None, getpass=getpass):
             else:
                 cli.msg('\nPlease inform password to connect to database "%s@%s:%s"' % (config.get('db_user'), config.get('db_host'), config.get('db_name')))
                 passwd = getpass()
-            config.remove('db_password')
-            config.put('db_password', passwd)
+            config.update('db_password', passwd)
 
         # If CLI was correctly parsed, execute db-migrate.
         Main(config).execute()
