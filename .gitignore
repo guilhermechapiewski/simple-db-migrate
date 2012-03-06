@@ -1,5 +1,7 @@
 .DS_Store
 .coverage
+cover
+*,cover
 *.pyc
 *~
 build
