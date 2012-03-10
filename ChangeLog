@@ -1,3 +1,9 @@
+### 1.4.3 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Wed, 07 Mar 2012 12:00:00 -0300
+- Removing support to make debian package installation
+- Refactoring tests
+- Make possible to set some command line options by configuration file
+- Updating README file
+
 ### 1.4.2.1 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Tue, 24 Jan 2012 19:00:00 -0300
 - Bug fix: bug fix on get_migration_from_version_number, for performance reason (contribution: Francisco Alves <franciscoandre@gmail.com>).
 
