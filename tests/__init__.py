@@ -22,12 +22,12 @@ def delete_files(pattern):
 
 def create_config(host='localhost', username='root', password='', database='migration_example', migrations_dir='.', utc_timestamp=False, script_encoding='utf-8'):
     config_file = '''
-HOST = os.getenv('DB_HOST') or '%s'
-USERNAME = os.getenv('DB_USERNAME') or '%s'
-PASSWORD = os.getenv('DB_PASSWORD') or '%s'
-DATABASE = os.getenv('DB_DATABASE') or '%s'
-MIGRATIONS_DIR = os.getenv('MIGRATIONS_DIR') or '%s'
-UTC_TIMESTAMP = os.getenv("UTC_TIMESTAMP") or %s
+DATABASE_HOST = '%s'
+DATABASE_USER = '%s'
+DATABASE_PASSWORD = '%s'
+DATABASE_NAME = '%s'
+DATABASE_MIGRATIONS_DIR = '%s'
+UTC_TIMESTAMP = %s
 DATABASE_SCRIPT_ENCODING = '%s'
 ''' % (host, username, password, database, migrations_dir, utc_timestamp, script_encoding)
     create_file('test_config_file.conf', config_file)

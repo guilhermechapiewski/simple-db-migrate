@@ -57,12 +57,11 @@ class MSSQLTest(unittest.TestCase):
         expected_query_calls = [
             call("if not exists ( select 1 from sysdatabases where name = 'migration_test' ) create database migration_test;"),
             call("if not exists ( select 1 from sysobjects where name = '__db_version__' and type = 'u' ) create table __db_version__ ( id INT IDENTITY(1,1) NOT NULL PRIMARY KEY, version varchar(20) NOT NULL default '0', label varchar(255), name varchar(255), sql_up NTEXT, sql_down NTEXT)"),
-            call('select id from __db_version__;'),
             call("insert into __db_version__ (version) values ('0')")
         ]
         self.assertEqual(expected_query_calls, self.db_mock.execute_non_query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
-        self.assertEqual(5, self.db_mock.close.call_count)
+        self.assertEqual(4, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select count(*) from __db_version__;')
@@ -78,12 +77,11 @@ class MSSQLTest(unittest.TestCase):
             call("if exists ( select 1 from sysdatabases where name = 'migration_test' ) drop database migration_test;"),
             call("if not exists ( select 1 from sysdatabases where name = 'migration_test' ) create database migration_test;"),
             call("if not exists ( select 1 from sysobjects where name = '__db_version__' and type = 'u' ) create table __db_version__ ( id INT IDENTITY(1,1) NOT NULL PRIMARY KEY, version varchar(20) NOT NULL default '0', label varchar(255), name varchar(255), sql_up NTEXT, sql_down NTEXT)"),
-            call('select id from __db_version__;'),
             call("insert into __db_version__ (version) values ('0')")
         ]
         self.assertEqual(expected_query_calls, self.db_mock.execute_non_query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
-        self.assertEqual(6, self.db_mock.close.call_count)
+        self.assertEqual(5, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select count(*) from __db_version__;')
@@ -114,14 +112,13 @@ class MSSQLTest(unittest.TestCase):
         expected_query_calls = [
             call("if not exists ( select 1 from sysdatabases where name = 'migration_test' ) create database migration_test;"),
             call("if not exists ( select 1 from sysobjects where name = '__db_version__' and type = 'u' ) create table __db_version__ ( id INT IDENTITY(1,1) NOT NULL PRIMARY KEY, version varchar(20) NOT NULL default '0', label varchar(255), name varchar(255), sql_up NTEXT, sql_down NTEXT)"),
-            call('select id from __db_version__;'),
             call("insert into __db_version__ (version) values ('0')"),
             call('create table spam()'),
             call('insert into __db_version__ (version, label, name, sql_up, sql_down) values (%s, %s, %s, %s, %s);', ('20090212112104', None, '20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration', 'create table spam();', 'drop table spam;'))
         ]
         self.assertEqual(expected_query_calls, self.db_mock.execute_non_query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
-        self.assertEqual(7, self.db_mock.close.call_count)
+        self.assertEqual(6, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select count(*) from __db_version__;')
@@ -135,14 +132,13 @@ class MSSQLTest(unittest.TestCase):
         expected_query_calls = [
             call("if not exists ( select 1 from sysdatabases where name = 'migration_test' ) create database migration_test;"),
             call("if not exists ( select 1 from sysobjects where name = '__db_version__' and type = 'u' ) create table __db_version__ ( id INT IDENTITY(1,1) NOT NULL PRIMARY KEY, version varchar(20) NOT NULL default '0', label varchar(255), name varchar(255), sql_up NTEXT, sql_down NTEXT)"),
-            call('select id from __db_version__;'),
             call("insert into __db_version__ (version) values ('0')"),
             call('drop table spam'),
             call("delete from __db_version__ where version = %s;", ('20090212112104',))
         ]
         self.assertEqual(expected_query_calls, self.db_mock.execute_non_query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
-        self.assertEqual(7, self.db_mock.close.call_count)
+        self.assertEqual(6, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select count(*) from __db_version__;')
@@ -156,14 +152,13 @@ class MSSQLTest(unittest.TestCase):
         expected_query_calls = [
             call("if not exists ( select 1 from sysdatabases where name = 'migration_test' ) create database migration_test;"),
             call("if not exists ( select 1 from sysobjects where name = '__db_version__' and type = 'u' ) create table __db_version__ ( id INT IDENTITY(1,1) NOT NULL PRIMARY KEY, version varchar(20) NOT NULL default '0', label varchar(255), name varchar(255), sql_up NTEXT, sql_down NTEXT)"),
-            call('select id from __db_version__;'),
             call("insert into __db_version__ (version) values ('0')"),
             call('create table spam()'),
             call('insert into __db_version__ (version, label, name, sql_up, sql_down) values (%s, %s, %s, %s, %s);', ('20090212112104', 'label', '20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration', 'create table spam();', 'drop table spam;'))
         ]
         self.assertEqual(expected_query_calls, self.db_mock.execute_non_query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
-        self.assertEqual(7, self.db_mock.close.call_count)
+        self.assertEqual(6, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select count(*) from __db_version__;')
@@ -183,7 +178,6 @@ class MSSQLTest(unittest.TestCase):
         expected_query_calls = [
             call("if not exists ( select 1 from sysdatabases where name = 'migration_test' ) create database migration_test;"),
             call("if not exists ( select 1 from sysobjects where name = '__db_version__' and type = 'u' ) create table __db_version__ ( id INT IDENTITY(1,1) NOT NULL PRIMARY KEY, version varchar(20) NOT NULL default '0', label varchar(255), name varchar(255), sql_up NTEXT, sql_down NTEXT)"),
-            call('select id from __db_version__;'),
             call("insert into __db_version__ (version) values ('0')"),
             call('create table spam()'),
             call('insert into spam')
@@ -191,7 +185,7 @@ class MSSQLTest(unittest.TestCase):
         self.assertEqual(expected_query_calls, self.db_mock.execute_non_query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
         self.assertEqual(1, self.db_mock.cancel.call_count)
-        self.assertEqual(6, self.db_mock.close.call_count)
+        self.assertEqual(5, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select count(*) from __db_version__;')
@@ -211,7 +205,6 @@ class MSSQLTest(unittest.TestCase):
         expected_query_calls = [
             call("if not exists ( select 1 from sysdatabases where name = 'migration_test' ) create database migration_test;"),
             call("if not exists ( select 1 from sysobjects where name = '__db_version__' and type = 'u' ) create table __db_version__ ( id INT IDENTITY(1,1) NOT NULL PRIMARY KEY, version varchar(20) NOT NULL default '0', label varchar(255), name varchar(255), sql_up NTEXT, sql_down NTEXT)"),
-            call('select id from __db_version__;'),
             call("insert into __db_version__ (version) values ('0')"),
             call('create table spam()'),
             call('insert into __db_version__ (version, label, name, sql_up, sql_down) values (%s, %s, %s, %s, %s);', ('20090212112104', 'label', '20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration', 'create table spam();', 'drop table spam;'))
@@ -219,7 +212,7 @@ class MSSQLTest(unittest.TestCase):
         self.assertEqual(expected_query_calls, self.db_mock.execute_non_query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
         self.assertEqual(1, self.db_mock.cancel.call_count)
-        self.assertEqual(7, self.db_mock.close.call_count)
+        self.assertEqual(6, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select count(*) from __db_version__;'),
@@ -246,12 +239,11 @@ class MSSQLTest(unittest.TestCase):
         expected_query_calls = [
             call("if not exists ( select 1 from sysdatabases where name = 'migration_test' ) create database migration_test;"),
             call("if not exists ( select 1 from sysobjects where name = '__db_version__' and type = 'u' ) create table __db_version__ ( id INT IDENTITY(1,1) NOT NULL PRIMARY KEY, version varchar(20) NOT NULL default '0', label varchar(255), name varchar(255), sql_up NTEXT, sql_down NTEXT)"),
-            call('select id from __db_version__;'),
             call("insert into __db_version__ (version) values ('0')")
         ]
         self.assertEqual(expected_query_calls, self.db_mock.execute_non_query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
-        self.assertEqual(6, self.db_mock.close.call_count)
+        self.assertEqual(5, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select count(*) from __db_version__;'),
@@ -280,12 +272,11 @@ class MSSQLTest(unittest.TestCase):
         expected_query_calls = [
             call("if not exists ( select 1 from sysdatabases where name = 'migration_test' ) create database migration_test;"),
             call("if not exists ( select 1 from sysobjects where name = '__db_version__' and type = 'u' ) create table __db_version__ ( id INT IDENTITY(1,1) NOT NULL PRIMARY KEY, version varchar(20) NOT NULL default '0', label varchar(255), name varchar(255), sql_up NTEXT, sql_down NTEXT)"),
-            call('select id from __db_version__;'),
             call("insert into __db_version__ (version) values ('0')")
         ]
         self.assertEqual(expected_query_calls, self.db_mock.execute_non_query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
-        self.assertEqual(6, self.db_mock.close.call_count)
+        self.assertEqual(5, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select count(*) from __db_version__;')
@@ -321,12 +312,11 @@ class MSSQLTest(unittest.TestCase):
         expected_query_calls = [
             call("if not exists ( select 1 from sysdatabases where name = 'migration_test' ) create database migration_test;"),
             call("if not exists ( select 1 from sysobjects where name = '__db_version__' and type = 'u' ) create table __db_version__ ( id INT IDENTITY(1,1) NOT NULL PRIMARY KEY, version varchar(20) NOT NULL default '0', label varchar(255), name varchar(255), sql_up NTEXT, sql_down NTEXT)"),
-            call('select id from __db_version__;'),
             call("insert into __db_version__ (version) values ('0')")
         ]
         self.assertEqual(expected_query_calls, self.db_mock.execute_non_query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
-        self.assertEqual(6, self.db_mock.close.call_count)
+        self.assertEqual(5, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select count(*) from __db_version__;'),
@@ -378,12 +368,11 @@ class MSSQLTest(unittest.TestCase):
         expected_query_calls = [
             call("if not exists ( select 1 from sysdatabases where name = 'migration_test' ) create database migration_test;"),
             call("if not exists ( select 1 from sysobjects where name = '__db_version__' and type = 'u' ) create table __db_version__ ( id INT IDENTITY(1,1) NOT NULL PRIMARY KEY, version varchar(20) NOT NULL default '0', label varchar(255), name varchar(255), sql_up NTEXT, sql_down NTEXT)"),
-            call('select id from __db_version__;'),
             call("insert into __db_version__ (version) values ('0')")
         ]
         self.assertEqual(expected_query_calls, self.db_mock.execute_non_query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
-        self.assertEqual(6, self.db_mock.close.call_count)
+        self.assertEqual(5, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select count(*) from __db_version__;'),
@@ -404,12 +393,11 @@ class MSSQLTest(unittest.TestCase):
         expected_query_calls = [
             call("if not exists ( select 1 from sysdatabases where name = 'migration_test' ) create database migration_test;"),
             call("if not exists ( select 1 from sysobjects where name = '__db_version__' and type = 'u' ) create table __db_version__ ( id INT IDENTITY(1,1) NOT NULL PRIMARY KEY, version varchar(20) NOT NULL default '0', label varchar(255), name varchar(255), sql_up NTEXT, sql_down NTEXT)"),
-            call('select id from __db_version__;'),
             call("insert into __db_version__ (version) values ('0')")
         ]
         self.assertEqual(expected_query_calls, self.db_mock.execute_non_query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
-        self.assertEqual(6, self.db_mock.close.call_count)
+        self.assertEqual(5, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select count(*) from __db_version__;'),
@@ -429,12 +417,11 @@ class MSSQLTest(unittest.TestCase):
         expected_query_calls = [
             call("if not exists ( select 1 from sysdatabases where name = 'migration_test' ) create database migration_test;"),
             call("if not exists ( select 1 from sysobjects where name = '__db_version__' and type = 'u' ) create table __db_version__ ( id INT IDENTITY(1,1) NOT NULL PRIMARY KEY, version varchar(20) NOT NULL default '0', label varchar(255), name varchar(255), sql_up NTEXT, sql_down NTEXT)"),
-            call('select id from __db_version__;'),
             call("insert into __db_version__ (version) values ('0')")
         ]
         self.assertEqual(expected_query_calls, self.db_mock.execute_non_query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
-        self.assertEqual(6, self.db_mock.close.call_count)
+        self.assertEqual(5, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select count(*) from __db_version__;'),
@@ -445,27 +432,6 @@ class MSSQLTest(unittest.TestCase):
             call("select version from __db_version__ where label = 'xxx' order by id desc")
         ]
         self.assertEqual(expected_execute_calls, self.db_mock.execute_row.mock_calls)
-
-    def test_it_should_update_version_table_on_init_if_dont_have_id_field(self):
-        self.execute_returns['select id from __db_version__;'] = Exception("Don't have id field")
-
-        mssql = MSSQL(self.config_mock, self.db_driver_mock)
-
-        expected_query_calls = [
-            call("if not exists ( select 1 from sysdatabases where name = 'migration_test' ) create database migration_test;"),
-            call("if not exists ( select 1 from sysobjects where name = '__db_version__' and type = 'u' ) create table __db_version__ ( id INT IDENTITY(1,1) NOT NULL PRIMARY KEY, version varchar(20) NOT NULL default '0', label varchar(255), name varchar(255), sql_up NTEXT, sql_down NTEXT)"),
-            call('select id from __db_version__;'),
-            call('alter table __db_version__ add id INT IDENTITY(1,1) NOT NULL PRIMARY KEY, label varchar(255), name varchar(255), sql_up ntext, sql_down ntext'),
-            call("insert into __db_version__ (version) values ('0')")
-        ]
-        self.assertEqual(expected_query_calls, self.db_mock.execute_non_query.mock_calls)
-        self.db_mock.select_db.assert_called_with('migration_test')
-        self.assertEqual(6, self.db_mock.close.call_count)
-
-        expected_execute_calls = [
-            call('select count(*) from __db_version__;'),
-        ]
-        self.assertEqual(expected_execute_calls, self.db_mock.execute_scalar.mock_calls)
 
     def side_effect(self, returns, default_value):
         result = returns.get(self.last_execute_command, default_value)

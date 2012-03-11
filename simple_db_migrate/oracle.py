@@ -15,11 +15,11 @@ class Oracle(object):
     def __init__(self, config=None, driver=None, get_pass=getpass, std_in=sys.stdin):
         self.__script_encoding = config.get("db_script_encoding", "utf8")
         self.__encoding = config.get("db_encoding", "American_America.UTF8")
-        self.__host = config.get("db_host")
-        self.__user = config.get("db_user")
-        self.__passwd = config.get("db_password")
-        self.__db = config.get("db_name")
-        self.__version_table = config.get("db_version_table")
+        self.__host = config.get("database_host")
+        self.__user = config.get("database_user")
+        self.__passwd = config.get("database_password")
+        self.__db = config.get("database_name")
+        self.__version_table = config.get("database_version_table")
 
         self.__driver = driver
         if not driver:
@@ -223,9 +223,6 @@ class Oracle(object):
             finally:
                 self.__execute("create sequence %s_seq start with 1 increment by 1 nomaxvalue" % self.__version_table)
 
-
-        self._check_version_table_if_is_updated()
-
         # check if there is a register there
         conn = self.__connect()
         cursor = conn.cursor()
@@ -238,41 +235,6 @@ class Oracle(object):
         if count == 0:
             sql = "insert into %s (id, version) values (%s_seq.nextval, '0')" % (self.__version_table, self.__version_table)
             self.__execute(sql)
-
-    def _check_version_table_if_is_updated(self):
-        # try to query a column wich not exists on the old version of simple-db-migrate
-        # has to have one check of this to each version of simple-db-migrate
-        db = self.__connect()
-        cursor = db.cursor()
-        try:
-            cursor.execute("select id from %s" % self.__version_table)
-        except Exception, e:
-            # update version table
-            self.__execute("alter table %s add (id number(11), name varchar2(255), sql_up clob, sql_down clob);" % self.__version_table)
-            try:
-                self.__execute("drop sequence %s_seq" % self.__version_table)
-            finally:
-                sql = """
-                create sequence %s_seq start with 1 increment by 1 nomaxvalue;
-                update %s set id = %s_seq.nextval;
-                alter table %s add constraint db_version_pk primary key (id)
-                """ % (self.__version_table, self.__version_table, self.__version_table, self.__version_table)
-                self.__execute(sql)
-
-        try:
-            cursor.execute("select label from %s" % self.__version_table)
-        except Exception, e:
-            # update version table
-            sql = "alter table %s add (label varchar2(255));" % (self.__version_table)
-            self.__execute(sql)
-
-        try:
-            cursor.execute("alter table %s drop constraint %s_uk_label" % (self.__version_table, self.__version_table))
-        except Exception, e:
-            pass
-
-        cursor.close()
-        db.close()
 
     def change(self, sql, new_db_version, migration_file_name, sql_up, sql_down, up=True, execution_log=None, label_version=None):
         self.__execute(sql, execution_log)

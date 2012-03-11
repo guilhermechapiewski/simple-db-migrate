@@ -158,13 +158,13 @@ class FileConfigTest(unittest.TestCase):
 
     def setUp(self):
         config_file = '''
-HOST = os.getenv('DB_HOST') or 'localhost'
-USERNAME = os.getenv('DB_USERNAME') or 'root'
-PASSWORD = os.getenv('DB_PASSWORD') or ''
-DATABASE = os.getenv('DB_DATABASE') or 'migration_example'
-ENV1_DATABASE = 'migration_example_env1'
-MIGRATIONS_DIR = os.getenv('MIGRATIONS_DIR') or 'example'
-UTC_TIMESTAMP = os.getenv("UTC_TIMESTAMP") or True
+DATABASE_HOST = 'localhost'
+DATABASE_USER = 'root'
+DATABASE_PASSWORD = ''
+DATABASE_NAME = 'migration_example'
+ENV1_DATABASE_NAME = 'migration_example_env1'
+DATABASE_MIGRATIONS_DIR = 'example'
+UTC_TIMESTAMP = True
 DATABASE_ANY_CUSTOM_VARIABLE = 'Some Value'
 SOME_ENV_DATABASE_ANY_CUSTOM_VARIABLE = 'Other Value'
 DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
@@ -184,23 +184,23 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
 
     def test_it_should_extract_variables_from_a_config_file(self):
         variables = FileConfig._import_file(os.path.abspath('sample.conf'))
-        self.assertEqual('root', variables['USERNAME'])
-        self.assertEqual('migration_example_env1', variables['ENV1_DATABASE'])
-        self.assertEqual('migration_example', variables['DATABASE'])
-        self.assertEqual('example', variables['MIGRATIONS_DIR'])
+        self.assertEqual('root', variables['DATABASE_USER'])
+        self.assertEqual('migration_example_env1', variables['ENV1_DATABASE_NAME'])
+        self.assertEqual('migration_example', variables['DATABASE_NAME'])
+        self.assertEqual('example', variables['DATABASE_MIGRATIONS_DIR'])
         self.assertEqual(True, variables['UTC_TIMESTAMP'])
-        self.assertEqual('localhost', variables['HOST'])
-        self.assertEqual('', variables['PASSWORD'])
+        self.assertEqual('localhost', variables['DATABASE_HOST'])
+        self.assertEqual('', variables['DATABASE_PASSWORD'])
 
     def test_it_should_extract_variables_from_a_config_file_with_py_extension(self):
         variables = FileConfig._import_file(os.path.abspath('sample.py'))
-        self.assertEqual('root', variables['USERNAME'])
-        self.assertEqual('migration_example_env1', variables['ENV1_DATABASE'])
-        self.assertEqual('migration_example', variables['DATABASE'])
-        self.assertEqual('example', variables['MIGRATIONS_DIR'])
+        self.assertEqual('root', variables['DATABASE_USER'])
+        self.assertEqual('migration_example_env1', variables['ENV1_DATABASE_NAME'])
+        self.assertEqual('migration_example', variables['DATABASE_NAME'])
+        self.assertEqual('example', variables['DATABASE_MIGRATIONS_DIR'])
         self.assertEqual(True, variables['UTC_TIMESTAMP'])
-        self.assertEqual('localhost', variables['HOST'])
-        self.assertEqual('', variables['PASSWORD'])
+        self.assertEqual('localhost', variables['DATABASE_HOST'])
+        self.assertEqual('', variables['DATABASE_PASSWORD'])
 
     def test_it_should_not_change_python_path(self):
         original_paths = []
@@ -234,85 +234,57 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
         self.assertFalse(os.path.exists(os.path.abspath('sample.pyc')))
 
 
-    def test_it_should_return_value_from_a_dict_using_one_of_the_given_names(self):
-        self.assertEqual("some_value", FileConfig._get_variable({"SOME_KEY": "some_value"}, "SOME_KEY", "OLD_SOME_KEY"))
-        self.assertEqual("some_value", FileConfig._get_variable({"OLD_SOME_KEY": "some_value"}, "SOME_KEY", "OLD_SOME_KEY"))
+    def test_it_should_return_value_from_a_dict_using_the_given_name(self):
+        self.assertEqual("some_value", FileConfig._get_variable({"SOME_KEY": "some_value"}, "SOME_KEY"))
 
-    def test_it_should_return_default_value_for_an_inexistent_dict_value_using_one_of_the_given_names(self):
+    def test_it_should_return_default_value_for_an_inexistent_dict_value_using_the_given_name(self):
         dict = {"SOME_KEY": "some_value"}
-        self.assertEqual("default_value", FileConfig._get_variable(dict, "ANOTHER_KEY", "OLD_ANOTHER_KEY", "default_value"))
+        self.assertEqual("default_value", FileConfig._get_variable(dict, "ANOTHER_KEY", "default_value"))
 
-    def test_it_should_raise_exception_for_an_inexistent_config_value_without_specify_a_default_value_using_one_of_the_given_names(self):
+    def test_it_should_raise_exception_for_an_inexistent_config_value_without_specify_a_default_value_using_the_given_name(self):
         dict = {"SOME_KEY": "some_value"}
         try:
             FileConfig._get_variable(dict, "ANOTHER_KEY", "OLD_ANOTHER_KEY")
         except Exception, e:
             self.assertEqual("invalid keys ('ANOTHER_KEY', 'OLD_ANOTHER_KEY')", str(e))
 
-    def test_it_should_raise_exception_for_an_inexistent_config_value_without_specify_a_default_value_and_with_environment_using_one_of_the_given_names(self):
+    def test_it_should_raise_exception_for_an_inexistent_config_value_without_specify_a_default_value_and_with_environment_using_the_given_name(self):
         dict = {"SOME_KEY": "some_value"}
         try:
-            FileConfig._get_variable(dict, "ANOTHER_KEY", "OLD_ANOTHER_KEY", environment='some_env')
+            FileConfig._get_variable(dict, "ANOTHER_KEY", environment='some_env')
         except Exception, e:
-            self.assertEqual("invalid keys ('SOME_ENV_ANOTHER_KEY', 'SOME_ENV_OLD_ANOTHER_KEY', 'ANOTHER_KEY', 'OLD_ANOTHER_KEY')", str(e))
+            self.assertEqual("invalid keys ('SOME_ENV_ANOTHER_KEY', 'ANOTHER_KEY')", str(e))
 
-    def test_it_should_accept_non_empty_string_and_false_as_default_value_using_one_of_the_given_names(self):
+    def test_it_should_accept_non_empty_string_and_false_as_default_value_using_the_given_name(self):
         dict = {"SOME_KEY": "some_value"}
-        self.assertEqual(None, FileConfig._get_variable(dict, "ANOTHER_KEY", "OLD_ANOTHER_KEY", None))
-        self.assertEqual("", FileConfig._get_variable(dict, "ANOTHER_KEY", "OLD_ANOTHER_KEY", ""))
-        self.assertEqual(False, FileConfig._get_variable(dict, "ANOTHER_KEY", "OLD_ANOTHER_KEY", False))
+        self.assertEqual(None, FileConfig._get_variable(dict, "ANOTHER_KEY", None))
+        self.assertEqual("", FileConfig._get_variable(dict, "ANOTHER_KEY", ""))
+        self.assertEqual(False, FileConfig._get_variable(dict, "ANOTHER_KEY", False))
 
-    def test_it_should_accept_none_one_of_the_given_names(self):
-        dict = {"SOME_KEY": "some_value", "OLD_SOME_KEY": "old_some_value", "SOME_ENV_SOME_KEY": "other_value", "SOME_ENV_OLD_SOME_KEY": "old_other_value"}
+    def test_it_should_stop_execution_when_a_none_key_is_requested(self):
+        dict = {"SOME_KEY": "some_value", "SOME_ENV_SOME_KEY": "other_value"}
 
-        self.assertEqual("some_value", FileConfig._get_variable(dict, "SOME_KEY", None))
-        self.assertEqual("old_some_value", FileConfig._get_variable(dict, None, "OLD_SOME_KEY"))
-        self.assertEqual("other_value", FileConfig._get_variable(dict, "SOME_KEY", None, environment='some_env'))
-        self.assertEqual("old_other_value", FileConfig._get_variable(dict, None, "OLD_SOME_KEY", environment='some_env'))
+        try:
+            FileConfig._get_variable(dict, None)
+            self.fail('it should not pass here')
+        except Exception, e:
+            self.assertEqual("invalid key ('None')", str(e))
 
-    def test_it_should_accept_none_one_of_the_given_names_and_default_value(self):
-        dict = {"SOME_KEY": "some_value", "OLD_SOME_KEY": "old_some_value", "SOME_ENV_SOME_KEY": "other_value", "SOME_ENV_OLD_SOME_KEY": "old_other_value"}
+    def test_it_should_use_environment_as_a_prefix_for_the_given_name(self):
+        self.assertEqual("other_value", FileConfig._get_variable({"SOME_KEY": "some_value", "SOME_ENV_SOME_KEY": "other_value"}, "SOME_KEY", environment='some_env'))
+        self.assertEqual("some_value", FileConfig._get_variable({"SOME_KEY": "some_value"}, "SOME_KEY", environment='some_env'))
 
-        self.assertEqual("some_value", FileConfig._get_variable(dict, "SOME_KEY", None, default_value='value'))
-        self.assertEqual("old_some_value", FileConfig._get_variable(dict, None, "OLD_SOME_KEY", default_value='value'))
-        self.assertEqual("other_value", FileConfig._get_variable(dict, "SOME_KEY", None, environment='some_env', default_value='value'))
-        self.assertEqual("old_other_value", FileConfig._get_variable(dict, None, "OLD_SOME_KEY", environment='some_env', default_value='value'))
-        self.assertEqual("value", FileConfig._get_variable(dict, "ANOTHER_KEY", None, default_value='value'))
-        self.assertEqual("value", FileConfig._get_variable(dict, None, "OLD_ANOTHER_KEY", default_value='value'))
-        self.assertEqual("value", FileConfig._get_variable(dict, "ANOTHER_KEY", None, environment='some_env', default_value='value'))
-        self.assertEqual("value", FileConfig._get_variable(dict, None, "OLD_ANOTHER_KEY", environment='some_env', default_value='value'))
+    def test_it_should_return_non_prefixed_key_when_environment_is_not_available_for_the_given_name(self):
+        self.assertEqual("some_value", FileConfig._get_variable({"SOME_KEY": "some_value", "SOME_ENV_SOME_KEY": "other_value"}, "SOME_KEY", environment='other_env'))
+        self.assertEqual("some_value", FileConfig._get_variable({"SOME_KEY": "some_value"}, "SOME_KEY", environment='other_env'))
 
-    def test_it_should_use_environment_as_a_prefix_for_the_given_names(self):
-        self.assertEqual("other_value", FileConfig._get_variable({"SOME_KEY": "some_value", "SOME_ENV_SOME_KEY": "other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='some_env'))
-        self.assertEqual("old_other_value", FileConfig._get_variable({"OLD_SOME_KEY": "old_some_value", "SOME_ENV_OLD_SOME_KEY": "old_other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='some_env'))
-        self.assertEqual("old_other_value", FileConfig._get_variable({"SOME_KEY": "some_value", "OLD_SOME_KEY": "old_some_value", "SOME_ENV_OLD_SOME_KEY": "old_other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='some_env'))
-        self.assertEqual("other_value", FileConfig._get_variable({"SOME_KEY": "some_value", "OLD_SOME_KEY": "old_some_value", "SOME_ENV_SOME_KEY": "other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='some_env'))
-        self.assertEqual("other_value", FileConfig._get_variable({"SOME_KEY": "some_value", "SOME_ENV_SOME_KEY": "other_value", "SOME_ENV_OLD_SOME_KEY": "old_other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='some_env'))
-        self.assertEqual("other_value", FileConfig._get_variable({"SOME_KEY": "some_value", "OLD_SOME_KEY": "old_some_value", "SOME_ENV_SOME_KEY": "other_value", "SOME_ENV_OLD_SOME_KEY": "old_other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='some_env'))
-
-    def test_it_should_return_non_prefixed_key_when_environment_is_not_available_for_the_given_names(self):
-        self.assertEqual("some_value", FileConfig._get_variable({"SOME_KEY": "some_value", "SOME_ENV_SOME_KEY": "other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='other_env'))
-        self.assertEqual("old_some_value", FileConfig._get_variable({"OLD_SOME_KEY": "old_some_value", "SOME_ENV_OLD_SOME_KEY": "old_other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='other_env'))
-        self.assertEqual("some_value", FileConfig._get_variable({"SOME_KEY": "some_value", "OLD_SOME_KEY": "old_some_value", "SOME_ENV_OLD_SOME_KEY": "old_other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='other_env'))
-        self.assertEqual("some_value", FileConfig._get_variable({"SOME_KEY": "some_value", "OLD_SOME_KEY": "old_some_value", "SOME_ENV_SOME_KEY": "other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='other_env'))
-        self.assertEqual("some_value", FileConfig._get_variable({"SOME_KEY": "some_value", "SOME_ENV_SOME_KEY": "other_value", "SOME_ENV_OLD_SOME_KEY": "old_other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='other_env'))
-        self.assertEqual("some_value", FileConfig._get_variable({"SOME_KEY": "some_value", "OLD_SOME_KEY": "old_some_value", "SOME_ENV_SOME_KEY": "other_value", "SOME_ENV_OLD_SOME_KEY": "old_other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='other_env'))
-
-    def test_it_should_use_environment_as_a_prefix_for_the_given_names_and_default_value(self):
-        self.assertEqual("other_value", FileConfig._get_variable({"SOME_KEY": "some_value", "SOME_ENV_SOME_KEY": "other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='some_env', default_value='value'))
-        self.assertEqual("old_other_value", FileConfig._get_variable({"OLD_SOME_KEY": "old_some_value", "SOME_ENV_OLD_SOME_KEY": "old_other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='some_env', default_value='value'))
-        self.assertEqual("old_other_value", FileConfig._get_variable({"SOME_KEY": "some_value", "OLD_SOME_KEY": "old_some_value", "SOME_ENV_OLD_SOME_KEY": "old_other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='some_env', default_value='value'))
-        self.assertEqual("other_value", FileConfig._get_variable({"SOME_KEY": "some_value", "OLD_SOME_KEY": "old_some_value", "SOME_ENV_SOME_KEY": "other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='some_env', default_value='value'))
-        self.assertEqual("other_value", FileConfig._get_variable({"SOME_KEY": "some_value", "SOME_ENV_SOME_KEY": "other_value", "SOME_ENV_OLD_SOME_KEY": "old_other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='some_env', default_value='value'))
-        self.assertEqual("other_value", FileConfig._get_variable({"SOME_KEY": "some_value", "OLD_SOME_KEY": "old_some_value", "SOME_ENV_SOME_KEY": "other_value", "SOME_ENV_OLD_SOME_KEY": "old_other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='some_env', default_value='value'))
+    def test_it_should_use_environment_as_a_prefix_for_the_given_name_and_default_value(self):
+        self.assertEqual("other_value", FileConfig._get_variable({"SOME_KEY": "some_value", "SOME_ENV_SOME_KEY": "other_value"}, "SOME_KEY", environment='some_env', default_value='value'))
+        self.assertEqual("some_value", FileConfig._get_variable({"SOME_KEY": "some_value"}, "SOME_KEY", environment='some_env', default_value='value'))
 
     def test_it_should_return_non_prefixed_key_when_environment_is_not_available_for_the_given_names_and_default_value(self):
-        self.assertEqual("some_value", FileConfig._get_variable({"SOME_KEY": "some_value", "SOME_ENV_SOME_KEY": "other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='other_env', default_value='value'))
-        self.assertEqual("old_some_value", FileConfig._get_variable({"OLD_SOME_KEY": "old_some_value", "SOME_ENV_OLD_SOME_KEY": "old_other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='other_env', default_value='value'))
-        self.assertEqual("some_value", FileConfig._get_variable({"SOME_KEY": "some_value", "OLD_SOME_KEY": "old_some_value", "SOME_ENV_OLD_SOME_KEY": "old_other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='other_env', default_value='value'))
-        self.assertEqual("some_value", FileConfig._get_variable({"SOME_KEY": "some_value", "OLD_SOME_KEY": "old_some_value", "SOME_ENV_SOME_KEY": "other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='other_env', default_value='value'))
-        self.assertEqual("some_value", FileConfig._get_variable({"SOME_KEY": "some_value", "SOME_ENV_SOME_KEY": "other_value", "SOME_ENV_OLD_SOME_KEY": "old_other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='other_env', default_value='value'))
-        self.assertEqual("some_value", FileConfig._get_variable({"SOME_KEY": "some_value", "OLD_SOME_KEY": "old_some_value", "SOME_ENV_SOME_KEY": "other_value", "SOME_ENV_OLD_SOME_KEY": "old_other_value"}, "SOME_KEY", "OLD_SOME_KEY", environment='other_env', default_value='value'))
+        self.assertEqual("some_value", FileConfig._get_variable({"SOME_KEY": "some_value", "SOME_ENV_SOME_KEY": "other_value"}, "SOME_KEY", environment='other_env', default_value='value'))
+        self.assertEqual("some_value", FileConfig._get_variable({"SOME_KEY": "some_value"}, "SOME_KEY", environment='other_env', default_value='value'))
 
     def test_it_should_extend_from_config_class(self):
         config = FileConfig(os.path.abspath('sample.conf'))
@@ -321,19 +293,19 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
     def test_it_should_read_config_file(self):
         config_path = os.path.abspath('sample.conf')
         config = FileConfig(config_path)
-        self.assertEquals(config.get('db_host'), 'localhost')
-        self.assertEquals(config.get('db_user'), 'root')
-        self.assertEquals(config.get('db_password'), '')
-        self.assertEquals(config.get('db_name'), 'migration_example')
-        self.assertEquals(config.get('db_version_table'), Config.DB_VERSION_TABLE)
-        self.assertEquals(config.get('migrations_dir'), [os.path.abspath('example')])
+        self.assertEquals(config.get('database_host'), 'localhost')
+        self.assertEquals(config.get('database_user'), 'root')
+        self.assertEquals(config.get('database_password'), '')
+        self.assertEquals(config.get('database_name'), 'migration_example')
+        self.assertEquals(config.get('database_version_table'), Config.DB_VERSION_TABLE)
+        self.assertEquals(config.get("database_migrations_dir"), [os.path.abspath('example')])
         self.assertEquals(config.get('utc_timestamp'), True)
 
     def test_it_should_use_configuration_by_environment(self):
         config_path = os.path.abspath('sample.conf')
         config = FileConfig(config_path, "env1")
-        self.assertEquals(config.get('db_name'), 'migration_example_env1')
-        self.assertEquals(config.get('db_user'), 'root')
+        self.assertEquals(config.get('database_name'), 'migration_example_env1')
+        self.assertEquals(config.get('database_user'), 'root')
 
     def test_it_should_stop_execution_when_an_invalid_key_is_requested(self):
         config_path = os.path.abspath('sample.conf')
@@ -354,36 +326,6 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
         config = FileConfig(config_path, 'some_env')
         self.assertEqual('Other Value', config.get('db_any_custom_variable'))
         self.assertEqual('Value', config.get('db_other_custom_variable'))
-
-class InPlaceConfigTest(unittest.TestCase):
-
-    def test_it_should_extend_from_config_class(self):
-        config = InPlaceConfig('localhost', 'user', 'passwd', 'db', 'dir')
-        self.assertTrue(isinstance(config, Config))
-
-    def test_it_should_configure_default_parameters(self):
-        config = InPlaceConfig('localhost', 'user', 'passwd', 'db', 'dir')
-        self.assertEquals('localhost', config.get('db_host'))
-        self.assertEquals('user', config.get('db_user'))
-        self.assertEquals('passwd', config.get('db_password'))
-        self.assertEquals('db', config.get('db_name'))
-        self.assertEquals(Config.DB_VERSION_TABLE, config.get('db_version_table'))
-        self.assertEquals([os.path.abspath('dir')], config.get('migrations_dir'))
-        self.assertEquals('', config.get('log_dir'))
-        self.assertEquals(False, config.get('utc_timestamp'))
-
-    def test_it_should_replace_default_parameters(self):
-        config = InPlaceConfig('localhost', 'user', 'passwd', 'db', 'dir', 'version_tb', '/tmp', 'engine')
-        self.assertEquals('version_tb', config.get('db_version_table'))
-        self.assertEquals('/tmp', config.get('log_dir'))
-        self.assertEquals('engine', config.get('db_engine'))
-
-    def test_it_should_accept_any_custom_configuration(self):
-        config = InPlaceConfig('localhost', 'user', 'passwd', 'db', 'dir', config_1='1', config_2=False, config_3=None, config_4=[1,2,3])
-        self.assertEquals('1', config.get('config_1'))
-        self.assertEquals(False, config.get('config_2'))
-        self.assertEquals(None, config.get('config_3'))
-        self.assertEquals([1,2,3], config.get('config_4'))
 
 if __name__ == '__main__':
     unittest.main()

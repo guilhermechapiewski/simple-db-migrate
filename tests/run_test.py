@@ -10,12 +10,12 @@ class RunTest(unittest.TestCase):
 
     def setUp(self):
         config_file = '''
-HOST = os.getenv('DB_HOST') or 'localhost'
-USERNAME = os.getenv('DB_USERNAME') or 'root'
-PASSWORD = os.getenv('DB_PASSWORD') or ''
-DATABASE = os.getenv('DB_DATABASE') or 'migration_example'
-ENV1_DATABASE = 'migration_example_env1'
-MIGRATIONS_DIR = os.getenv('MIGRATIONS_DIR') or 'example'
+DATABASE_HOST = os.getenv('DB_HOST') or 'localhost'
+DATABASE_USER = os.getenv('DB_USERNAME') or 'root'
+DATABASE_PASSWORD = os.getenv('DB_PASSWORD') or ''
+DATABASE_NAME = os.getenv('DB_DATABASE') or 'migration_example'
+ENV1_DATABASE_NAME = 'migration_example_env1'
+DATABASE_MIGRATIONS_DIR = os.getenv('DATABASE_MIGRATIONS_DIR') or 'example'
 UTC_TIMESTAMP = os.getenv("UTC_TIMESTAMP") or True
 DATABASE_ANY_CUSTOM_VARIABLE = 'Some Value'
 SOME_ENV_DATABASE_ANY_CUSTOM_VARIABLE = 'Other Value'
@@ -83,7 +83,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
 
     @patch.object(simple_db_migrate.main.Main, 'execute')
     @patch.object(simple_db_migrate.main.Main, '__init__', return_value=None)
-    @patch.object(simple_db_migrate.config.FileConfig, '_import_file', return_value = {'HOST':'host', 'USERNAME': 'root', 'PASSWORD':'', 'DATABASE':'database', 'MIGRATIONS_DIR':'.'})
+    @patch.object(simple_db_migrate.config.FileConfig, '_import_file', return_value = {'DATABASE_HOST':'host', 'DATABASE_USER': 'root', 'DATABASE_PASSWORD':'', 'DATABASE_NAME':'database', 'DATABASE_MIGRATIONS_DIR':'.'})
     def test_it_should_read_configuration_file_using_fileconfig_class_and_execute_with_default_configuration(self, import_file_mock, main_mock, execute_mock):
         simple_db_migrate.run(["-c", os.path.abspath('sample.conf')])
 
@@ -94,14 +94,14 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
 
         self.assertEqual(1, main_mock.call_count)
         config_used = main_mock.call_args[0][0]
-        self.assertEqual('mysql', config_used.get('db_engine'))
-        self.assertEqual('root', config_used.get('db_user'))
-        self.assertEqual('', config_used.get('db_password'))
-        self.assertEqual('database', config_used.get('db_name'))
-        self.assertEqual('host', config_used.get('db_host'))
+        self.assertEqual('mysql', config_used.get('database_engine'))
+        self.assertEqual('root', config_used.get('database_user'))
+        self.assertEqual('', config_used.get('database_password'))
+        self.assertEqual('database', config_used.get('database_name'))
+        self.assertEqual('host', config_used.get('database_host'))
         self.assertEqual(False, config_used.get('utc_timestamp'))
-        self.assertEqual('__db_version__', config_used.get('db_version_table'))
-        self.assertEqual([os.path.abspath('.')], config_used.get('migrations_dir'))
+        self.assertEqual('__db_version__', config_used.get('database_version_table'))
+        self.assertEqual([os.path.abspath('.')], config_used.get("database_migrations_dir"))
         self.assertEqual(None, config_used.get('schema_version'))
         self.assertEqual(False, config_used.get('show_sql'))
         self.assertEqual(False, config_used.get('show_sql_only'))
@@ -116,7 +116,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
 
     @patch.object(simple_db_migrate.main.Main, 'execute')
     @patch.object(simple_db_migrate.main.Main, '__init__', return_value=None)
-    @patch.object(simple_db_migrate.config.FileConfig, '_import_file', return_value = {'HOST':'host', 'USERNAME': 'root', 'PASSWORD':'', 'DATABASE':'database', 'MIGRATIONS_DIR':'.'})
+    @patch.object(simple_db_migrate.config.FileConfig, '_import_file', return_value = {'DATABASE_HOST':'host', 'DATABASE_USER': 'root', 'DATABASE_PASSWORD':'', 'DATABASE_NAME':'database', 'DATABASE_MIGRATIONS_DIR':'.'})
     def test_it_should_use_log_level_as_specified(self, import_file_mock, main_mock, execute_mock):
         simple_db_migrate.run(["-c", os.path.abspath('sample.conf'), '--log-level', 4])
         config_used = main_mock.call_args[0][0]
@@ -124,7 +124,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
 
     @patch.object(simple_db_migrate.main.Main, 'execute')
     @patch.object(simple_db_migrate.main.Main, '__init__', return_value=None)
-    @patch.object(simple_db_migrate.config.FileConfig, '_import_file', return_value = {'HOST':'host', 'USERNAME': 'root', 'PASSWORD':'', 'DATABASE':'database', 'MIGRATIONS_DIR':'.'})
+    @patch.object(simple_db_migrate.config.FileConfig, '_import_file', return_value = {'DATABASE_HOST':'host', 'DATABASE_USER': 'root', 'DATABASE_PASSWORD':'', 'DATABASE_NAME':'database', 'DATABASE_MIGRATIONS_DIR':'.'})
     def test_it_should_use_log_level_as_2_when_in_paused_mode(self, import_file_mock, main_mock, execute_mock):
         simple_db_migrate.run(["-c", os.path.abspath('sample.conf'), '--pause'])
         config_used = main_mock.call_args[0][0]
@@ -133,25 +133,25 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
     @patch('sys.stdout', new_callable=StringIO)
     @patch.object(simple_db_migrate.main.Main, 'execute')
     @patch.object(simple_db_migrate.main.Main, '__init__', return_value=None)
-    @patch.object(simple_db_migrate.config.FileConfig, '_import_file', return_value = {'HOST':'host', 'USERNAME': 'root', 'PASSWORD':'<<ask_me>>', 'DATABASE':'database', 'MIGRATIONS_DIR':'.'})
+    @patch.object(simple_db_migrate.config.FileConfig, '_import_file', return_value = {'DATABASE_HOST':'host', 'DATABASE_USER': 'root', 'DATABASE_PASSWORD':'<<ask_me>>', 'DATABASE_NAME':'database', 'DATABASE_MIGRATIONS_DIR':'.'})
     def test_it_should_ask_for_password_when_configuration_is_as_ask_me(self, import_file_mock, main_mock, execute_mock, stdout_mock):
         getpass_mock = Mock(return_value = 'password_asked')
         simple_db_migrate.run(["-c", os.path.abspath('sample.conf')], getpass=getpass_mock)
         config_used = main_mock.call_args[0][0]
-        self.assertEqual('password_asked', config_used.get('db_password'))
+        self.assertEqual('password_asked', config_used.get('database_password'))
         self.assertEqual('\nPlease inform password to connect to database "root@host:database"\n', stdout_mock.getvalue())
 
     @patch.object(simple_db_migrate.main.Main, 'execute')
     @patch.object(simple_db_migrate.main.Main, '__init__', return_value=None)
-    @patch.object(simple_db_migrate.config.FileConfig, '_import_file', return_value = {'HOST':'host', 'USERNAME': 'root', 'PASSWORD':'<<ask_me>>', 'DATABASE':'database', 'MIGRATIONS_DIR':'.'})
+    @patch.object(simple_db_migrate.config.FileConfig, '_import_file', return_value = {'DATABASE_HOST':'host', 'DATABASE_USER': 'root', 'DATABASE_PASSWORD':'<<ask_me>>', 'DATABASE_NAME':'database', 'DATABASE_MIGRATIONS_DIR':'.'})
     def test_it_should_use_password_from_command_line_when_configuration_is_as_ask_me(self, import_file_mock, main_mock, execute_mock):
         simple_db_migrate.run(["-c", os.path.abspath('sample.conf'), '--password', 'xpto_pass'])
         config_used = main_mock.call_args[0][0]
-        self.assertEqual('xpto_pass', config_used.get('db_password'))
+        self.assertEqual('xpto_pass', config_used.get('database_password'))
 
     @patch.object(simple_db_migrate.main.Main, 'execute')
     @patch.object(simple_db_migrate.main.Main, '__init__', return_value=None)
-    @patch.object(simple_db_migrate.config.FileConfig, '_import_file', return_value = {'force_execute_old_migrations_versions':True, 'label_version':'label', 'HOST':'host', 'USERNAME': 'root', 'PASSWORD':'', 'DATABASE':'database', 'MIGRATIONS_DIR':'.'})
+    @patch.object(simple_db_migrate.config.FileConfig, '_import_file', return_value = {'force_execute_old_migrations_versions':True, 'label_version':'label', 'DATABASE_HOST':'host', 'DATABASE_USER': 'root', 'DATABASE_PASSWORD':'', 'DATABASE_NAME':'database', 'DATABASE_MIGRATIONS_DIR':'.'})
     def test_it_should_use_values_from_config_file_in_replacement_for_command_line(self, import_file_mock, main_mock, execute_mock):
         simple_db_migrate.run(["-c", os.path.abspath('sample.conf')])
         config_used = main_mock.call_args[0][0]

@@ -93,8 +93,6 @@ class MSSQL(object):
         sql = "if not exists ( select 1 from sysobjects where name = '%s' and type = 'u' ) create table %s ( id INT IDENTITY(1,1) NOT NULL PRIMARY KEY, version varchar(20) NOT NULL default '0', label varchar(255), name varchar(255), sql_up NTEXT, sql_down NTEXT);" % (self.__version_table, self.__version_table)
         self.__execute(sql)
 
-        self._check_version_table_if_is_updated()
-
         # check if there is a register there
         db = self.__mssql_connect()
         count = db.execute_scalar("select count(*) from %s;" % self.__version_table)
@@ -104,19 +102,6 @@ class MSSQL(object):
         if count == 0:
             sql = "insert into %s (version) values ('0');" % self.__version_table
             self.__execute(sql)
-
-    def _check_version_table_if_is_updated(self):
-        # try to query a column wich not exists on the old version of simple-db-migrate
-        # has to have one check of this to each version of simple-db-migrate
-        db = self.__mssql_connect()
-        try:
-            db.execute_non_query("select id from %s;" % self.__version_table)
-        except Exception:
-            # update version table
-            sql = "alter table %s add id INT IDENTITY(1,1) NOT NULL PRIMARY KEY, label varchar(255), name varchar(255), sql_up ntext, sql_down ntext;" % self.__version_table
-            self.__execute(sql)
-
-        db.close()
 
     def __change_db_version(self, version, migration_file_name, sql_up, sql_down, up=True, execution_log=None, label_version=None):
         params = []

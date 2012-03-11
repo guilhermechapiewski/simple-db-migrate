@@ -23,7 +23,7 @@ class SimpleDBMigrateTest(BaseTest):
 
     def test_it_should_use_migrations_dir_from_configuration(self):
         db_migrate = SimpleDBMigrate(self.config)
-        self.assertEqual(self.config.get('migrations_dir'), db_migrate._migrations_dir)
+        self.assertEqual(self.config.get("database_migrations_dir"), db_migrate._migrations_dir)
 
     def test_it_should_use_script_encoding_from_configuration(self):
         db_migrate = SimpleDBMigrate(self.config)
@@ -68,7 +68,7 @@ class SimpleDBMigrateTest(BaseTest):
         self.assertEqual((len(self.test_migration_files) * 2), is_file_name_valid_mock.call_count)
 
     def test_it_should_raise_error_if_has_an_invalid_dir_on_migrations_dir_list(self):
-        self.config.update('migrations_dir', ['invalid_path_it_does_not_exist'])
+        self.config.update("database_migrations_dir", ['invalid_path_it_does_not_exist'])
         db_migrate = SimpleDBMigrate(self.config)
         self.assertRaisesWithMessage(Exception, "directory not found ('%s')" % os.path.abspath('invalid_path_it_does_not_exist'), db_migrate.get_all_migrations)
 

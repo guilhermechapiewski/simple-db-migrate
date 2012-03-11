@@ -65,22 +65,22 @@ class FileConfig(Config):
         # read configuration
         settings = FileConfig._import_file(config_file)
 
-        self.put("db_host", FileConfig._get_variable(settings, 'DATABASE_HOST', 'HOST', environment=environment))
-        self.put("db_user", FileConfig._get_variable(settings, 'DATABASE_USER', 'USERNAME', environment=environment))
-        self.put("db_password", FileConfig._get_variable(settings, 'DATABASE_PASSWORD', 'PASSWORD', environment=environment))
-        self.put("db_name", FileConfig._get_variable(settings, 'DATABASE_NAME', 'DATABASE', environment=environment))
+        self.put("database_host", FileConfig._get_variable(settings, 'DATABASE_HOST', environment=environment))
+        self.put("database_user", FileConfig._get_variable(settings, 'DATABASE_USER', environment=environment))
+        self.put("database_password", FileConfig._get_variable(settings, 'DATABASE_PASSWORD', environment=environment))
+        self.put("database_name", FileConfig._get_variable(settings, 'DATABASE_NAME', environment=environment))
 
-        self.put("db_engine", FileConfig._get_variable(settings, 'DATABASE_ENGINE', 'ENGINE', 'mysql', environment))
-        self.put("db_version_table", FileConfig._get_variable(settings, 'DATABASE_VERSION_TABLE', 'VERSION_TABLE', self.DB_VERSION_TABLE, environment))
+        self.put("database_engine", FileConfig._get_variable(settings, 'DATABASE_ENGINE', 'mysql', environment))
+        self.put("database_version_table", FileConfig._get_variable(settings, 'DATABASE_VERSION_TABLE', self.DB_VERSION_TABLE, environment))
 
-        self.put("utc_timestamp", ast.literal_eval(str(FileConfig._get_variable(settings, 'UTC_TIMESTAMP', None, 'False', environment))))
+        self.put("utc_timestamp", ast.literal_eval(str(FileConfig._get_variable(settings, 'UTC_TIMESTAMP', 'False', environment))))
 
         self._get_custom_variables(settings, ['DATABASE_HOST', 'DATABASE_USER', 'DATABASE_PASSWORD', 'DATABASE_NAME', 'DATABASE_ENGINE', 'DATABASE_VERSION_TABLE', 'DATABASE_MIGRATIONS_DIR'], environment=environment)
         self._get_general_variables(settings, environment=environment)
 
-        migrations_dir = FileConfig._get_variable(settings, 'DATABASE_MIGRATIONS_DIR', 'MIGRATIONS_DIR', environment=environment)
+        migrations_dir = FileConfig._get_variable(settings, 'DATABASE_MIGRATIONS_DIR', environment=environment)
         config_dir = os.path.split(config_file)[0]
-        self.put("migrations_dir", FileConfig._parse_migrations_dir(migrations_dir, config_dir))
+        self.put("database_migrations_dir", FileConfig._parse_migrations_dir(migrations_dir, config_dir))
 
     def _get_custom_variables(self, settings, default_variables = [], environment=''):
         """
@@ -104,28 +104,23 @@ class FileConfig(Config):
 
     #default_value was assigned as !@#$%&* to be more easy to check when the default value is None, empty string or False
     @staticmethod
-    def _get_variable(settings, name, old_name, default_value='!@#$%&*', environment=''):
+    def _get_variable(settings, name, default_value='!@#$%&*', environment=''):
         if environment:
             try:
-                return FileConfig._get_variable(settings, environment.upper() + "_" + name if name else None, environment.upper() + "_" + old_name if old_name else None)
+                return FileConfig._get_variable(settings, environment.upper() + "_" + name if name else None)
             except Exception, e:
                 pass
 
         try:
             return FileConfig._get(settings, name)
         except Exception, e:
-            pass
-
-        try:
-            return FileConfig._get(settings, old_name)
-        except Exception, e:
             if (default_value != '!@#$%&*'):
                 return default_value
 
             if environment:
-                raise Exception("invalid keys ('%s_%s', '%s_%s', '%s', '%s')" % (environment.upper(), name, environment.upper(), old_name, name, old_name))
+                raise Exception("invalid keys ('%s_%s', '%s')" % (environment.upper(), name, name))
 
-            raise Exception("invalid keys ('%s', '%s')" % (name, old_name))
+            raise Exception("invalid key ('%s')" % (name))
 
     @staticmethod
     def _import_file(full_filename):
@@ -161,19 +156,3 @@ class FileConfig(Config):
             sys.path.remove(path)
 
         return local_dict
-
-class InPlaceConfig(Config):
-
-    def __init__(self, db_host, db_user, db_password, db_name, migrations_dir, db_version_table='', log_dir='', db_engine='mysql', utc_timestamp=False, **kwargs):
-        if not db_version_table or db_version_table == '':
-            db_version_table = self.DB_VERSION_TABLE
-        self._config = kwargs.copy()
-        self._config["db_host"] = db_host
-        self._config["db_user"] = db_user
-        self._config["db_password"] = db_password
-        self._config["db_name"] = db_name
-        self._config["db_engine"] = db_engine
-        self._config["db_version_table"] = db_version_table
-        self._config["utc_timestamp"] = utc_timestamp
-        self._config["migrations_dir"] = InPlaceConfig._parse_migrations_dir(migrations_dir)
-        self._config["log_dir"] = log_dir
