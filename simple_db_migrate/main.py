@@ -16,14 +16,14 @@ class Main(object):
 
         self.sgdb = sgdb
         if self.sgdb is None and not self.config.get("new_migration", None):
-            if self.config.get("db_engine") is 'mysql':
+            if self.config.get("database_engine") is 'mysql':
                 from mysql import MySQL
                 self.sgdb = MySQL(config)
-            elif self.config.get("db_engine") is 'oracle':
+            elif self.config.get("database_engine") is 'oracle':
                 from oracle import Oracle
                 self.sgdb = Oracle(config)
             else:
-                raise Exception("engine not supported '%s'" % self.config.get("db_engine"))
+                raise Exception("engine not supported '%s'" % self.config.get("database_engine"))
 
         self.db_migrate = SimpleDBMigrate(self.config)
 
@@ -36,7 +36,7 @@ class Main(object):
         self._execution_log("\nDone.\n", "PINK", log_level_limit=1)
 
     def _create_migration(self):
-        migrations_dir = self.config.get("migrations_dir")
+        migrations_dir = self.config.get("database_migrations_dir")
         new_file = Migration.create(self.config.get("new_migration", None), migrations_dir[0], self.config.get("db_script_encoding", "utf-8"), self.config.get("utc_timestamp", False))
         self._execution_log("- Created file '%s'" % (new_file), log_level_limit=1)
 

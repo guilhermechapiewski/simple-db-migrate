@@ -7,11 +7,11 @@ class MySQL(object):
     def __init__(self, config=None, mysql_driver=None):
         self.__mysql_script_encoding = config.get("db_script_encoding", "utf8")
         self.__mysql_encoding = config.get("db_encoding", "utf8")
-        self.__mysql_host = config.get("db_host")
-        self.__mysql_user = config.get("db_user")
-        self.__mysql_passwd = config.get("db_password")
-        self.__mysql_db = config.get("db_name")
-        self.__version_table = config.get("db_version_table")
+        self.__mysql_host = config.get("database_host")
+        self.__mysql_user = config.get("database_user")
+        self.__mysql_passwd = config.get("database_password")
+        self.__mysql_db = config.get("database_name")
+        self.__version_table = config.get("database_version_table")
 
         self.__mysql_driver = mysql_driver
         if not mysql_driver:
@@ -24,13 +24,13 @@ class MySQL(object):
         self._create_database_if_not_exists()
         self._create_version_table_if_not_exists()
 
-    def __mysql_connect(self, connect_using_db_name=True):
+    def __mysql_connect(self, connect_using_database_name=True):
         try:
             conn = self.__mysql_driver.connect(host=self.__mysql_host, user=self.__mysql_user, passwd=self.__mysql_passwd)
 
             conn.set_character_set(self.__mysql_encoding)
 
-            if connect_using_db_name:
+            if connect_using_database_name:
                 conn.select_db(self.__mysql_db)
             return conn
         except Exception, e:
@@ -128,8 +128,6 @@ class MySQL(object):
         sql = "create table if not exists %s ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default \"0\", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id));" % self.__version_table
         self.__execute(sql)
 
-        self._check_version_table_if_is_updated()
-
         # check if there is a register there
         db = self.__mysql_connect()
         cursor = db.cursor()
@@ -142,32 +140,6 @@ class MySQL(object):
         if count == 0:
             sql = "insert into %s (version) values (\"0\");" % self.__version_table
             self.__execute(sql)
-
-    def _check_version_table_if_is_updated(self):
-        # try to query a column wich not exists on the old version of simple-db-migrate
-        # has to have one check of this to each version of simple-db-migrate
-        db = self.__mysql_connect()
-        cursor = db.cursor()
-        try:
-            cursor.execute("select id from %s;" % self.__version_table)
-        except Exception:
-            # update version table
-            sql = "alter table %s add column id int(11)  not null auto_increment first, add column name varchar(255), add column sql_up longtext, add column sql_down longtext, add primary key (id);" % self.__version_table
-            self.__execute(sql)
-
-        try:
-            cursor.execute("select label from %s;" % self.__version_table)
-        except Exception:
-            # update version table
-            sql = "alter table %s add column label varchar(255) after version;" % self.__version_table
-            self.__execute(sql)
-
-        cursor.execute("show index from %s where key_name = 'label';" % self.__version_table)
-        if cursor.fetchone():
-            cursor.execute("alter table %s drop index label;" % self.__version_table)
-
-        cursor.close()
-        db.close()
 
     def change(self, sql, new_db_version, migration_file_name, sql_up, sql_down, up=True, execution_log=None, label_version=None):
         self.__execute(sql, execution_log)

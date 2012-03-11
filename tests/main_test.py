@@ -34,18 +34,18 @@ class MainTest(BaseTest):
 
     @patch('simple_db_migrate.main.LOG')
     def test_it_should_use_log_dir_from_config(self, log_mock):
-        Main(sgdb=Mock(), config=Config({'log_dir':'.', 'migrations_dir':['.']}))
+        Main(sgdb=Mock(), config=Config({'log_dir':'.', "database_migrations_dir":['.']}))
         log_mock.assert_called_with('.')
 
     @patch('simple_db_migrate.mysql.MySQL')
     def test_it_should_use_mysql_class_if_choose_this_engine(self, mysql_mock):
-        config=Config({'log_dir':'.', 'db_engine': 'mysql', 'migrations_dir':['.']})
+        config=Config({'log_dir':'.', 'database_engine': 'mysql', "database_migrations_dir":['.']})
         Main(config=config)
         mysql_mock.assert_called_with(config)
 
     @patch('simple_db_migrate.oracle.Oracle')
     def test_it_should_use_oracle_class_if_choose_this_engine(self, oracle_mock):
-        config=Config({'log_dir':'.', 'db_engine': 'oracle', 'migrations_dir':['.']})
+        config=Config({'log_dir':'.', 'database_engine': 'oracle', "database_migrations_dir":['.']})
         Main(config=config)
         oracle_mock.assert_called_with(config)
 
@@ -53,11 +53,11 @@ class MainTest(BaseTest):
         self.assertRaisesWithMessage(Exception, "config must be an instance of simple_db_migrate.config.Config", Main, config={})
 
     def test_it_should_raise_error_if_choose_an_invalid_engine(self):
-        config=Config({'log_dir':'.', 'db_engine': 'invalid_engine'})
+        config=Config({'log_dir':'.', 'database_engine': 'invalid_engine'})
         self.assertRaisesWithMessage(Exception, "engine not supported 'invalid_engine'", Main, config=config)
 
     def test_it_should_ignore_engine_configuration_if_asked_to_create_a_new_migration(self):
-        config=Config({'new_migration':'new_test_migration', 'db_engine': 'invalid_engine', 'migrations_dir':['.']})
+        config=Config({'new_migration':'new_test_migration', 'database_engine': 'invalid_engine', "database_migrations_dir":['.']})
         try:
             Main(config)
         except:
@@ -66,7 +66,7 @@ class MainTest(BaseTest):
     @patch('simple_db_migrate.main.Main._execution_log')
     @patch('simple_db_migrate.main.Migration.create', return_value='created_file')
     def test_it_should_create_migration_if_option_is_activated_by_the_user(self, migration_mock, _execution_log_mock):
-        config=Config({'new_migration':'new_test_migration', 'db_engine': 'invalid_engine', 'migrations_dir':['migrations', '.']})
+        config=Config({'new_migration':'new_test_migration', 'database_engine': 'invalid_engine', "database_migrations_dir":['migrations', '.']})
         main = Main(config)
         main.execute()
 
@@ -83,7 +83,7 @@ class MainTest(BaseTest):
     @patch('simple_db_migrate.main.LOG')
     @patch('simple_db_migrate.main.CLI')
     def test_it_should_create_new_migration_with_utc_timestamp(self, cli_mock, log_mock, simpledbmigrate_mock, migration_mock):
-        config=Config({'new_migration':'new_test_migration', 'db_engine': 'invalid_engine', 'migrations_dir':['migrations', '.'], 'utc_timestamp': True})
+        config=Config({'new_migration':'new_test_migration', 'database_engine': 'invalid_engine', "database_migrations_dir":['migrations', '.'], 'utc_timestamp': True})
         main = Main(sgdb=Mock(), config=config)
         main.execute()
         migration_mock.assert_called_with('new_test_migration', 'migrations', 'utf-8', True)
@@ -93,7 +93,7 @@ class MainTest(BaseTest):
     @patch('simple_db_migrate.main.LOG')
     @patch('simple_db_migrate.main.CLI')
     def test_it_should_create_new_migration_with_different_encoding(self, cli_mock, log_mock, simpledbmigrate_mock, migration_mock):
-        config=Config({'new_migration':'new_test_migration', 'db_engine': 'invalid_engine', 'migrations_dir':['migrations', '.'], 'db_script_encoding': 'iso8859-1'})
+        config=Config({'new_migration':'new_test_migration', 'database_engine': 'invalid_engine', "database_migrations_dir":['migrations', '.'], 'db_script_encoding': 'iso8859-1'})
         main = Main(sgdb=Mock(), config=config)
         main.execute()
         migration_mock.assert_called_with('new_test_migration', 'migrations', 'iso8859-1', False)
@@ -101,7 +101,7 @@ class MainTest(BaseTest):
     @patch('simple_db_migrate.main.Main._execution_log')
     @patch('simple_db_migrate.main.Main._migrate')
     def test_it_should_migrate_db_if_create_migration_option_is_not_activated_by_user(self, migrate_mock, _execution_log_mock):
-        config=Config({'migrations_dir':['.']})
+        config=Config({"database_migrations_dir":['.']})
         main = Main(config=config, sgdb=Mock())
         main.execute()
 
@@ -150,7 +150,7 @@ class MainTest(BaseTest):
         execute_migrations_mock.assert_called_with('current_schema_version', 'destination_version')
 
     def test_it_should_get_destination_version_when_user_informs_a_specific_version(self):
-        config=Config({"schema_version":"20090214115300", 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version":"20090214115300", "database_migrations_dir":['migrations', '.']})
         main = Main(sgdb=Mock(), config=config)
         main = Main(sgdb=Mock(**{'get_version_id_from_version_number.return_value':None}), config=config)
         self.assertEqual("20090214115300", main._get_destination_version())
@@ -158,32 +158,32 @@ class MainTest(BaseTest):
         self.assertEqual(1, main.sgdb.get_version_id_from_version_number.call_count)
 
     def test_it_should_get_destination_version_when_user_does_not_inform_a_specific_version(self):
-        config=Config({'migrations_dir':['migrations', '.']})
+        config=Config({"database_migrations_dir":['migrations', '.']})
         main = Main(sgdb=Mock(), config=config)
         self.assertEqual("20090214115600", main._get_destination_version())
 
     def test_it_should_raise_exception_when_get_destination_version_and_version_does_not_exist_on_database_or_on_migrations_dir(self):
-        config=Config({"schema_version":"20090214115900", 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version":"20090214115900", "database_migrations_dir":['migrations', '.']})
         main = Main(sgdb=Mock(**{'get_version_id_from_version_number.return_value':None}), config=config)
         self.assertRaisesWithMessage(Exception, 'version not found (20090214115900)', main.execute)
         main.sgdb.get_version_id_from_version_number.assert_called_with('20090214115900')
         self.assertEqual(2, main.sgdb.get_version_id_from_version_number.call_count)
 
     def test_it_should_get_destination_version_when_user_informs_a_label_and_it_does_not_exists_in_database(self):
-        config=Config({"label_version":"test_label", 'migrations_dir':['migrations', '.']})
+        config=Config({"label_version":"test_label", "database_migrations_dir":['migrations', '.']})
         main = Main(sgdb=Mock(**{'get_version_number_from_label.return_value':None}), config=config)
         self.assertEqual("20090214115600", main._get_destination_version())
         main.sgdb.get_version_number_from_label.assert_called_with('test_label')
 
     def test_it_should_get_destination_version_when_user_informs_a_specific_version_and_it_exists_on_database(self):
-        config=Config({"schema_version":"20090214115300", 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version":"20090214115300", "database_migrations_dir":['migrations', '.']})
         main = Main(sgdb=Mock(**{'get_version_id_from_version_number.return_value':3}), config=config)
         self.assertEqual("20090214115300", main._get_destination_version())
         main.sgdb.get_version_id_from_version_number.assert_called_with('20090214115300')
         self.assertEqual(1, main.sgdb.get_version_id_from_version_number.call_count)
 
     def test_it_should_get_destination_version_when_user_informs_a_label_and_a_version_and_it_does_not_exists_in_database(self):
-        config=Config({"schema_version":"20090214115300", "label_version":"test_label", 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version":"20090214115300", "label_version":"test_label", "database_migrations_dir":['migrations', '.']})
         main = Main(sgdb=Mock(**{'get_version_number_from_label.return_value':None, 'get_version_id_from_version_number.return_value':None}), config=config)
         self.assertEqual("20090214115300", main._get_destination_version())
         main.sgdb.get_version_number_from_label.assert_called_with('test_label')
@@ -194,20 +194,20 @@ class MainTest(BaseTest):
 
     @patch('simple_db_migrate.main.Main._get_migration_files_to_be_executed', return_value=[])
     def test_it_should_do_migration_down_if_a_label_and_a_version_were_specified_and_both_of_them_are_present_at_database_and_correspond_to_same_migration(self, files_to_be_executed_mock):
-        config=Config({"schema_version":"20090214115300", "label_version":"test_label", 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version":"20090214115300", "label_version":"test_label", "database_migrations_dir":['migrations', '.']})
         main = Main(sgdb=Mock(**{'get_current_schema_version.return_value':'20090214115600', 'get_version_number_from_label.return_value':'20090214115300', 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
         main.execute()
         files_to_be_executed_mock.assert_called_with('20090214115600', '20090214115300', False)
 
     @patch('simple_db_migrate.main.Main._get_migration_files_to_be_executed', return_value=[])
     def test_it_should_do_migration_down_if_a_label_and_a_version_were_specified_and_both_of_them_are_present_at_database_and_correspond_to_same_migration_and_force_execute_old_migrations_versions_is_set(self, files_to_be_executed_mock):
-        config=Config({"schema_version":"20090214115300", "label_version":"test_label", 'migrations_dir':['migrations', '.'], "force_execute_old_migrations_versions": True})
+        config=Config({"schema_version":"20090214115300", "label_version":"test_label", "database_migrations_dir":['migrations', '.'], "force_execute_old_migrations_versions": True})
         main = Main(sgdb=Mock(**{'get_current_schema_version.return_value':'20090214115600', 'get_version_number_from_label.return_value':'20090214115300', 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
         main.execute()
         files_to_be_executed_mock.assert_called_with('20090214115600', '20090214115300', False)
 
     def test_it_should_get_destination_version_and_update_config_when_user_informs_a_label_and_it_exists_in_database(self):
-        config=Config({"schema_version":None, "label_version":"test_label", 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version":None, "label_version":"test_label", "database_migrations_dir":['migrations', '.']})
         main = Main(sgdb=Mock(**{'get_version_number_from_label.return_value':'20090214115300', 'get_version_id_from_version_number.return_value':3}), config=config)
         self.assertEqual("20090214115300", main._get_destination_version())
         self.assertEqual("20090214115300", config.get("schema_version"))
@@ -217,7 +217,7 @@ class MainTest(BaseTest):
         self.assertEqual(1, main.sgdb.get_version_id_from_version_number.call_count)
 
     def test_it_should_raise_exception_when_get_destination_version_and_version_and_label_point_to_a_different_migration_on_database(self):
-        config=Config({"schema_version":"20090214115300", "label_version":"test_label", 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version":"20090214115300", "label_version":"test_label", "database_migrations_dir":['migrations', '.']})
         main = Main(sgdb=Mock(**{'get_version_number_from_label.return_value':'20090214115400', 'get_version_id_from_version_number.return_value':3}), config=config)
         self.assertRaisesWithMessage(Exception, "label (test_label) and schema_version (20090214115300) don't correspond to the same version at database", main.execute)
         main.sgdb.get_version_number_from_label.assert_called_with('test_label')
@@ -226,7 +226,7 @@ class MainTest(BaseTest):
         self.assertEqual(1, main.sgdb.get_version_id_from_version_number.call_count)
 
     def test_it_should_raise_exception_when_get_destination_version_and_version_exists_on_database_and_label_not(self):
-        config=Config({"schema_version":"20090214115300", "label_version":"test_label", 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version":"20090214115300", "label_version":"test_label", "database_migrations_dir":['migrations', '.']})
         main = Main(sgdb=Mock(**{'get_version_number_from_label.return_value':None, 'get_version_id_from_version_number.return_value':3}), config=config)
         self.assertRaisesWithMessage(Exception, "label (test_label) or schema_version (20090214115300), only one of them exists in the database", main.execute)
         main.sgdb.get_version_number_from_label.assert_called_with('test_label')
@@ -235,7 +235,7 @@ class MainTest(BaseTest):
         self.assertEqual(1, main.sgdb.get_version_id_from_version_number.call_count)
 
     def test_it_should_raise_exception_when_get_destination_version_and_label_exists_on_database_and_version_not(self):
-        config=Config({"schema_version":"20090214115300", "label_version":"test_label", 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version":"20090214115300", "label_version":"test_label", "database_migrations_dir":['migrations', '.']})
         main = Main(sgdb=Mock(**{'get_version_number_from_label.return_value':'20090214115400', 'get_version_id_from_version_number.return_value':None}), config=config)
         self.assertRaisesWithMessage(Exception, "label (test_label) or schema_version (20090214115300), only one of them exists in the database", main.execute)
         main.sgdb.get_version_number_from_label.assert_called_with('test_label')
@@ -244,7 +244,7 @@ class MainTest(BaseTest):
         self.assertEqual(1, main.sgdb.get_version_id_from_version_number.call_count)
 
     def test_it_should_raise_exception_when_get_destination_version_and_version_and_label_point_to_a_different_migration_on_database_and_force_execute_old_migrations_versions_is_set(self):
-        config=Config({"schema_version":"20090214115300", "label_version":"test_label", 'migrations_dir':['migrations', '.'], "force_execute_old_migrations_versions":True})
+        config=Config({"schema_version":"20090214115300", "label_version":"test_label", "database_migrations_dir":['migrations', '.'], "force_execute_old_migrations_versions":True})
         main = Main(sgdb=Mock(**{'get_version_number_from_label.return_value':'20090214115400', 'get_version_id_from_version_number.return_value':3}), config=config)
         self.assertRaisesWithMessage(Exception, "label (test_label) and schema_version (20090214115300) don't correspond to the same version at database", main.execute)
         main.sgdb.get_version_number_from_label.assert_called_with('test_label')
@@ -253,7 +253,7 @@ class MainTest(BaseTest):
         self.assertEqual(1, main.sgdb.get_version_id_from_version_number.call_count)
 
     def test_it_should_raise_exception_when_get_destination_version_and_version_exists_on_database_and_label_not_and_force_execute_old_migrations_versions_is_set(self):
-        config=Config({"schema_version":"20090214115300", "label_version":"test_label", 'migrations_dir':['migrations', '.'], "force_execute_old_migrations_versions":True})
+        config=Config({"schema_version":"20090214115300", "label_version":"test_label", "database_migrations_dir":['migrations', '.'], "force_execute_old_migrations_versions":True})
         main = Main(sgdb=Mock(**{'get_version_number_from_label.return_value':None, 'get_version_id_from_version_number.return_value':3}), config=config)
         self.assertRaisesWithMessage(Exception, "label (test_label) or schema_version (20090214115300), only one of them exists in the database", main.execute)
         main.sgdb.get_version_number_from_label.assert_called_with('test_label')
@@ -262,7 +262,7 @@ class MainTest(BaseTest):
         self.assertEqual(1, main.sgdb.get_version_id_from_version_number.call_count)
 
     def test_it_should_raise_exception_when_get_destination_version_and_label_exists_on_database_and_version_not_and_force_execute_old_migrations_versions_is_set(self):
-        config=Config({"schema_version":"20090214115300", "label_version":"test_label", 'migrations_dir':['migrations', '.'], "force_execute_old_migrations_versions":True})
+        config=Config({"schema_version":"20090214115300", "label_version":"test_label", "database_migrations_dir":['migrations', '.'], "force_execute_old_migrations_versions":True})
         main = Main(sgdb=Mock(**{'get_version_number_from_label.return_value':'20090214115400', 'get_version_id_from_version_number.return_value':None}), config=config)
         self.assertRaisesWithMessage(Exception, "label (test_label) or schema_version (20090214115300), only one of them exists in the database", main.execute)
         main.sgdb.get_version_number_from_label.assert_called_with('test_label')
@@ -272,26 +272,26 @@ class MainTest(BaseTest):
 
     @patch('simple_db_migrate.main.Main._get_migration_files_to_be_executed', return_value=[])
     def test_it_should_migrate_database_with_migration_is_up(self, files_to_be_executed_mock):
-        config=Config({"schema_version": None, "label_version": None, 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version": None, "label_version": None, "database_migrations_dir":['migrations', '.']})
         main = Main(sgdb=Mock(**{'get_current_schema_version.return_value':'20090214115300', 'get_version_id_from_version_number.return_value':None}), config=config)
         main.execute()
         files_to_be_executed_mock.assert_called_with('20090214115300', '20090214115600', True)
 
     @patch('simple_db_migrate.main.Main._get_migration_files_to_be_executed', return_value=[])
     def test_it_should_migrate_database_with_migration_is_down_when_specify_a_version_older_than_that_on_database(self, files_to_be_executed_mock):
-        config=Config({"schema_version": '20090214115200', "label_version": None, 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version": '20090214115200', "label_version": None, "database_migrations_dir":['migrations', '.']})
         main = Main(sgdb=Mock(**{'get_current_schema_version.return_value':'20090214115300', 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
         main.execute()
         files_to_be_executed_mock.assert_called_with('20090214115300', '20090214115200', False)
 
     def test_it_should_raise_error_when_specify_a_version_older_than_the_current_database_version_and_is_not_present_on_database(self):
-        config=Config({"schema_version": '20090214115100', "label_version": None, 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version": '20090214115100', "label_version": None, "database_migrations_dir":['migrations', '.']})
         main = Main(sgdb=Mock(**{'get_current_schema_version.return_value':'20090214115300', 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
         self.assertRaisesWithMessage(Exception, 'Trying to migrate to a lower version wich is not found on database (20090214115100)', main.execute)
 
     @patch('simple_db_migrate.main.Main._execution_log')
     def test_it_should_just_log_message_when_dont_have_any_migration_to_execute(self, _execution_log_mock):
-        config=Config({"schema_version": None, "label_version": None, 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version": None, "label_version": None, "database_migrations_dir":['migrations', '.']})
         main = Main(sgdb=Mock(**{'get_current_schema_version.return_value':'20090214115600', 'get_version_id_from_version_number.return_value':None}), config=config)
         main.execute()
 
@@ -306,14 +306,14 @@ class MainTest(BaseTest):
 
     @patch('simple_db_migrate.main.Main._get_migration_files_to_be_executed', return_value=[])
     def test_it_should_do_migration_down_if_a_label_was_specified_and_a_version_was_not_specified_and_label_is_present_at_database(self, files_to_be_executed_mock):
-        config=Config({"schema_version":None, "label_version":"test_label", 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version":None, "label_version":"test_label", "database_migrations_dir":['migrations', '.']})
         main = Main(sgdb=Mock(**{'get_current_schema_version.return_value':'20090214115600', 'get_version_number_from_label.return_value':'20090214115300', 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
         main.execute()
         files_to_be_executed_mock.assert_called_with('20090214115600', '20090214115300', False)
 
     @patch('simple_db_migrate.main.Main._get_migration_files_to_be_executed', return_value=[])
     def test_it_should_do_migration_down_if_a_label_was_specified_and_a_version_was_not_specified_and_label_is_present_at_database_and_force_execute_old_migrations_versions_is_set(self, files_to_be_executed_mock):
-        config=Config({"schema_version":None, "label_version":"test_label", 'migrations_dir':['migrations', '.'], "force_execute_old_migrations_versions":True})
+        config=Config({"schema_version":None, "label_version":"test_label", "database_migrations_dir":['migrations', '.'], "force_execute_old_migrations_versions":True})
         main = Main(sgdb=Mock(**{'get_current_schema_version.return_value':'20090214115600', 'get_version_number_from_label.return_value':'20090214115300', 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
         main.execute()
         files_to_be_executed_mock.assert_called_with('20090214115600', '20090214115300', False)
@@ -321,7 +321,7 @@ class MainTest(BaseTest):
     @patch('simple_db_migrate.main.Main._get_migration_files_to_be_executed', return_value=[Migration(file_name="20090214115500_05_test_migration.migration", version="20090214115500", sql_up="sql up 05", sql_down="sql down 05"), Migration(file_name="20090214115600_06_test_migration.migration", version="20090214115600", sql_up="sql up 06", sql_down="sql down 06")])
     @patch('simple_db_migrate.main.Main._execution_log')
     def test_it_should_only_log_sql_commands_when_show_sql_only_is_set_and_is_up(self, _execution_log_mock, files_to_be_executed_mock):
-        config=Config({"schema_version":'20090214115600', "label_version":None, 'migrations_dir':['migrations', '.'], 'show_sql_only':True})
+        config=Config({"schema_version":'20090214115600', "label_version":None, "database_migrations_dir":['migrations', '.'], 'show_sql_only':True})
         main = Main(sgdb=Mock(**{'change.return_value':None, 'get_current_schema_version.return_value':'20090214115400', 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
         main.execute()
 
@@ -344,7 +344,7 @@ class MainTest(BaseTest):
     @patch('simple_db_migrate.main.Main._get_migration_files_to_be_executed', return_value=[Migration(file_name="20090214115600_06_test_migration.migration", version="20090214115600", sql_up="sql up 06", sql_down="sql down 06"), Migration(file_name="20090214115500_05_test_migration.migration", version="20090214115500", sql_up="sql up 05", sql_down="sql down 05")])
     @patch('simple_db_migrate.main.Main._execution_log')
     def test_it_should_only_log_sql_commands_when_show_sql_only_is_set_and_is_down(self, _execution_log_mock, files_to_be_executed_mock):
-        config=Config({"schema_version":'20090214115400', "label_version":None, 'migrations_dir':['migrations', '.'], 'show_sql_only':True})
+        config=Config({"schema_version":'20090214115400', "label_version":None, "database_migrations_dir":['migrations', '.'], 'show_sql_only':True})
         main = Main(sgdb=Mock(**{'change.return_value':None, 'get_current_schema_version.return_value':'20090214115600', 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
         main.execute()
 
@@ -367,7 +367,7 @@ class MainTest(BaseTest):
     @patch('simple_db_migrate.main.Main._get_migration_files_to_be_executed', return_value=[Migration(file_name="20090214115500_05_test_migration.migration", version="20090214115500", sql_up="sql up 05", sql_down="sql down 05"), Migration(file_name="20090214115600_06_test_migration.migration", version="20090214115600", sql_up="sql up 06", sql_down="sql down 06")])
     @patch('simple_db_migrate.main.Main._execution_log')
     def test_it_should_execute_sql_commands_when_show_sql_only_is_not_set_and_is_up(self, _execution_log_mock, files_to_be_executed_mock):
-        config=Config({"schema_version":'20090214115600', "label_version":None, 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version":'20090214115600', "label_version":None, "database_migrations_dir":['migrations', '.']})
         main = Main(sgdb=Mock(**{'change.return_value':None, 'get_current_schema_version.return_value':'20090214115400', 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
         main.execute()
 
@@ -392,7 +392,7 @@ class MainTest(BaseTest):
     @patch('simple_db_migrate.main.Main._get_migration_files_to_be_executed', return_value=[Migration(file_name="20090214115600_06_test_migration.migration", version="20090214115600", sql_up="sql up 06", sql_down="sql down 06"), Migration(file_name="20090214115500_05_test_migration.migration", version="20090214115500", sql_up="sql up 05", sql_down="sql down 05")])
     @patch('simple_db_migrate.main.Main._execution_log')
     def test_it_should_execute_sql_commands_when_show_sql_only_is_not_set_and_is_down(self, _execution_log_mock, files_to_be_executed_mock):
-        config=Config({"schema_version":'20090214115400', "label_version":None, 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version":'20090214115400', "label_version":None, "database_migrations_dir":['migrations', '.']})
         main = Main(sgdb=Mock(**{'change.return_value':None, 'get_current_schema_version.return_value':'20090214115600', 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
         main.execute()
 
@@ -417,7 +417,7 @@ class MainTest(BaseTest):
     @patch('simple_db_migrate.main.Main._get_migration_files_to_be_executed', return_value=[Migration(file_name="20090214115500_05_test_migration.migration", version="20090214115500", sql_up="sql up 05", sql_down="sql down 05"), Migration(file_name="20090214115600_06_test_migration.migration", version="20090214115600", sql_up="sql up 06", sql_down="sql down 06")])
     @patch('simple_db_migrate.main.Main._execution_log')
     def test_it_should_execute_and_log_sql_commands_when_show_sql_is_set_and_is_up(self, _execution_log_mock, files_to_be_executed_mock):
-        config=Config({"schema_version":'20090214115600', "label_version":None, 'migrations_dir':['migrations', '.'], 'show_sql':True})
+        config=Config({"schema_version":'20090214115600', "label_version":None, "database_migrations_dir":['migrations', '.'], 'show_sql':True})
         main = Main(sgdb=Mock(**{'change.return_value':None, 'get_current_schema_version.return_value':'20090214115400', 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
         main.execute()
 
@@ -446,7 +446,7 @@ class MainTest(BaseTest):
     @patch('simple_db_migrate.main.Main._get_migration_files_to_be_executed', return_value=[Migration(file_name="20090214115600_06_test_migration.migration", version="20090214115600", sql_up="sql up 06", sql_down="sql down 06"), Migration(file_name="20090214115500_05_test_migration.migration", version="20090214115500", sql_up="sql up 05", sql_down="sql down 05")])
     @patch('simple_db_migrate.main.Main._execution_log')
     def test_it_should_execute_and_log_sql_commands_when_show_sql_is_set_and_is_down(self, _execution_log_mock, files_to_be_executed_mock):
-        config=Config({"schema_version":'20090214115400', "label_version":None, 'migrations_dir':['migrations', '.'], 'show_sql':True})
+        config=Config({"schema_version":'20090214115400', "label_version":None, "database_migrations_dir":['migrations', '.'], 'show_sql':True})
         main = Main(sgdb=Mock(**{'change.return_value':None, 'get_current_schema_version.return_value':'20090214115600', 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
         main.execute()
 
@@ -474,7 +474,7 @@ class MainTest(BaseTest):
 
     @patch('simple_db_migrate.main.Main._get_migration_files_to_be_executed', return_value=[Migration(file_name="20090214115500_05_test_migration.migration", version="20090214115500", sql_up="sql up 05", sql_down="sql down 05"), Migration(file_name="20090214115600_06_test_migration.migration", version="20090214115600", sql_up="sql up 06", sql_down="sql down 06")])
     def test_it_should_apply_label_to_executed_sql_commands_when_a_label_was_specified_and_is_up(self, files_to_be_executed_mock):
-        config=Config({"schema_version":None, "label_version":"new_label", 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version":None, "label_version":"new_label", "database_migrations_dir":['migrations', '.']})
         main = Main(sgdb=Mock(**{'change.return_value':None, 'get_version_number_from_label.return_value':None, 'get_current_schema_version.return_value':'20090214115400', 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
         main.execute()
 
@@ -487,7 +487,7 @@ class MainTest(BaseTest):
     @patch('simple_db_migrate.main.Main._get_migration_files_to_be_executed', return_value=[Migration(file_name="20090214115500_05_test_migration.migration", version="20090214115500", sql_up="sql up 05", sql_down="sql down 05"), Migration(file_name="20090214115600_06_test_migration.migration", version="20090214115600", sql_up="sql up 06", sql_down="sql down 06")])
     @patch('simple_db_migrate.main.Main._execution_log')
     def test_it_should_raise_exception_and_stop_process_when_an_error_occur_on_executing_sql_commands_and_is_up(self, _execution_log_mock, files_to_be_executed_mock):
-        config=Config({"schema_version":'20090214115600', "label_version":None, 'migrations_dir':['migrations', '.'], 'show_sql':True})
+        config=Config({"schema_version":'20090214115600', "label_version":None, "database_migrations_dir":['migrations', '.'], 'show_sql':True})
         main = Main(sgdb=Mock(**{'change.side_effect':Exception('error when executin sql'), 'get_current_schema_version.return_value':'20090214115400', 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
         self.assertRaisesWithMessage(Exception, 'error when executin sql', main.execute)
 
@@ -510,7 +510,7 @@ class MainTest(BaseTest):
     @patch('simple_db_migrate.main.Main._get_migration_files_to_be_executed', return_value=[Migration(file_name="20090214115600_06_test_migration.migration", version="20090214115600", sql_up="sql up 06", sql_down="sql down 06"), Migration(file_name="20090214115500_05_test_migration.migration", version="20090214115500", sql_up="sql up 05", sql_down="sql down 05")])
     @patch('simple_db_migrate.main.Main._execution_log')
     def test_it_should_raise_exception_and_stop_process_when_an_error_occur_on_executing_sql_commands_and_is_down(self, _execution_log_mock, files_to_be_executed_mock):
-        config=Config({"schema_version":'20090214115400', "label_version":None, 'migrations_dir':['migrations', '.'], 'show_sql':True})
+        config=Config({"schema_version":'20090214115400', "label_version":None, "database_migrations_dir":['migrations', '.'], 'show_sql':True})
         main = Main(sgdb=Mock(**{'change.side_effect':Exception('error when executin sql'), 'get_current_schema_version.return_value':'20090214115600', 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
         self.assertRaisesWithMessage(Exception, 'error when executin sql', main.execute)
 
@@ -533,7 +533,7 @@ class MainTest(BaseTest):
     @patch('simple_db_migrate.main.Main._get_migration_files_to_be_executed', side_effect=Exception('error getting migrations to execute'))
     @patch('simple_db_migrate.main.Main._execution_log')
     def test_it_should_raise_exception_and_stop_process_when_an_error_occur_on_getting_migrations_to_execute_and_is_up(self, _execution_log_mock, files_to_be_executed_mock):
-        config=Config({"schema_version":'20090214115600', "label_version":None, 'migrations_dir':['migrations', '.'], 'show_sql':True})
+        config=Config({"schema_version":'20090214115600', "label_version":None, "database_migrations_dir":['migrations', '.'], 'show_sql':True})
         main = Main(sgdb=Mock(**{'get_current_schema_version.return_value':'20090214115400', 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
         self.assertRaisesWithMessage(Exception, 'error getting migrations to execute', main.execute)
 
@@ -549,7 +549,7 @@ class MainTest(BaseTest):
     @patch('simple_db_migrate.main.Main._get_migration_files_to_be_executed', side_effect=Exception('error getting migrations to execute'))
     @patch('simple_db_migrate.main.Main._execution_log')
     def test_it_should_raise_exception_and_stop_process_when_an_error_occur_on_getting_migrations_to_execute_and_is_down(self, _execution_log_mock, files_to_be_executed_mock):
-        config=Config({"schema_version":'20090214115400', "label_version":None, 'migrations_dir':['migrations', '.'], 'show_sql':True})
+        config=Config({"schema_version":'20090214115400', "label_version":None, "database_migrations_dir":['migrations', '.'], 'show_sql':True})
         main = Main(sgdb=Mock(**{'get_current_schema_version.return_value':'20090214115600', 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
         self.assertRaisesWithMessage(Exception, 'error getting migrations to execute', main.execute)
 
@@ -566,7 +566,7 @@ class MainTest(BaseTest):
     @patch('sys.stdout', new_callable=StringIO)
     @patch('simple_db_migrate.main.Main._get_migration_files_to_be_executed', return_value=[Migration(file_name="20090214115500_05_test_migration.migration", version="20090214115500", sql_up="sql up 05", sql_down="sql down 05"), Migration(file_name="20090214115600_06_test_migration.migration", version="20090214115600", sql_up="sql up 06", sql_down="sql down 06")])
     def test_it_should_pause_execution_after_each_migration_when_paused_mode_is_set_and_is_up(self, files_to_be_executed_mock, stdout_mock, stdin_mock):
-        config=Config({"schema_version":'20090214115600', "label_version":None, 'migrations_dir':['migrations', '.'], 'paused_mode':True})
+        config=Config({"schema_version":'20090214115600', "label_version":None, "database_migrations_dir":['migrations', '.'], 'paused_mode':True})
         main = Main(sgdb=Mock(**{'change.return_value':None, 'get_current_schema_version.return_value':'20090214115400', 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
         main.execute()
 
@@ -582,7 +582,7 @@ class MainTest(BaseTest):
     @patch('sys.stdout', new_callable=StringIO)
     @patch('simple_db_migrate.main.Main._get_migration_files_to_be_executed', return_value=[Migration(file_name="20090214115600_06_test_migration.migration", version="20090214115600", sql_up="sql up 06", sql_down="sql down 06"), Migration(file_name="20090214115500_05_test_migration.migration", version="20090214115500", sql_up="sql up 05", sql_down="sql down 05")])
     def test_it_should_pause_execution_after_each_migration_when_paused_mode_is_set_and_is_down(self, files_to_be_executed_mock, stdout_mock, stdin_mock):
-        config=Config({"schema_version":'20090214115400', "label_version":None, 'migrations_dir':['migrations', '.'], 'paused_mode':True})
+        config=Config({"schema_version":'20090214115400', "label_version":None, "database_migrations_dir":['migrations', '.'], 'paused_mode':True})
         main = Main(sgdb=Mock(**{'change.return_value':None, 'get_current_schema_version.return_value':'20090214115600', 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
         main.execute()
 
@@ -595,17 +595,17 @@ class MainTest(BaseTest):
         self.assertEqual(expected_calls, main.sgdb.change.mock_calls)
 
     def test_it_should_return_an_empty_list_of_files_to_execute_if_current_and_destiny_version_are_equals(self):
-        config=Config({"schema_version":None, "label_version":None, 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version":None, "label_version":None, "database_migrations_dir":['migrations', '.']})
         main = Main(sgdb=Mock(**{'get_all_schema_versions.return_value':['20090214115100', '20090214115200', '20090214115300', '20090214115600']}), config=config)
         self.assertEqual([], main._get_migration_files_to_be_executed('20090214115600', '20090214115600', True))
 
     def test_it_should_return_an_empty_list_of_files_to_execute_if_current_and_destiny_version_are_equals_and_has_new_files_to_execute(self):
-        config=Config({"schema_version":None, "label_version":None, 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version":None, "label_version":None, "database_migrations_dir":['migrations', '.']})
         main = Main(sgdb=Mock(**{'get_all_schema_versions.return_value':['20090214115100', '20090214115200', '20090214115300']}), config=config)
         self.assertEqual([], main._get_migration_files_to_be_executed('20090214115300', '20090214115300', True))
 
     def test_it_should_check_if_has_any_old_files_to_execute_if_current_and_destiny_version_are_equals_and_force_old_migrations_is_set(self):
-        config=Config({"schema_version":None, "label_version":None, 'migrations_dir':['migrations', '.'], 'force_execute_old_migrations_versions':True})
+        config=Config({"schema_version":None, "label_version":None, "database_migrations_dir":['migrations', '.'], 'force_execute_old_migrations_versions':True})
         main = Main(sgdb=Mock(**{'get_all_schema_versions.return_value':['20090214115100', '20090214115200', '20090214115300', '20090214115600']}), config=config)
         migrations = main._get_migration_files_to_be_executed('20090214115600', '20090214115600', True)
 
@@ -614,7 +614,7 @@ class MainTest(BaseTest):
         self.assertEqual('20090214115500_05_test_migration.migration', migrations[1].file_name)
 
     def test_it_should_check_if_has_any_old_files_to_execute_if_current_and_destiny_version_are_different(self):
-        config=Config({"schema_version":None, "label_version":None, 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version":None, "label_version":None, "database_migrations_dir":['migrations', '.']})
         main = Main(sgdb=Mock(**{'get_all_schema_versions.return_value':['20090214115100', '20090214115300']}), config=config)
         migrations = main._get_migration_files_to_be_executed('20090214115300', '20090214115500', True)
 
@@ -624,7 +624,7 @@ class MainTest(BaseTest):
         self.assertEqual('20090214115500_05_test_migration.migration', migrations[2].file_name)
 
     def test_it_should_return_an_empty_list_of_files_to_execute_if_current_and_destiny_version_are_equals_and_is_down(self):
-        config=Config({"schema_version":None, "label_version":None, 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version":None, "label_version":None, "database_migrations_dir":['migrations', '.']})
         all_schema_migrations = [
             Migration(file_name="20090214115200_02_test_migration.migration", version="20090214115200", sql_up="sql up 02", sql_down="sql down 02", id=2),
             Migration(file_name="20090214115300_03_test_migration.migration", version="20090214115300", sql_up="sql up 03", sql_down="sql down 03", id=3),
@@ -634,7 +634,7 @@ class MainTest(BaseTest):
         self.assertEqual([], main._get_migration_files_to_be_executed('20090214115400', '20090214115400', False))
 
     def test_it_should_get_all_schema_migrations_to_check_wich_one_has_to_be_removed_if_current_and_destiny_version_are_equals_and_is_down_and_force_old_migrations_is_set(self):
-        config=Config({"schema_version":None, "label_version":None, 'migrations_dir':['migrations', '.'], 'force_execute_old_migrations_versions':True})
+        config=Config({"schema_version":None, "label_version":None, "database_migrations_dir":['migrations', '.'], 'force_execute_old_migrations_versions':True})
         all_schema_migrations = [
             Migration(file_name="20090214115200_02_test_migration.migration", version="20090214115200", sql_up="sql up 02", sql_down="sql down 02", id=2),
             Migration(file_name="20090214115300_03_test_migration.migration", version="20090214115300", sql_up="sql up 03", sql_down="sql down 03", id=3),
@@ -644,7 +644,7 @@ class MainTest(BaseTest):
         self.assertEqual([], main._get_migration_files_to_be_executed('20090214115400', '20090214115400', False))
 
     def test_it_should_get_all_schema_migrations_to_check_wich_one_has_to_be_removed_if_current_and_destiny_version_are_different_and_is_down(self):
-        config=Config({"schema_version":None, "label_version":None, 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version":None, "label_version":None, "database_migrations_dir":['migrations', '.']})
         all_schema_migrations = [
             Migration(file_name="20090214115200_02_test_migration.migration", version="20090214115200", sql_up="sql up 02", sql_down="sql down 02", id=2),
             Migration(file_name="20090214115300_03_test_migration.migration", version="20090214115300", sql_up="sql up 03", sql_down="sql down 03", id=3),
@@ -654,7 +654,7 @@ class MainTest(BaseTest):
         self.assertEqual([all_schema_migrations[-1], all_schema_migrations[-2]], main._get_migration_files_to_be_executed('20090214115400', '20090214115200', False))
 
     def test_it_should_get_all_schema_migrations_to_check_wich_one_has_to_be_removed_if_one_of_migration_file_does_not_exists_and_is_down(self):
-        config=Config({"schema_version":None, "label_version":None, 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version":None, "label_version":None, "database_migrations_dir":['migrations', '.']})
         all_schema_migrations = [
             Migration(file_name="20090214115200_02_test_migration.migration", version="20090214115200", sql_up="sql up 02", sql_down="sql down 02", id=2),
             Migration(file_name="20090214115301_03_test_migration.migration", version="20090214115301", sql_up="sql up 03.1", sql_down="sql down 03.1", id=3),
@@ -664,7 +664,7 @@ class MainTest(BaseTest):
         self.assertEqual([all_schema_migrations[-1], all_schema_migrations[-2]], main._get_migration_files_to_be_executed('20090214115400', '20090214115200', False))
 
     def test_it_should_get_sql_down_from_file_if_sql_down_is_empty_on_database_and_is_down(self):
-        config=Config({"schema_version":None, "label_version":None, 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version":None, "label_version":None, "database_migrations_dir":['migrations', '.']})
         all_schema_migrations = [
             Migration(file_name="20090214115200_02_test_migration.migration", version="20090214115200", sql_up="sql up 02", sql_down="sql down 02", id=2),
             Migration(file_name="20090214115300_03_test_migration.migration", version="20090214115300", sql_up="sql up 03", sql_down="", id=3),
@@ -677,7 +677,7 @@ class MainTest(BaseTest):
         self.assertEqual(u"bar 3", migrations[1].sql_down)
 
     def test_it_should_get_sql_down_from_file_if_force_use_files_is_set_and_is_down(self):
-        config=Config({"schema_version":None, "label_version":None, 'migrations_dir':['migrations', '.'], 'force_use_files_on_down':True})
+        config=Config({"schema_version":None, "label_version":None, "database_migrations_dir":['migrations', '.'], 'force_use_files_on_down':True})
         all_schema_migrations = [
             Migration(file_name="20090214115200_02_test_migration.migration", version="20090214115200", sql_up="sql up 02", sql_down="sql down 02", id=2),
             Migration(file_name="20090214115300_03_test_migration.migration", version="20090214115300", sql_up="sql up 03", sql_down="sql down 03", id=3),
@@ -690,7 +690,7 @@ class MainTest(BaseTest):
         self.assertEqual(u"bar 3", migrations[1].sql_down)
 
     def test_it_should_raise_exception_and_stop_process_when_a_migration_has_an_empty_sql_down_and_migration_file_is_not_present_and_is_down(self):
-        config=Config({"schema_version":None, "label_version":None, 'migrations_dir':['migrations', '.']})
+        config=Config({"schema_version":None, "label_version":None, "database_migrations_dir":['migrations', '.']})
         all_schema_migrations = [
             Migration(file_name="20090214115200_02_test_migration.migration", version="20090214115200", sql_up="sql up 02", sql_down="sql down 02", id=2),
             Migration(file_name="20090214115301_03_test_migration.migration", version="20090214115301", sql_up="sql up 03.1", sql_down="", id=3),
@@ -700,7 +700,7 @@ class MainTest(BaseTest):
         self.assertRaisesWithMessage(Exception, 'impossible to migrate down: one of the versions was not found (20090214115301)', main._get_migration_files_to_be_executed, '20090214115400', '20090214115200', False)
 
     def test_it_should_raise_exception_and_stop_process_when_a_migration_file_is_not_present_and_force_files_is_set_and_is_down(self):
-        config=Config({"schema_version":None, "label_version":None, 'migrations_dir':['migrations', '.'], 'force_use_files_on_down':True})
+        config=Config({"schema_version":None, "label_version":None, "database_migrations_dir":['migrations', '.'], 'force_use_files_on_down':True})
         all_schema_migrations = [
             Migration(file_name="20090214115200_02_test_migration.migration", version="20090214115200", sql_up="sql up 02", sql_down="sql down 02", id=2),
             Migration(file_name="20090214115301_03_test_migration.migration", version="20090214115301", sql_up="sql up 03.1", sql_down="sql down 03.1", id=3),

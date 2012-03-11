@@ -14,11 +14,11 @@ class OracleTest(unittest.TestCase):
         self.last_execute_command = '';
         self.config_dict = {'db_script_encoding': 'utf8',
                    'db_encoding': 'American_America.UTF8',
-                   'db_host': 'SID',
-                   'db_user': 'root',
-                   'db_password': '',
-                   'db_name': 'migration_test',
-                   'db_version_table': 'db_version',
+                   'database_host': 'SID',
+                   'database_user': 'root',
+                   'database_password': '',
+                   'database_name': 'migration_test',
+                   'database_version_table': 'db_version',
                    'drop_db_first': False
                 }
 
@@ -67,9 +67,9 @@ class OracleTest(unittest.TestCase):
 
         oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
 
-        self.assertEqual(9, self.db_driver_mock.connect.call_count)
+        self.assertEqual(8, self.db_driver_mock.connect.call_count)
         self.assertEqual(4, self.db_mock.commit.call_count)
-        self.assertEqual(8, self.db_mock.close.call_count)
+        self.assertEqual(7, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('create user root identified by '),
@@ -80,37 +80,31 @@ class OracleTest(unittest.TestCase):
             call("create table db_version ( id number(11) not null, version varchar2(20) default '0' NOT NULL, label varchar2(255), name varchar2(255), sql_up clob, sql_down clob, CONSTRAINT db_version_pk PRIMARY KEY (id) ENABLE)"),
             call('drop sequence db_version_seq'),
             call('create sequence db_version_seq start with 1 increment by 1 nomaxvalue'),
-            call('select id from db_version'),
-            call('select label from db_version'),
-            call('alter table db_version drop constraint db_version_uk_label'),
             call('select count(*) from db_version'),
             call("insert into db_version (id, version) values (db_version_seq.nextval, '0')")
         ]
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(8, self.cursor_mock.close.call_count)
+        self.assertEqual(7, self.cursor_mock.close.call_count)
 
     def test_it_should_create_version_table_on_init_if_not_exists(self):
         self.execute_returns["select version from db_version"] = Exception("Table doesn't exist")
 
         oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
 
-        self.assertEqual(8, self.db_driver_mock.connect.call_count)
+        self.assertEqual(7, self.db_driver_mock.connect.call_count)
         self.assertEqual(4, self.db_mock.commit.call_count)
-        self.assertEqual(8, self.db_mock.close.call_count)
+        self.assertEqual(7, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select version from db_version'),
             call("create table db_version ( id number(11) not null, version varchar2(20) default '0' NOT NULL, label varchar2(255), name varchar2(255), sql_up clob, sql_down clob, CONSTRAINT db_version_pk PRIMARY KEY (id) ENABLE)"),
             call('drop sequence db_version_seq'),
             call('create sequence db_version_seq start with 1 increment by 1 nomaxvalue'),
-            call('select id from db_version'),
-            call('select label from db_version'),
-            call('alter table db_version drop constraint db_version_uk_label'),
             call('select count(*) from db_version'),
             call("insert into db_version (id, version) values (db_version_seq.nextval, '0')")
         ]
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(7, self.cursor_mock.close.call_count)
+        self.assertEqual(6, self.cursor_mock.close.call_count)
 
     def test_it_should_drop_database_on_init_if_its_asked(self):
         select_elements_to_drop_sql = """\
@@ -133,9 +127,9 @@ class OracleTest(unittest.TestCase):
 
         oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
 
-        self.assertEqual(10, self.db_driver_mock.connect.call_count)
+        self.assertEqual(9, self.db_driver_mock.connect.call_count)
         self.assertEqual(5, self.db_mock.commit.call_count)
-        self.assertEqual(10, self.db_mock.close.call_count)
+        self.assertEqual(9, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call(select_elements_to_drop_sql),
@@ -144,15 +138,12 @@ class OracleTest(unittest.TestCase):
             call("create table db_version ( id number(11) not null, version varchar2(20) default '0' NOT NULL, label varchar2(255), name varchar2(255), sql_up clob, sql_down clob, CONSTRAINT db_version_pk PRIMARY KEY (id) ENABLE)"),
             call('drop sequence db_version_seq'),
             call('create sequence db_version_seq start with 1 increment by 1 nomaxvalue'),
-            call('select id from db_version'),
-            call('select label from db_version'),
-            call('alter table db_version drop constraint db_version_uk_label'),
             call('select count(*) from db_version'),
             call("insert into db_version (id, version) values (db_version_seq.nextval, '0')")
         ]
 
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(9, self.cursor_mock.close.call_count)
+        self.assertEqual(8, self.cursor_mock.close.call_count)
 
     def test_it_should_create_user_when_it_does_not_exists_during_drop_database_selecting_elements_to_drop(self):
         select_elements_to_drop_sql = """\
@@ -174,9 +165,9 @@ class OracleTest(unittest.TestCase):
 
         oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
 
-        self.assertEqual(7, self.db_driver_mock.connect.call_count)
+        self.assertEqual(6, self.db_driver_mock.connect.call_count)
         self.assertEqual(2, self.db_mock.commit.call_count)
-        self.assertEqual(7, self.db_mock.close.call_count)
+        self.assertEqual(6, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call(select_elements_to_drop_sql),
@@ -185,15 +176,12 @@ class OracleTest(unittest.TestCase):
             call('grant create public synonym to root'),
             call('grant drop public synonym to root'),
             call('select version from db_version'),
-            call('select id from db_version'),
-            call('select label from db_version'),
-            call('alter table db_version drop constraint db_version_uk_label'),
             call('select count(*) from db_version'),
             call("insert into db_version (id, version) values (db_version_seq.nextval, '0')")
         ]
 
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(6, self.cursor_mock.close.call_count)
+        self.assertEqual(5, self.cursor_mock.close.call_count)
 
     def test_it_should_stop_process_when_an_error_occur_during_create_user(self):
         select_elements_to_drop_sql = """\
@@ -329,22 +317,19 @@ class OracleTest(unittest.TestCase):
         oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
 
         self.assertEqual(3, self.db_mock.commit.call_count)
-        self.assertEqual(8, self.db_mock.close.call_count)
+        self.assertEqual(7, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call(select_elements_to_drop_sql),
             call('DELETE TABLE DB_VERSION CASCADE CONSTRAINTS'),
             call('DELETE TABLE AUX CASCADE CONSTRAINTS'),
             call('select version from db_version'),
-            call('select id from db_version'),
-            call('select label from db_version'),
-            call('alter table db_version drop constraint db_version_uk_label'),
             call('select count(*) from db_version'),
             call("insert into db_version (id, version) values (db_version_seq.nextval, '0')")
         ]
 
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(7, self.cursor_mock.close.call_count)
+        self.assertEqual(6, self.cursor_mock.close.call_count)
 
     def test_it_should_execute_migration_up_and_update_schema_version(self):
         self.db_driver_mock.CLOB = 'X'
@@ -352,15 +337,12 @@ class OracleTest(unittest.TestCase):
         oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
         oracle.change("create table spam();", "20090212112104", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam();", "drop table spam;")
 
-        self.assertEqual(7, self.db_driver_mock.connect.call_count)
+        self.assertEqual(6, self.db_driver_mock.connect.call_count)
         self.assertEqual(4, self.db_mock.commit.call_count)
-        self.assertEqual(7, self.db_mock.close.call_count)
+        self.assertEqual(6, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select version from db_version'),
-            call('select id from db_version'),
-            call('select label from db_version'),
-            call('alter table db_version drop constraint db_version_uk_label'),
             call('select count(*) from db_version'),
             call("insert into db_version (id, version) values (db_version_seq.nextval, '0')"),
             call('create table spam()'),
@@ -368,7 +350,7 @@ class OracleTest(unittest.TestCase):
         ]
 
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(6, self.cursor_mock.close.call_count)
+        self.assertEqual(5, self.cursor_mock.close.call_count)
 
         expected_var_calls = [
             call('X', 20),
@@ -382,15 +364,12 @@ class OracleTest(unittest.TestCase):
         oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
         oracle.change("drop table spam;", "20090212112104", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam();", "drop table spam;", False)
 
-        self.assertEqual(7, self.db_driver_mock.connect.call_count)
+        self.assertEqual(6, self.db_driver_mock.connect.call_count)
         self.assertEqual(4, self.db_mock.commit.call_count)
-        self.assertEqual(7, self.db_mock.close.call_count)
+        self.assertEqual(6, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select version from db_version'),
-            call('select id from db_version'),
-            call('select label from db_version'),
-            call('alter table db_version drop constraint db_version_uk_label'),
             call('select count(*) from db_version'),
             call("insert into db_version (id, version) values (db_version_seq.nextval, '0')"),
             call('drop table spam'),
@@ -398,22 +377,19 @@ class OracleTest(unittest.TestCase):
         ]
 
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(6, self.cursor_mock.close.call_count)
+        self.assertEqual(5, self.cursor_mock.close.call_count)
 
 
     def test_it_should_use_label_version_when_updating_schema_version(self):
         oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
         oracle.change("create table spam();", "20090212112104", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam();", "drop table spam;", label_version="label")
 
-        self.assertEqual(7, self.db_driver_mock.connect.call_count)
+        self.assertEqual(6, self.db_driver_mock.connect.call_count)
         self.assertEqual(4, self.db_mock.commit.call_count)
-        self.assertEqual(7, self.db_mock.close.call_count)
+        self.assertEqual(6, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select version from db_version'),
-            call('select id from db_version'),
-            call('select label from db_version'),
-            call('alter table db_version drop constraint db_version_uk_label'),
             call('select count(*) from db_version'),
             call("insert into db_version (id, version) values (db_version_seq.nextval, '0')"),
             call('create table spam()'),
@@ -421,7 +397,7 @@ class OracleTest(unittest.TestCase):
         ]
 
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(6, self.cursor_mock.close.call_count)
+        self.assertEqual(5, self.cursor_mock.close.call_count)
 
     def test_it_should_stop_process_when_an_error_occur_during_database_change(self):
         self.execute_returns["insert into spam"] = Exception("invalid sql")
@@ -434,15 +410,12 @@ class OracleTest(unittest.TestCase):
             self.assertTrue(isinstance(e, simple_db_migrate.core.exceptions.MigrationException))
 
         self.assertEqual(1, self.db_mock.rollback.call_count)
-        self.assertEqual(6, self.db_driver_mock.connect.call_count)
+        self.assertEqual(5, self.db_driver_mock.connect.call_count)
         self.assertEqual(2, self.db_mock.commit.call_count)
-        self.assertEqual(6, self.db_mock.close.call_count)
+        self.assertEqual(5, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select version from db_version'),
-            call('select id from db_version'),
-            call('select label from db_version'),
-            call('alter table db_version drop constraint db_version_uk_label'),
             call('select count(*) from db_version'),
             call("insert into db_version (id, version) values (db_version_seq.nextval, '0')"),
             call('create table spam()'),
@@ -450,7 +423,7 @@ class OracleTest(unittest.TestCase):
         ]
 
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(5, self.cursor_mock.close.call_count)
+        self.assertEqual(4, self.cursor_mock.close.call_count)
 
     def test_it_should_stop_process_when_an_error_occur_during_log_schema_version(self):
         self.execute_returns['insert into db_version (id, version, label, name, sql_up, sql_down) values (db_version_seq.nextval, :version, :label, :migration_file_name, :sql_up, :sql_down)'] = Exception("invalid sql")
@@ -462,23 +435,20 @@ class OracleTest(unittest.TestCase):
             self.assertEqual('error logging migration: invalid sql\n\n[ERROR DETAILS] SQL command was:\n20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration', str(e))
             self.assertTrue(isinstance(e, simple_db_migrate.core.exceptions.MigrationException))
 
-        self.assertEqual(7, self.db_driver_mock.connect.call_count)
+        self.assertEqual(6, self.db_driver_mock.connect.call_count)
         self.assertEqual(1, self.db_mock.rollback.call_count)
         self.assertEqual(3, self.db_mock.commit.call_count)
-        self.assertEqual(7, self.db_mock.close.call_count)
+        self.assertEqual(6, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select version from db_version'),
-            call('select id from db_version'),
-            call('select label from db_version'),
-            call('alter table db_version drop constraint db_version_uk_label'),
             call('select count(*) from db_version'),
             call("insert into db_version (id, version) values (db_version_seq.nextval, '0')"),
             call('create table spam()'),
             call('insert into db_version (id, version, label, name, sql_up, sql_down) values (db_version_seq.nextval, :version, :label, :migration_file_name, :sql_up, :sql_down)', {'label': 'label', 'sql_up': 'create table spam();', 'version': '20090212112104', 'sql_down': 'drop table spam;', 'migration_file_name': '20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration'})
         ]
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(5, self.cursor_mock.close.call_count)
+        self.assertEqual(4, self.cursor_mock.close.call_count)
 
     def test_it_should_log_execution_when_a_function_is_given_when_updating_schema_version(self):
         execution_log_mock = Mock()
@@ -499,21 +469,18 @@ class OracleTest(unittest.TestCase):
         self.assertEquals("0", oracle.get_current_schema_version())
 
 
-        self.assertEqual(6, self.db_driver_mock.connect.call_count)
+        self.assertEqual(5, self.db_driver_mock.connect.call_count)
         self.assertEqual(2, self.db_mock.commit.call_count)
-        self.assertEqual(6, self.db_mock.close.call_count)
+        self.assertEqual(5, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select version from db_version'),
-            call('select id from db_version'),
-            call('select label from db_version'),
-            call('alter table db_version drop constraint db_version_uk_label'),
             call('select count(*) from db_version'),
             call("insert into db_version (id, version) values (db_version_seq.nextval, '0')"),
             call('select version from db_version order by id desc')
         ]
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(5, self.cursor_mock.close.call_count)
+        self.assertEqual(4, self.cursor_mock.close.call_count)
 
     def test_it_should_get_all_schema_versions(self):
         expected_versions = []
@@ -531,21 +498,18 @@ class OracleTest(unittest.TestCase):
         for version in schema_versions:
             self.assertTrue(version in expected_versions)
 
-        self.assertEqual(6, self.db_driver_mock.connect.call_count)
+        self.assertEqual(5, self.db_driver_mock.connect.call_count)
         self.assertEqual(2, self.db_mock.commit.call_count)
-        self.assertEqual(6, self.db_mock.close.call_count)
+        self.assertEqual(5, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select version from db_version'),
-            call('select id from db_version'),
-            call('select label from db_version'),
-            call('alter table db_version drop constraint db_version_uk_label'),
             call('select count(*) from db_version'),
             call("insert into db_version (id, version) values (db_version_seq.nextval, '0')"),
             call('select version from db_version order by id')
         ]
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(5, self.cursor_mock.close.call_count)
+        self.assertEqual(4, self.cursor_mock.close.call_count)
 
     def test_it_should_get_all_schema_migrations(self):
         expected_versions = []
@@ -566,21 +530,18 @@ class OracleTest(unittest.TestCase):
             self.assertEqual(migration.sql_up, expected_versions[index][4] and expected_versions[index][4].read() or "")
             self.assertEqual(migration.sql_down, expected_versions[index][5] and expected_versions[index][5].read() or "")
 
-        self.assertEqual(6, self.db_driver_mock.connect.call_count)
+        self.assertEqual(5, self.db_driver_mock.connect.call_count)
         self.assertEqual(2, self.db_mock.commit.call_count)
-        self.assertEqual(6, self.db_mock.close.call_count)
+        self.assertEqual(5, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select version from db_version'),
-            call('select id from db_version'),
-            call('select label from db_version'),
-            call('alter table db_version drop constraint db_version_uk_label'),
             call('select count(*) from db_version'),
             call("insert into db_version (id, version) values (db_version_seq.nextval, '0')"),
             call('select id, version, label, name, sql_up, sql_down from db_version order by id')
         ]
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(5, self.cursor_mock.close.call_count)
+        self.assertEqual(4, self.cursor_mock.close.call_count)
 
 
     def test_it_should_parse_sql_statements(self):
@@ -756,22 +717,19 @@ class OracleTest(unittest.TestCase):
 
         self.assertEqual(None, ret)
 
-        self.assertEqual(6, self.db_driver_mock.connect.call_count)
+        self.assertEqual(5, self.db_driver_mock.connect.call_count)
         self.assertEqual(2, self.db_mock.commit.call_count)
-        self.assertEqual(6, self.db_mock.close.call_count)
+        self.assertEqual(5, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select version from db_version'),
-            call('select id from db_version'),
-            call('select label from db_version'),
-            call('alter table db_version drop constraint db_version_uk_label'),
             call('select count(*) from db_version'),
             call("insert into db_version (id, version) values (db_version_seq.nextval, '0')"),
             call("select id from db_version where version = 'xxx'")
         ]
 
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(5, self.cursor_mock.close.call_count)
+        self.assertEqual(4, self.cursor_mock.close.call_count)
 
     def test_it_should_get_most_recent_version_for_a_existent_label_in_database(self):
         self.fetchone_returns["select version from db_version where label = 'xxx' order by id desc"] = ["vesion", "version2", "version3"]
@@ -781,22 +739,19 @@ class OracleTest(unittest.TestCase):
 
         self.assertEqual("vesion", ret)
 
-        self.assertEqual(6, self.db_driver_mock.connect.call_count)
+        self.assertEqual(5, self.db_driver_mock.connect.call_count)
         self.assertEqual(2, self.db_mock.commit.call_count)
-        self.assertEqual(6, self.db_mock.close.call_count)
+        self.assertEqual(5, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select version from db_version'),
-            call('select id from db_version'),
-            call('select label from db_version'),
-            call('alter table db_version drop constraint db_version_uk_label'),
             call('select count(*) from db_version'),
             call("insert into db_version (id, version) values (db_version_seq.nextval, '0')"),
             call("select version from db_version where label = 'xxx' order by id desc")
         ]
 
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(5, self.cursor_mock.close.call_count)
+        self.assertEqual(4, self.cursor_mock.close.call_count)
 
     def test_it_should_get_none_for_a_non_existent_label_in_database(self):
         oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
@@ -804,109 +759,17 @@ class OracleTest(unittest.TestCase):
 
         self.assertEqual(None, ret)
 
-        self.assertEqual(6, self.db_driver_mock.connect.call_count)
+        self.assertEqual(5, self.db_driver_mock.connect.call_count)
         self.assertEqual(2, self.db_mock.commit.call_count)
-        self.assertEqual(6, self.db_mock.close.call_count)
+        self.assertEqual(5, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('select version from db_version'),
-            call('select id from db_version'),
-            call('select label from db_version'),
-            call('alter table db_version drop constraint db_version_uk_label'),
             call('select count(*) from db_version'),
             call("insert into db_version (id, version) values (db_version_seq.nextval, '0')"),
             call("select version from db_version where label = 'xxx' order by id desc")
         ]
 
-        self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(5, self.cursor_mock.close.call_count)
-
-    def test_it_should_update_version_table_on_init_if_dont_have_id_field(self):
-        self.execute_returns["select version from db_version"] = ["0"]
-        self.execute_returns["select id from db_version"] = Exception("Don't have id field")
-
-        oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
-
-        self.assertEqual(8, self.db_driver_mock.connect.call_count)
-        self.assertEqual(5, self.db_mock.commit.call_count)
-        self.assertEqual(8, self.db_mock.close.call_count)
-
-        expected_execute_calls = [
-            call('select version from db_version'),
-            call('select id from db_version'),
-            call('alter table db_version add (id number(11), name varchar2(255), sql_up clob, sql_down clob)'),
-            call('drop sequence db_version_seq'),
-            call('create sequence db_version_seq start with 1 increment by 1 nomaxvalue'),
-            call('update db_version set id = db_version_seq.nextval'),
-            call('alter table db_version add constraint db_version_pk primary key (id)'),
-            call('select label from db_version'),
-            call('alter table db_version drop constraint db_version_uk_label'),
-            call('select count(*) from db_version'),
-            call("insert into db_version (id, version) values (db_version_seq.nextval, '0')")
-        ]
-        self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(7, self.cursor_mock.close.call_count)
-
-    def test_it_should_update_version_table_on_init_if_dont_have_label_field(self):
-        self.execute_returns["select version from db_version"] = ["0"]
-        self.execute_returns["select label from db_version"] = Exception("Don't have label field")
-
-        oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
-
-        self.assertEqual(6, self.db_driver_mock.connect.call_count)
-        self.assertEqual(3, self.db_mock.commit.call_count)
-        self.assertEqual(6, self.db_mock.close.call_count)
-
-        expected_execute_calls = [
-            call('select version from db_version'),
-            call('select id from db_version'),
-            call('select label from db_version'),
-            call('alter table db_version add (label varchar2(255))'),
-            call('alter table db_version drop constraint db_version_uk_label'),
-            call('select count(*) from db_version'),
-            call("insert into db_version (id, version) values (db_version_seq.nextval, '0')")
-        ]
-        self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(5, self.cursor_mock.close.call_count)
-
-    def test_it_should_update_version_table_on_init_dropping_label_constraint_if_still_have_it(self):
-        self.execute_returns["select version from db_version"] = ["0"]
-
-        oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
-
-        self.assertEqual(5, self.db_driver_mock.connect.call_count)
-        self.assertEqual(2, self.db_mock.commit.call_count)
-        self.assertEqual(5, self.db_mock.close.call_count)
-
-        expected_execute_calls = [
-            call('select version from db_version'),
-            call('select id from db_version'),
-            call('select label from db_version'),
-            call('alter table db_version drop constraint db_version_uk_label'),
-            call('select count(*) from db_version'),
-            call("insert into db_version (id, version) values (db_version_seq.nextval, '0')")
-        ]
-        self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(4, self.cursor_mock.close.call_count)
-
-    def test_it_should_not_stop_when_an_error_occur_during_dropping_label_constraint(self):
-        self.execute_returns["select version from db_version"] = ["0"]
-        self.execute_returns['alter table db_version drop constraint db_version_uk_label'] = Exception('error dropping label constraint')
-
-        oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
-
-        self.assertEqual(5, self.db_driver_mock.connect.call_count)
-        self.assertEqual(2, self.db_mock.commit.call_count)
-        self.assertEqual(5, self.db_mock.close.call_count)
-
-        expected_execute_calls = [
-            call('select version from db_version'),
-            call('select id from db_version'),
-            call('select label from db_version'),
-            call('alter table db_version drop constraint db_version_uk_label'),
-            call('select count(*) from db_version'),
-            call("insert into db_version (id, version) values (db_version_seq.nextval, '0')")
-        ]
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
         self.assertEqual(4, self.cursor_mock.close.call_count)
 

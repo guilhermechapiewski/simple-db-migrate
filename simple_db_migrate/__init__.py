@@ -6,7 +6,7 @@ from cli import CLI
 from config import FileConfig
 from main import Main
 
-SIMPLE_DB_MIGRATE_VERSION = '1.4.3'
+SIMPLE_DB_MIGRATE_VERSION = '1.5.0'
 
 # fixing print in non-utf8 terminals
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
@@ -44,13 +44,13 @@ def run(args=None, getpass=getpass):
         config.update('log_level', log_level)
 
         # Ask the password for user if configured
-        if config.get('db_password') == '<<ask_me>>':
+        if config.get('database_password') == '<<ask_me>>':
             if options.password:
                 passwd = options.password
             else:
-                cli.msg('\nPlease inform password to connect to database "%s@%s:%s"' % (config.get('db_user'), config.get('db_host'), config.get('db_name')))
+                cli.msg('\nPlease inform password to connect to database "%s@%s:%s"' % (config.get('database_user'), config.get('database_host'), config.get('database_name')))
                 passwd = getpass()
-            config.update('db_password', passwd)
+            config.update('database_password', passwd)
 
         # If CLI was correctly parsed, execute db-migrate.
         Main(config).execute()

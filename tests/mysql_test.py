@@ -14,11 +14,11 @@ class MySQLTest(unittest.TestCase):
         self.last_execute_command = '';
         self.config_dict = {'db_script_encoding': 'utf8',
                    'db_encoding': 'utf8',
-                   'db_host': 'localhost',
-                   'db_user': 'root',
-                   'db_password': '',
-                   'db_name': 'migration_test',
-                   'db_version_table': '__db_version__',
+                   'database_host': 'localhost',
+                   'database_user': 'root',
+                   'database_password': '',
+                   'database_name': 'migration_test',
+                   'database_version_table': '__db_version__',
                    'drop_db_first': False
                 }
 
@@ -61,18 +61,15 @@ class MySQLTest(unittest.TestCase):
         self.assertEqual(expected_query_calls, self.db_mock.query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
         self.assertEqual(2, self.db_mock.commit.call_count)
-        self.assertEqual(5, self.db_mock.close.call_count)
+        self.assertEqual(4, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))'),
-            call('select id from __db_version__;'),
-            call('select label from __db_version__;'),
-            call("show index from __db_version__ where key_name = 'label';"),
             call('select count(*) from __db_version__;'),
             call('insert into __db_version__ (version) values ("0")')
         ]
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(4, self.cursor_mock.close.call_count)
+        self.assertEqual(3, self.cursor_mock.close.call_count)
 
     def test_it_should_drop_database_on_init_if_its_asked(self):
         self.config_dict["drop_db_first"] = True
@@ -86,18 +83,15 @@ class MySQLTest(unittest.TestCase):
         self.assertEqual(expected_query_calls, self.db_mock.query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
         self.assertEqual(2, self.db_mock.commit.call_count)
-        self.assertEqual(6, self.db_mock.close.call_count)
+        self.assertEqual(5, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))'),
-            call('select id from __db_version__;'),
-            call('select label from __db_version__;'),
-            call("show index from __db_version__ where key_name = 'label';"),
             call('select count(*) from __db_version__;'),
             call('insert into __db_version__ (version) values ("0")')
         ]
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(4, self.cursor_mock.close.call_count)
+        self.assertEqual(3, self.cursor_mock.close.call_count)
 
     def test_it_should_stop_process_when_an_error_occur_during_drop_database(self):
         self.config_dict["drop_db_first"] = True
@@ -129,20 +123,17 @@ class MySQLTest(unittest.TestCase):
         self.assertEqual(expected_query_calls, self.db_mock.query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
         self.assertEqual(4, self.db_mock.commit.call_count)
-        self.assertEqual(7, self.db_mock.close.call_count)
+        self.assertEqual(6, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))'),
-            call('select id from __db_version__;'),
-            call('select label from __db_version__;'),
-            call("show index from __db_version__ where key_name = 'label';"),
             call('select count(*) from __db_version__;'),
             call('insert into __db_version__ (version) values ("0")'),
             call('create table spam()'),
             call('insert into __db_version__ (version, label, name, sql_up, sql_down) values ("20090212112104", NULL, "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam();", "drop table spam;");')
         ]
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(6, self.cursor_mock.close.call_count)
+        self.assertEqual(5, self.cursor_mock.close.call_count)
 
     def test_it_should_execute_migration_down_and_update_schema_version(self):
         mysql = MySQL(self.config_mock, self.db_driver_mock)
@@ -154,20 +145,17 @@ class MySQLTest(unittest.TestCase):
         self.assertEqual(expected_query_calls, self.db_mock.query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
         self.assertEqual(4, self.db_mock.commit.call_count)
-        self.assertEqual(7, self.db_mock.close.call_count)
+        self.assertEqual(6, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))'),
-            call('select id from __db_version__;'),
-            call('select label from __db_version__;'),
-            call("show index from __db_version__ where key_name = 'label';"),
             call('select count(*) from __db_version__;'),
             call('insert into __db_version__ (version) values ("0")'),
             call('drop table spam'),
             call('delete from __db_version__ where version = "20090212112104";')
         ]
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(6, self.cursor_mock.close.call_count)
+        self.assertEqual(5, self.cursor_mock.close.call_count)
 
     def test_it_should_use_label_version_when_updating_schema_version(self):
         mysql = MySQL(self.config_mock, self.db_driver_mock)
@@ -179,20 +167,17 @@ class MySQLTest(unittest.TestCase):
         self.assertEqual(expected_query_calls, self.db_mock.query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
         self.assertEqual(4, self.db_mock.commit.call_count)
-        self.assertEqual(7, self.db_mock.close.call_count)
+        self.assertEqual(6, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))'),
-            call('select id from __db_version__;'),
-            call('select label from __db_version__;'),
-            call("show index from __db_version__ where key_name = 'label';"),
             call('select count(*) from __db_version__;'),
             call('insert into __db_version__ (version) values ("0")'),
             call('create table spam()'),
             call('insert into __db_version__ (version, label, name, sql_up, sql_down) values ("20090212112104", "label", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam();", "drop table spam;");')
         ]
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(6, self.cursor_mock.close.call_count)
+        self.assertEqual(5, self.cursor_mock.close.call_count)
 
     def test_it_should_stop_process_when_an_error_occur_during_database_change(self):
         self.execute_returns["insert into spam"] = Exception("invalid sql")
@@ -211,20 +196,17 @@ class MySQLTest(unittest.TestCase):
         self.db_mock.select_db.assert_called_with('migration_test')
         self.assertEqual(1, self.db_mock.rollback.call_count)
         self.assertEqual(2, self.db_mock.commit.call_count)
-        self.assertEqual(6, self.db_mock.close.call_count)
+        self.assertEqual(5, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))'),
-            call('select id from __db_version__;'),
-            call('select label from __db_version__;'),
-            call("show index from __db_version__ where key_name = 'label';"),
             call('select count(*) from __db_version__;'),
             call('insert into __db_version__ (version) values ("0")'),
             call('create table spam()'),
             call('insert into spam')
         ]
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(4, self.cursor_mock.close.call_count)
+        self.assertEqual(3, self.cursor_mock.close.call_count)
 
     def test_it_should_stop_process_when_an_error_occur_during_log_schema_version(self):
         self.execute_returns['insert into __db_version__ (version, label, name, sql_up, sql_down) values ("20090212112104", "label", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam();", "drop table spam;");'] = Exception("invalid sql")
@@ -243,20 +225,17 @@ class MySQLTest(unittest.TestCase):
         self.db_mock.select_db.assert_called_with('migration_test')
         self.assertEqual(1, self.db_mock.rollback.call_count)
         self.assertEqual(3, self.db_mock.commit.call_count)
-        self.assertEqual(7, self.db_mock.close.call_count)
+        self.assertEqual(6, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))'),
-            call('select id from __db_version__;'),
-            call('select label from __db_version__;'),
-            call("show index from __db_version__ where key_name = 'label';"),
             call('select count(*) from __db_version__;'),
             call('insert into __db_version__ (version) values ("0")'),
             call('create table spam()'),
             call('insert into __db_version__ (version, label, name, sql_up, sql_down) values ("20090212112104", "label", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam();", "drop table spam;");')
         ]
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(5, self.cursor_mock.close.call_count)
+        self.assertEqual(4, self.cursor_mock.close.call_count)
 
     def test_it_should_log_execution_when_a_function_is_given_when_updating_schema_version(self):
         execution_log_mock = Mock()
@@ -281,19 +260,16 @@ class MySQLTest(unittest.TestCase):
         self.assertEqual(expected_query_calls, self.db_mock.query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
         self.assertEqual(2, self.db_mock.commit.call_count)
-        self.assertEqual(6, self.db_mock.close.call_count)
+        self.assertEqual(5, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))'),
-            call('select id from __db_version__;'),
-            call('select label from __db_version__;'),
-            call("show index from __db_version__ where key_name = 'label';"),
             call('select count(*) from __db_version__;'),
             call('insert into __db_version__ (version) values ("0")'),
             call('select version from __db_version__ order by id desc limit 0,1;')
         ]
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(5, self.cursor_mock.close.call_count)
+        self.assertEqual(4, self.cursor_mock.close.call_count)
 
     def test_it_should_get_all_schema_versions(self):
         expected_versions = []
@@ -317,19 +293,16 @@ class MySQLTest(unittest.TestCase):
         self.assertEqual(expected_query_calls, self.db_mock.query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
         self.assertEqual(2, self.db_mock.commit.call_count)
-        self.assertEqual(6, self.db_mock.close.call_count)
+        self.assertEqual(5, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))'),
-            call('select id from __db_version__;'),
-            call('select label from __db_version__;'),
-            call("show index from __db_version__ where key_name = 'label';"),
             call('select count(*) from __db_version__;'),
             call('insert into __db_version__ (version) values ("0")'),
             call('select version from __db_version__ order by id;')
         ]
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(5, self.cursor_mock.close.call_count)
+        self.assertEqual(4, self.cursor_mock.close.call_count)
 
     def test_it_should_get_all_schema_migrations(self):
         expected_versions = []
@@ -356,19 +329,16 @@ class MySQLTest(unittest.TestCase):
         self.assertEqual(expected_query_calls, self.db_mock.query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
         self.assertEqual(2, self.db_mock.commit.call_count)
-        self.assertEqual(6, self.db_mock.close.call_count)
+        self.assertEqual(5, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))'),
-            call('select id from __db_version__;'),
-            call('select label from __db_version__;'),
-            call("show index from __db_version__ where key_name = 'label';"),
             call('select count(*) from __db_version__;'),
             call('insert into __db_version__ (version) values ("0")'),
             call('select id, version, label, name, sql_up, sql_down from __db_version__ order by id;')
         ]
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(5, self.cursor_mock.close.call_count)
+        self.assertEqual(4, self.cursor_mock.close.call_count)
 
     def test_it_should_parse_sql_statements(self):
         statements = MySQL._parse_sql_statements('; ; create table eggs; drop table spam; ; ;')
@@ -413,19 +383,16 @@ class MySQLTest(unittest.TestCase):
         self.assertEqual(expected_query_calls, self.db_mock.query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
         self.assertEqual(2, self.db_mock.commit.call_count)
-        self.assertEqual(6, self.db_mock.close.call_count)
+        self.assertEqual(5, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))'),
-            call('select id from __db_version__;'),
-            call('select label from __db_version__;'),
-            call("show index from __db_version__ where key_name = 'label';"),
             call('select count(*) from __db_version__;'),
             call('insert into __db_version__ (version) values ("0")'),
             call("select id from __db_version__ where version = 'xxx';")
         ]
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(5, self.cursor_mock.close.call_count)
+        self.assertEqual(4, self.cursor_mock.close.call_count)
 
     def test_it_should_get_most_recent_version_for_a_existent_label_in_database(self):
         self.fetchone_returns["select version from __db_version__ where label = 'xxx' order by id desc"] = ["vesion", "version2", "version3"]
@@ -439,19 +406,16 @@ class MySQLTest(unittest.TestCase):
         self.assertEqual(expected_query_calls, self.db_mock.query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
         self.assertEqual(2, self.db_mock.commit.call_count)
-        self.assertEqual(6, self.db_mock.close.call_count)
+        self.assertEqual(5, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))'),
-            call('select id from __db_version__;'),
-            call('select label from __db_version__;'),
-            call("show index from __db_version__ where key_name = 'label';"),
             call('select count(*) from __db_version__;'),
             call('insert into __db_version__ (version) values ("0")'),
             call("select version from __db_version__ where label = 'xxx' order by id desc")
         ]
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(5, self.cursor_mock.close.call_count)
+        self.assertEqual(4, self.cursor_mock.close.call_count)
 
     def test_it_should_get_none_for_a_non_existent_label_in_database(self):
         mysql = MySQL(self.config_mock, self.db_driver_mock)
@@ -464,91 +428,13 @@ class MySQLTest(unittest.TestCase):
         self.assertEqual(expected_query_calls, self.db_mock.query.mock_calls)
         self.db_mock.select_db.assert_called_with('migration_test')
         self.assertEqual(2, self.db_mock.commit.call_count)
-        self.assertEqual(6, self.db_mock.close.call_count)
-
-        expected_execute_calls = [
-            call('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))'),
-            call('select id from __db_version__;'),
-            call('select label from __db_version__;'),
-            call("show index from __db_version__ where key_name = 'label';"),
-            call('select count(*) from __db_version__;'),
-            call('insert into __db_version__ (version) values ("0")'),
-            call("select version from __db_version__ where label = 'xxx' order by id desc")
-        ]
-        self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(5, self.cursor_mock.close.call_count)
-
-    def test_it_should_update_version_table_on_init_if_dont_have_id_field(self):
-        self.execute_returns['select id from __db_version__;'] = Exception("Don't have id field")
-
-        mysql = MySQL(self.config_mock, self.db_driver_mock)
-
-        expected_query_calls = [
-            call('create database if not exists `migration_test`;')
-        ]
-        self.assertEqual(expected_query_calls, self.db_mock.query.mock_calls)
-        self.db_mock.select_db.assert_called_with('migration_test')
-        self.assertEqual(3, self.db_mock.commit.call_count)
-        self.assertEqual(6, self.db_mock.close.call_count)
-
-        expected_execute_calls = [
-            call('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))'),
-            call('select id from __db_version__;'),
-            call('alter table __db_version__ add column id int(11)  not null auto_increment first, add column name varchar(255), add column sql_up longtext, add column sql_down longtext, add primary key (id)'),
-            call('select label from __db_version__;'),
-            call("show index from __db_version__ where key_name = 'label';"),
-            call('select count(*) from __db_version__;'),
-            call('insert into __db_version__ (version) values ("0")')
-        ]
-        self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(5, self.cursor_mock.close.call_count)
-
-    def test_it_should_update_version_table_on_init_if_dont_have_label_field(self):
-        self.execute_returns['select label from __db_version__;'] = Exception("Don't have label field")
-
-        mysql = MySQL(self.config_mock, self.db_driver_mock)
-
-        expected_query_calls = [
-            call('create database if not exists `migration_test`;')
-        ]
-        self.assertEqual(expected_query_calls, self.db_mock.query.mock_calls)
-        self.db_mock.select_db.assert_called_with('migration_test')
-        self.assertEqual(3, self.db_mock.commit.call_count)
-        self.assertEqual(6, self.db_mock.close.call_count)
-
-        expected_execute_calls = [
-            call('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))'),
-            call('select id from __db_version__;'),
-            call('select label from __db_version__;'),
-            call('alter table __db_version__ add column label varchar(255) after version'),
-            call("show index from __db_version__ where key_name = 'label';"),
-            call('select count(*) from __db_version__;'),
-            call('insert into __db_version__ (version) values ("0")')
-        ]
-        self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
-        self.assertEqual(5, self.cursor_mock.close.call_count)
-
-    def test_it_should_update_version_table_on_init_dropping_label_constraint_if_still_have_it(self):
-        self.fetchone_returns["show index from __db_version__ where key_name = 'label';"] = ('__db_version__', 0L, 'label', 1L, 'label', 'A', None, None, None, 'YES', 'BTREE', '')
-
-        mysql = MySQL(self.config_mock, self.db_driver_mock)
-
-        expected_query_calls = [
-            call('create database if not exists `migration_test`;')
-        ]
-        self.assertEqual(expected_query_calls, self.db_mock.query.mock_calls)
-        self.db_mock.select_db.assert_called_with('migration_test')
-        self.assertEqual(2, self.db_mock.commit.call_count)
         self.assertEqual(5, self.db_mock.close.call_count)
 
         expected_execute_calls = [
             call('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))'),
-            call('select id from __db_version__;'),
-            call('select label from __db_version__;'),
-            call("show index from __db_version__ where key_name = 'label';"),
-            call('alter table __db_version__ drop index label;'),
             call('select count(*) from __db_version__;'),
-            call('insert into __db_version__ (version) values ("0")')
+            call('insert into __db_version__ (version) values ("0")'),
+            call("select version from __db_version__ where label = 'xxx' order by id desc")
         ]
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
         self.assertEqual(4, self.cursor_mock.close.call_count)
