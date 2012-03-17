@@ -2,6 +2,7 @@ import os
 import sys
 import re
 import ast
+from helpers import Utils
 
 class Config(object):
 
@@ -63,7 +64,7 @@ class FileConfig(Config):
         self._config = {}
 
         # read configuration
-        settings = FileConfig._import_file(config_file)
+        settings = Utils.get_variables_from_file(config_file)
 
         self.put("database_host", FileConfig._get_variable(settings, 'DATABASE_HOST', environment=environment))
         self.put("database_user", FileConfig._get_variable(settings, 'DATABASE_USER', environment=environment))
@@ -121,38 +122,3 @@ class FileConfig(Config):
                 raise Exception("invalid keys ('%s_%s', '%s')" % (environment.upper(), name, name))
 
             raise Exception("invalid key ('%s')" % (name))
-
-    @staticmethod
-    def _import_file(full_filename):
-        path, filename = os.path.split(full_filename)
-        name, extension = os.path.splitext(filename)
-
-        global_dict = globals().copy()
-        local_dict = {}
-
-        try:
-            # add settings dir from path
-            sys.path.insert(0, path)
-            if extension == '.py':
-                # if is Python, execute as a module
-                old_keys = sys.modules.keys()
-                exec "from %s import *" % name in global_dict, local_dict
-                for key in sys.modules.keys():
-                    if key not in old_keys:
-                        del sys.modules[key]
-            else:
-                # if not, exec the file contents
-                execfile(full_filename, global_dict, local_dict)
-        except IOError:
-            raise Exception("%s: file not found" % full_filename)
-        except Exception, e:
-            raise Exception("error interpreting config file '%s': %s" % (filename, str(e)))
-        finally:
-            # remove compiled file
-            compiled_file = "%s/%s.pyc" %(path, name)
-            if os.path.exists(compiled_file):
-                os.remove(compiled_file)
-            # remove settings dir from path
-            sys.path.remove(path)
-
-        return local_dict

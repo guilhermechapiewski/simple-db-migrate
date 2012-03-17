@@ -6,6 +6,7 @@ import re
 import imp
 import tempfile
 import sys
+from simple_db_migrate.helpers import Utils
 
 class Migration(object):
 
@@ -36,49 +37,12 @@ class Migration(object):
             self.sql_up, self.sql_down = self._get_commands()
 
     def _get_commands(self):
-        mod = None
-        temp_abspath = None
-
         try:
-            mod = imp.load_source(self.file_name, self.abspath)
-            SQL_UP = Migration.ensure_sql_unicode(mod.SQL_UP, self.script_encoding)
-            SQL_DOWN = Migration.ensure_sql_unicode(mod.SQL_DOWN, self.script_encoding)
-        except Exception:
-            try:
-                f = open(self.abspath, "rU")
-                content = f.read()
-                f.close()
-
-                temp_abspath = "%s/%s" %(tempfile.gettempdir().rstrip('/'), self.file_name)
-                f = open(temp_abspath, "w")
-                f.write('#-*- coding:%s -*-\n%s' % (self.script_encoding, content))
-                f.close()
-
-                mod = imp.load_source(self.file_name, temp_abspath)
-
-                SQL_UP = Migration.ensure_sql_unicode(mod.SQL_UP, self.script_encoding)
-                SQL_DOWN = Migration.ensure_sql_unicode(mod.SQL_DOWN, self.script_encoding)
-            except Exception:
-                f = codecs.open(self.abspath, "rU", self.script_encoding)
-                exec(f.read())
-                f.close()
-        finally:
-            #erase temp and compiled files
-            if temp_abspath and os.path.isfile(temp_abspath):
-                os.remove(temp_abspath)
-
-            if mod and sys.modules.has_key(self.file_name):
-                sys.modules.pop(self.file_name)
-
-            if temp_abspath and os.path.isfile(temp_abspath + "c"):
-                os.remove(temp_abspath + "c")
-
-            if os.path.isfile(self.abspath + "c"):
-                os.remove(self.abspath + "c")
-
-        try:
+            variables = Utils.get_variables_from_file(self.abspath, self.script_encoding)
+            SQL_UP = Migration.ensure_sql_unicode(variables['SQL_UP'], self.script_encoding)
+            SQL_DOWN = Migration.ensure_sql_unicode(variables['SQL_DOWN'], self.script_encoding)
             (SQL_UP, SQL_DOWN)
-        except NameError:
+        except KeyError:
             raise Exception("migration file is incorrect; it does not define 'SQL_UP' or 'SQL_DOWN' (%s)" % self.abspath)
 
         if SQL_UP is None or SQL_UP == "":

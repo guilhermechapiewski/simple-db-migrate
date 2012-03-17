@@ -1,6 +1,7 @@
 # coding: utf-8
 import os
 import time
+import unittest
 from mock import patch, Mock
 from simple_db_migrate.config import *
 from simple_db_migrate.core import *
@@ -259,8 +260,8 @@ class MigrationTest(BaseTest):
         file_name = '20090508155742_test_migration.migration'
         create_file(file_name, content='SQL_UP=u"some sql command ç %s" % os.path.abspath(\'.\')\nSQL_DOWN=u"other sql command ã %s" % os.path.abspath(\'.\')', encoding='iso8859-1')
         migration = Migration(file_name, script_encoding='iso8859-1')
-        self.assertEqual(u"some sql command ç %s" % os.path.abspath('.'), migration.sql_up)
-        self.assertEqual(u"other sql command ã %s" % os.path.abspath('.'), migration.sql_down)
+        self.assertEqual(u"some sql command \xc3\xa7 %s" % os.path.abspath('.'), migration.sql_up)
+        self.assertEqual(u"other sql command \xc3\xa3 %s" % os.path.abspath('.'), migration.sql_down)
 
     def test_it_should_raise_exception_when_migration_commands_are_empty(self):
         self.assertRaisesWithMessage(Exception, "migration command 'SQL_UP' is empty (%s)" % os.path.abspath('20090727113900_empty_sql_up_test_migration.migration'), Migration, '20090727113900_empty_sql_up_test_migration.migration')
