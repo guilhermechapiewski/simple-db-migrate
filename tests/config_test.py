@@ -182,58 +182,6 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
         os.remove('sample.conf')
         os.remove('sample.py')
 
-    def test_it_should_extract_variables_from_a_config_file(self):
-        variables = FileConfig._import_file(os.path.abspath('sample.conf'))
-        self.assertEqual('root', variables['DATABASE_USER'])
-        self.assertEqual('migration_example_env1', variables['ENV1_DATABASE_NAME'])
-        self.assertEqual('migration_example', variables['DATABASE_NAME'])
-        self.assertEqual('example', variables['DATABASE_MIGRATIONS_DIR'])
-        self.assertEqual(True, variables['UTC_TIMESTAMP'])
-        self.assertEqual('localhost', variables['DATABASE_HOST'])
-        self.assertEqual('', variables['DATABASE_PASSWORD'])
-
-    def test_it_should_extract_variables_from_a_config_file_with_py_extension(self):
-        variables = FileConfig._import_file(os.path.abspath('sample.py'))
-        self.assertEqual('root', variables['DATABASE_USER'])
-        self.assertEqual('migration_example_env1', variables['ENV1_DATABASE_NAME'])
-        self.assertEqual('migration_example', variables['DATABASE_NAME'])
-        self.assertEqual('example', variables['DATABASE_MIGRATIONS_DIR'])
-        self.assertEqual(True, variables['UTC_TIMESTAMP'])
-        self.assertEqual('localhost', variables['DATABASE_HOST'])
-        self.assertEqual('', variables['DATABASE_PASSWORD'])
-
-    def test_it_should_not_change_python_path(self):
-        original_paths = []
-        for path in sys.path:
-            original_paths.append(path)
-
-        FileConfig._import_file(os.path.abspath('sample.py'))
-
-        self.assertEqual(original_paths, sys.path)
-
-
-    def test_it_should_raise_exception_config_file_has_a_sintax_problem(self):
-        f = open('sample.py', 'a')
-        f.write('\nimport some_not_imported_module\n')
-        f.close()
-        try:
-            FileConfig._import_file(os.path.abspath('sample.py'))
-            self.fail("it should not get here")
-        except Exception, e:
-            self.assertEqual("error interpreting config file 'sample.py': No module named some_not_imported_module", str(e))
-
-    def test_it_should_raise_exception_config_file_not_exists(self):
-        try:
-            FileConfig._import_file(os.path.abspath('unexistent.conf'))
-            self.fail("it should not get here")
-        except Exception, e:
-            self.assertEqual("%s: file not found" % os.path.abspath('unexistent.conf'), str(e))
-
-    def test_it_should_delete_compiled_module_file(self):
-        FileConfig._import_file(os.path.abspath('sample.py'))
-        self.assertFalse(os.path.exists(os.path.abspath('sample.pyc')))
-
-
     def test_it_should_return_value_from_a_dict_using_the_given_name(self):
         self.assertEqual("some_value", FileConfig._get_variable({"SOME_KEY": "some_value"}, "SOME_KEY"))
 
