@@ -6,8 +6,6 @@ from helpers import Utils
 
 class Config(object):
 
-    DB_VERSION_TABLE = "__db_version__"
-
     def __init__(self, inital_config=None):
         self._config = inital_config or {}
         for key in self._config.keys():
@@ -78,11 +76,9 @@ class FileConfig(Config):
                 if key.startswith(prefix):
                     self.update(key[len(prefix):], self.get(key))
 
-        self.update("database_engine", self.get("database_engine", 'mysql'))
-        self.update("database_version_table", self.get("database_version_table", self.DB_VERSION_TABLE))
-
         self.update("utc_timestamp", ast.literal_eval(str(self.get("utc_timestamp", 'False'))))
 
-        migrations_dir = self.get("database_migrations_dir")
-        config_dir = os.path.split(config_file)[0]
-        self.update("database_migrations_dir", FileConfig._parse_migrations_dir(migrations_dir, config_dir))
+        migrations_dir = self.get("database_migrations_dir", None)
+        if migrations_dir:
+            config_dir = os.path.split(config_file)[0]
+            self.update("database_migrations_dir", FileConfig._parse_migrations_dir(migrations_dir, config_dir))
