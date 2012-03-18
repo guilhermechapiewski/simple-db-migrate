@@ -42,8 +42,8 @@ class CLITest(unittest.TestCase):
         except SystemExit, e:
             self.assertEqual(0, e.code)
 
-    def test_it_should_has_a_default_value_for_configuration_file(self):
-        self.assertEqual("simple-db-migrate.conf", self.cli.parse([])[0].config_file)
+    def test_it_should_not_has_a_default_value_for_configuration_file(self):
+        self.assertEqual(None, self.cli.parse([])[0].config_file)
 
     def test_it_should_accept_configuration_file_options(self):
         self.assertEqual("file.conf", self.cli.parse(["-c", "file.conf"])[0].config_file)

@@ -33,7 +33,7 @@ class CLI(object):
 
         self.__parser.add_option("-c", "--config",
                 dest="config_file",
-                default="simple-db-migrate.conf",
+                default=None,
                 help="Use a specific config file. If not provided, will search for 'simple-db-migrate.conf' in the current directory.")
 
         self.__parser.add_option("-l", "--log-level",
