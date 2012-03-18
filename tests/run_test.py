@@ -84,16 +84,17 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
     @patch.object(simple_db_migrate.main.Main, 'execute')
     @patch.object(simple_db_migrate.main.Main, '__init__', return_value=None)
     @patch.object(simple_db_migrate.helpers.Utils, 'get_variables_from_file', return_value = {'DATABASE_HOST':'host', 'DATABASE_USER': 'root', 'DATABASE_PASSWORD':'', 'DATABASE_NAME':'database', 'DATABASE_MIGRATIONS_DIR':'.'})
-    def test_it_should_read_configuration_file_using_fileconfig_class_and_execute_with_default_configuration(self, import_file_mock, main_mock, execute_mock):
+    def test_it_should_read_configuration_file_using_fileconfig_class_and_execute_with_default_configuration(self, get_variables_from_file_mock, main_mock, execute_mock):
         simple_db_migrate.run(["-c", os.path.abspath('sample.conf')])
 
-        import_file_mock.assert_called_with(os.path.abspath('sample.conf'))
+        get_variables_from_file_mock.assert_called_with(os.path.abspath('sample.conf'))
 
         self.assertEqual(1, execute_mock.call_count)
         execute_mock.assert_called_with()
 
         self.assertEqual(1, main_mock.call_count)
         config_used = main_mock.call_args[0][0]
+        self.assertTrue(isinstance(config_used, simple_db_migrate.config.FileConfig))
         self.assertEqual('mysql', config_used.get('database_engine'))
         self.assertEqual('root', config_used.get('database_user'))
         self.assertEqual('', config_used.get('database_password'))
@@ -102,6 +103,37 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
         self.assertEqual(False, config_used.get('utc_timestamp'))
         self.assertEqual('__db_version__', config_used.get('database_version_table'))
         self.assertEqual([os.path.abspath('.')], config_used.get("database_migrations_dir"))
+        self.assertEqual(None, config_used.get('schema_version'))
+        self.assertEqual(False, config_used.get('show_sql'))
+        self.assertEqual(False, config_used.get('show_sql_only'))
+        self.assertEqual(None, config_used.get('new_migration'))
+        self.assertEqual(False, config_used.get('drop_db_first'))
+        self.assertEqual(False, config_used.get('paused_mode'))
+        self.assertEqual(None, config_used.get('log_dir'))
+        self.assertEqual(None, config_used.get('label_version'))
+        self.assertEqual(False, config_used.get('force_use_files_on_down'))
+        self.assertEqual(False, config_used.get('force_execute_old_migrations_versions'))
+        self.assertEqual(1, config_used.get('log_level'))
+
+    @patch.object(simple_db_migrate.main.Main, 'execute')
+    @patch.object(simple_db_migrate.main.Main, '__init__', return_value=None)
+    def test_it_should_get_configuration_exclusively_from_args_if_not_use_configuration_file_using_config_class_and_execute_with_default_configuration(self, main_mock, execute_mock):
+        simple_db_migrate.run(['--db-host', 'host', '--db-name', 'name', '--db-user', 'user', '--db-password', 'pass', '--db-engine', 'engine', '--db-migrations-dir', '.:/tmp:../migration'])
+
+        self.assertEqual(1, execute_mock.call_count)
+        execute_mock.assert_called_with()
+
+        self.assertEqual(1, main_mock.call_count)
+        config_used = main_mock.call_args[0][0]
+        self.assertTrue(isinstance(config_used, simple_db_migrate.config.Config))
+        self.assertEqual('engine', config_used.get('database_engine'))
+        self.assertEqual('user', config_used.get('database_user'))
+        self.assertEqual('pass', config_used.get('database_password'))
+        self.assertEqual('name', config_used.get('database_name'))
+        self.assertEqual('host', config_used.get('database_host'))
+        self.assertEqual(False, config_used.get('utc_timestamp'))
+        self.assertEqual('__db_version__', config_used.get('database_version_table'))
+        self.assertEqual([os.path.abspath('.'), '/tmp', os.path.abspath('../migration')], config_used.get("database_migrations_dir"))
         self.assertEqual(None, config_used.get('schema_version'))
         self.assertEqual(False, config_used.get('show_sql'))
         self.assertEqual(False, config_used.get('show_sql_only'))

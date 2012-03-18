@@ -3,7 +3,7 @@ import codecs
 import sys
 
 from cli import CLI
-from config import FileConfig
+from config import FileConfig, Config
 from main import Main
 
 SIMPLE_DB_MIGRATE_VERSION = '1.5.0'
@@ -24,7 +24,11 @@ def run(args=None):
             CLI.show_colors()
 
         # Create config
-        config = FileConfig(options.config_file, options.environment)
+        if options.config_file:
+            config = FileConfig(options.config_file, options.environment)
+        else:
+            config = Config()
+
         config.update('schema_version', options.schema_version)
         config.update('show_sql', options.show_sql)
         config.update('show_sql_only', options.show_sql_only)
@@ -35,6 +39,21 @@ def run(args=None):
         config.update('label_version', options.label_version)
         config.update('force_use_files_on_down', options.force_use_files_on_down)
         config.update('force_execute_old_migrations_versions', options.force_execute_old_migrations_versions)
+        config.update('utc_timestamp', options.utc_timestamp)
+        config.update('database_user', options.database_user)
+        config.update('database_password', options.database_password)
+        config.update('database_host', options.database_host)
+        config.update('database_name', options.database_name)
+        if options.database_migrations_dir:
+            config.update("database_migrations_dir", Config._parse_migrations_dir(options.database_migrations_dir))
+
+        config.update('database_engine', options.database_engine)
+        if not config.get('database_engine', None):
+            config.update('database_engine', "mysql")
+
+        config.update('database_version_table', options.database_version_table)
+        if not config.get('database_version_table', None):
+            config.update('database_version_table', "__db_version__")
 
         # paused mode forces log_level to 2
         log_level = int(options.log_level)

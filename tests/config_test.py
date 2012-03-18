@@ -206,7 +206,6 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
         self.assertEquals(config.get('database_user'), 'root')
         self.assertEquals(config.get('database_password'), '')
         self.assertEquals(config.get('database_name'), 'migration_example')
-        self.assertEquals(config.get('database_version_table'), Config.DB_VERSION_TABLE)
         self.assertEquals(config.get("database_migrations_dir"), [os.path.abspath('example')])
         self.assertEquals(config.get('utc_timestamp'), True)
 
