@@ -83,6 +83,7 @@ class FileConfig(Config):
 
         self.update("utc_timestamp", ast.literal_eval(str(self.get("utc_timestamp", 'False'))))
 
-        migrations_dir = self.get("database_migrations_dir")
-        config_dir = os.path.split(config_file)[0]
-        self.update("database_migrations_dir", FileConfig._parse_migrations_dir(migrations_dir, config_dir))
+        migrations_dir = self.get("database_migrations_dir", None)
+        if migrations_dir:
+            config_dir = os.path.split(config_file)[0]
+            self.update("database_migrations_dir", FileConfig._parse_migrations_dir(migrations_dir, config_dir))

@@ -172,23 +172,27 @@ DATABASE_USER = 'root'
 DATABASE_PASSWORD = ''
 DATABASE_NAME = 'migration_example'
 ENV1_DATABASE_NAME = 'migration_example_env1'
-DATABASE_MIGRATIONS_DIR = 'example'
 UTC_TIMESTAMP = True
 DATABASE_ANY_CUSTOM_VARIABLE = 'Some Value'
 SOME_ENV_DATABASE_ANY_CUSTOM_VARIABLE = 'Other Value'
 DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
 '''
         f = open('sample.conf', 'w')
-        f.write(config_file)
+        f.write("%s\nDATABASE_MIGRATIONS_DIR = 'example'" % config_file)
+        f.close()
+
+        f = open('sample2.conf', 'w')
+        f.write("%s" % config_file)
         f.close()
 
         f = open('sample.py', 'w')
         f.write('import os\n')
-        f.write(config_file)
+        f.write("%s\nDATABASE_MIGRATIONS_DIR = 'example'" % config_file)
         f.close()
 
     def tearDown(self):
         os.remove('sample.conf')
+        os.remove('sample2.conf')
         os.remove('sample.py')
 
     def test_it_should_extend_from_config_class(self):
@@ -231,6 +235,11 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
         config = FileConfig(config_path, 'some_env')
         self.assertEqual('Other Value', config.get('database_any_custom_variable'))
         self.assertEqual('Value', config.get('database_other_custom_variable'))
+
+    def test_it_should_accept_a_configuration_file_without_migrations_dir_key(self):
+        config_path = os.path.abspath('sample2.conf')
+        config = FileConfig(config_path)
+        self.assertEqual("no_migrations_dir_key", config.get('migrations_dir', "no_migrations_dir_key"))
 
 if __name__ == '__main__':
     unittest.main()
