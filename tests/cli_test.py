@@ -122,13 +122,13 @@ class CLITest(unittest.TestCase):
         self.assertEqual(False, self.cli.parse([])[0].show_sql)
 
     def test_it_should_accept_show_sql_options(self):
-        self.assertEqual(True, self.cli.parse(["--showsql"])[0].show_sql)
+        self.assertEqual(True, self.cli.parse(["--show-sql"])[0].show_sql)
 
     def test_it_should_has_a_default_value_for_show_sql_only(self):
         self.assertEqual(False, self.cli.parse([])[0].show_sql_only)
 
     def test_it_should_accept_show_sql_only_options(self):
-        self.assertEqual(True, self.cli.parse(["--showsqlonly"])[0].show_sql_only)
+        self.assertEqual(True, self.cli.parse(["--show-sql-only"])[0].show_sql_only)
 
     def test_it_should_not_has_a_default_value_for_label_version(self):
         self.assertEqual(None, self.cli.parse([])[0].label_version)
@@ -148,6 +148,54 @@ class CLITest(unittest.TestCase):
     def test_it_should_accept_environment_options(self):
         self.assertEqual("environment_value", self.cli.parse(["--env", "environment_value"])[0].environment)
         self.assertEqual("environment_value", self.cli.parse(["--environment", "environment_value"])[0].environment)
+
+    def test_it_should_has_a_default_value_for_utc_timestamp(self):
+        self.assertEqual(False, self.cli.parse([])[0].utc_timestamp)
+
+    def test_it_should_accept_utc_timestamp_options(self):
+        self.assertEqual(True, self.cli.parse(["--utc-timestamp"])[0].utc_timestamp)
+
+    def test_it_should_has_a_default_value_for_database_engine(self):
+        self.assertEqual("mysql", self.cli.parse([])[0].database_engine)
+
+    def test_it_should_accept_database_engine_options(self):
+        self.assertEqual("engine_value", self.cli.parse(["--db-engine", "engine_value"])[0].database_engine)
+
+    def test_it_should_has_a_default_value_for_database_version_table(self):
+        self.assertEqual("__db_version__", self.cli.parse([])[0].database_version_table)
+
+    def test_it_should_accept_database_version_table_options(self):
+        self.assertEqual("version_table_value", self.cli.parse(["--db-version-table", "version_table_value"])[0].database_version_table)
+
+    def test_it_should_not_has_a_default_value_for_database_user(self):
+        self.assertEqual(None, self.cli.parse([])[0].database_user)
+
+    def test_it_should_accept_database_user_options(self):
+        self.assertEqual("user_value", self.cli.parse(["--db-user", "user_value"])[0].database_user)
+
+    def test_it_should_not_has_a_default_value_for_database_password(self):
+        self.assertEqual(None, self.cli.parse([])[0].database_password)
+
+    def test_it_should_accept_database_password_options(self):
+        self.assertEqual("password_value", self.cli.parse(["--db-password", "password_value"])[0].database_password)
+
+    def test_it_should_not_has_a_default_value_for_database_host(self):
+        self.assertEqual(None, self.cli.parse([])[0].database_host)
+
+    def test_it_should_accept_database_host_options(self):
+        self.assertEqual("host_value", self.cli.parse(["--db-host", "host_value"])[0].database_host)
+
+    def test_it_should_not_has_a_default_value_for_database_name(self):
+        self.assertEqual(None, self.cli.parse([])[0].database_name)
+
+    def test_it_should_accept_database_name_options(self):
+        self.assertEqual("name_value", self.cli.parse(["--db-name", "name_value"])[0].database_name)
+
+    def test_it_should_not_has_a_default_value_for_migrations_dir(self):
+        self.assertEqual(None, self.cli.parse([])[0].database_migrations_dir)
+
+    def test_it_should_accept_migrations_dir_options(self):
+        self.assertEqual(".:../:/tmp", self.cli.parse(["--db-migrations-dir", ".:../:/tmp"])[0].database_migrations_dir)
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_it_should_call_print_statment_with_the_given_message(self, stdout_mock):

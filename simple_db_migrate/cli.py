@@ -92,13 +92,13 @@ class CLI(object):
                 default=False,
                 help="Drop database before running migrations to create everything from scratch. Useful when the database schema is corrupted and the migration scripts are not working.")
 
-        self.__parser.add_option("--showsql",
+        self.__parser.add_option("--show-sql",
                 action="store_true",
                 dest="show_sql",
                 default=False,
                 help="Show all SQL statements executed.")
 
-        self.__parser.add_option("--showsqlonly",
+        self.__parser.add_option("--show-sql-only",
                 action="store_true",
                 dest="show_sql_only",
                 default=False,
@@ -118,6 +118,47 @@ class CLI(object):
                 dest="environment",
                 default="",
                 help="Use this environment to get specific configurations.")
+
+        self.__parser.add_option("--utc-timestamp",
+                action="store_true",
+                dest="utc_timestamp",
+                default=False,
+                help="Use utc datetime value on the name of migration when creating one.")
+
+        self.__parser.add_option("--db-engine",
+                dest="database_engine",
+                default="mysql",
+                help="Set each engine to use as sgdb (mysql, oracle).")
+
+        self.__parser.add_option("--db-version-table",
+                dest="database_version_table",
+                default="__db_version__",
+                help="Set the name of the table used to save migrations history.")
+
+        self.__parser.add_option("--db-user",
+                dest="database_user",
+                default=None,
+                help="Set the username to connect to database.")
+
+        self.__parser.add_option("--db-password",
+                dest="database_password",
+                default=None,
+                help="Set the password to connect to database.")
+
+        self.__parser.add_option("--db-host",
+                dest="database_host",
+                default=None,
+                help="Set the host where the database is.")
+
+        self.__parser.add_option("--db-name",
+                dest="database_name",
+                default=None,
+                help="Set the name of the database.")
+
+        self.__parser.add_option("--db-migrations-dir",
+                dest="database_migrations_dir",
+                default=None,
+                help="List of directories where migrations are separated by a colon")
 
     def parse(self, args=None):
         return self.__parser.parse_args(args)
