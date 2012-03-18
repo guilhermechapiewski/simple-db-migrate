@@ -130,13 +130,13 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
         config_used = main_mock.call_args[0][0]
         self.assertEqual(2, config_used.get('log_level'))
 
+    @patch('simple_db_migrate.getpass', return_value='password_asked')
     @patch('sys.stdout', new_callable=StringIO)
     @patch.object(simple_db_migrate.main.Main, 'execute')
     @patch.object(simple_db_migrate.main.Main, '__init__', return_value=None)
     @patch.object(simple_db_migrate.helpers.Utils, 'get_variables_from_file', return_value = {'DATABASE_HOST':'host', 'DATABASE_USER': 'root', 'DATABASE_PASSWORD':'<<ask_me>>', 'DATABASE_NAME':'database', 'DATABASE_MIGRATIONS_DIR':'.'})
-    def test_it_should_ask_for_password_when_configuration_is_as_ask_me(self, import_file_mock, main_mock, execute_mock, stdout_mock):
-        getpass_mock = Mock(return_value = 'password_asked')
-        simple_db_migrate.run(["-c", os.path.abspath('sample.conf')], getpass=getpass_mock)
+    def test_it_should_ask_for_password_when_configuration_is_as_ask_me(self, import_file_mock, main_mock, execute_mock, stdout_mock, getpass_mock):
+        simple_db_migrate.run(["-c", os.path.abspath('sample.conf')])
         config_used = main_mock.call_args[0][0]
         self.assertEqual('password_asked', config_used.get('database_password'))
         self.assertEqual('\nPlease inform password to connect to database "root@host:database"\n', stdout_mock.getvalue())
