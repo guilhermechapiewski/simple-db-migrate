@@ -23,8 +23,7 @@ The sgbd class should implement the following methods
 class Main(object):
 
     def __init__(self, config, sgdb=None):
-        if not isinstance(config, Config):
-            raise Exception("config must be an instance of simple_db_migrate.config.Config")
+        Main._check_configuration(config)
 
         self.cli = CLI()
         self.config = config
@@ -53,6 +52,19 @@ class Main(object):
         else:
             self._migrate()
         self._execution_log("\nDone.\n", "PINK", log_level_limit=1)
+
+    @staticmethod
+    def _check_configuration(config):
+        if not isinstance(config, Config):
+            raise Exception("config must be an instance of simple_db_migrate.config.Config")
+
+        required_configs = ['database_host', 'database_name', 'database_user', 'database_password', 'database_migrations_dir', 'database_engine', 'schema_version']
+        if config.get("new_migration", None):
+            required_configs = ['database_migrations_dir']
+
+        for key in required_configs:
+            #check if config has the key, if do not have will raise exception
+            config.get(key)
 
     def _create_migration(self):
         migrations_dir = self.config.get("database_migrations_dir")
