@@ -28,10 +28,10 @@ class SimpleDBMigrateTest(BaseTest):
 
     def test_it_should_use_script_encoding_from_configuration(self):
         db_migrate = SimpleDBMigrate(self.config)
-        self.assertEqual(self.config.get('db_script_encoding'), db_migrate._script_encoding)
+        self.assertEqual(self.config.get('database_script_encoding'), db_migrate._script_encoding)
 
     def test_it_should_use_utf8_as_default_script_encoding_from_configuration(self):
-        self.config.remove('db_script_encoding')
+        self.config.remove('database_script_encoding')
         db_migrate = SimpleDBMigrate(self.config)
         self.assertEqual('utf-8', db_migrate._script_encoding)
 
