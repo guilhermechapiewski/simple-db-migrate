@@ -9,7 +9,8 @@ from main import Main
 SIMPLE_DB_MIGRATE_VERSION = '1.5.0'
 
 # fixing print in non-utf8 terminals
-sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
+if sys.stdout.encoding != 'UTF-8':
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 
 def run(args=None):
     cli = CLI()
