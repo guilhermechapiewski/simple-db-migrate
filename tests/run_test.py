@@ -31,7 +31,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
     def test_it_should_define_a_version_string(self):
         self.assertTrue(isinstance(simple_db_migrate.SIMPLE_DB_MIGRATE_VERSION, str))
 
-    @patch.object(simple_db_migrate.cli.CLI, 'parse')
+    @patch('simple_db_migrate.cli.CLI.parse')
     def test_it_should_use_cli_to_parse_arguments(self, parse_mock):
         parse_mock.return_value = (Mock(simple_db_migrate_version=True), [])
         try:
@@ -50,7 +50,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
 
         self.assertEqual('simple-db-migrate v%s\n\n' % simple_db_migrate.SIMPLE_DB_MIGRATE_VERSION, stdout_mock.getvalue())
 
-    @patch.object(simple_db_migrate.cli.CLI, 'show_colors')
+    @patch('simple_db_migrate.cli.CLI.show_colors')
     def test_it_should_activate_use_of_colors(self, show_colors_mock):
         try:
             simple_db_migrate.run(["--color"])
@@ -59,7 +59,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
 
         self.assertEqual(1, show_colors_mock.call_count)
 
-    @patch.object(simple_db_migrate.cli.CLI, 'parse')
+    @patch('simple_db_migrate.cli.CLI.parse')
     @patch('sys.stdout', new_callable=StringIO)
     def test_it_should_print_message_and_exit_when_user_interrupt_execution(self, stdout_mock, parse_mock):
         parse_mock.side_effect = KeyboardInterrupt()
@@ -70,7 +70,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
 
         self.assertEqual('\nExecution interrupted by user...\n\n', stdout_mock.getvalue())
 
-    @patch.object(simple_db_migrate.cli.CLI, 'parse')
+    @patch('simple_db_migrate.cli.CLI.parse')
     @patch('sys.stdout', new_callable=StringIO)
     def test_it_should_print_message_and_exit_when_user_an_error_happen(self, stdout_mock, parse_mock):
         parse_mock.side_effect = Exception('occur an error')

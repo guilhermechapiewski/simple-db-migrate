@@ -33,169 +33,169 @@ class CLITest(unittest.TestCase):
 
     def test_it_should_exit_with_help_options(self):
         try:
-            self.cli.parse(["-h"])
+            CLI.parse(["-h"])
         except SystemExit, e:
             self.assertEqual(0, e.code)
 
         try:
-            self.cli.parse(["--help"])
+            CLI.parse(["--help"])
         except SystemExit, e:
             self.assertEqual(0, e.code)
 
     def test_it_should_not_has_a_default_value_for_configuration_file(self):
-        self.assertEqual(None, self.cli.parse([])[0].config_file)
+        self.assertEqual(None, CLI.parse([])[0].config_file)
 
     def test_it_should_accept_configuration_file_options(self):
-        self.assertEqual("file.conf", self.cli.parse(["-c", "file.conf"])[0].config_file)
-        self.assertEqual("file.conf", self.cli.parse(["--config", "file.conf"])[0].config_file)
+        self.assertEqual("file.conf", CLI.parse(["-c", "file.conf"])[0].config_file)
+        self.assertEqual("file.conf", CLI.parse(["--config", "file.conf"])[0].config_file)
 
     def test_it_should_has_a_default_value_for_log_level(self):
-        self.assertEqual(1, self.cli.parse([])[0].log_level)
+        self.assertEqual(1, CLI.parse([])[0].log_level)
 
     def test_it_should_accept_log_level_options(self):
-        self.assertEqual("log_level_value", self.cli.parse(["-l", "log_level_value"])[0].log_level)
-        self.assertEqual("log_level_value", self.cli.parse(["--log-level", "log_level_value"])[0].log_level)
+        self.assertEqual("log_level_value", CLI.parse(["-l", "log_level_value"])[0].log_level)
+        self.assertEqual("log_level_value", CLI.parse(["--log-level", "log_level_value"])[0].log_level)
 
     def test_it_should_not_has_a_default_value_for_log_dir(self):
-        self.assertEqual(None, self.cli.parse([])[0].log_dir)
+        self.assertEqual(None, CLI.parse([])[0].log_dir)
 
     def test_it_should_accept_log_dir_options(self):
-        self.assertEqual("log_dir_value", self.cli.parse(["--log-dir", "log_dir_value"])[0].log_dir)
+        self.assertEqual("log_dir_value", CLI.parse(["--log-dir", "log_dir_value"])[0].log_dir)
 
     def test_it_should_has_a_default_value_for_force_old_migrations(self):
-        self.assertEqual(False, self.cli.parse([])[0].force_execute_old_migrations_versions)
+        self.assertEqual(False, CLI.parse([])[0].force_execute_old_migrations_versions)
 
     def test_it_should_accept_force_old_migrations_options(self):
-        self.assertEqual(True, self.cli.parse(["--force-old-migrations"])[0].force_execute_old_migrations_versions)
-        self.assertEqual(True, self.cli.parse(["--force-execute-old-migrations-versions"])[0].force_execute_old_migrations_versions)
+        self.assertEqual(True, CLI.parse(["--force-old-migrations"])[0].force_execute_old_migrations_versions)
+        self.assertEqual(True, CLI.parse(["--force-execute-old-migrations-versions"])[0].force_execute_old_migrations_versions)
 
     def test_it_should_has_a_default_value_for_force_files(self):
-        self.assertEqual(False, self.cli.parse([])[0].force_use_files_on_down)
+        self.assertEqual(False, CLI.parse([])[0].force_use_files_on_down)
 
     def test_it_should_accept_force_files_options(self):
-        self.assertEqual(True, self.cli.parse(["--force-files"])[0].force_use_files_on_down)
-        self.assertEqual(True, self.cli.parse(["--force-use-files-on-down"])[0].force_use_files_on_down)
+        self.assertEqual(True, CLI.parse(["--force-files"])[0].force_use_files_on_down)
+        self.assertEqual(True, CLI.parse(["--force-use-files-on-down"])[0].force_use_files_on_down)
 
     def test_it_should_not_has_a_default_value_for_schema_version(self):
-        self.assertEqual(None, self.cli.parse([])[0].schema_version)
+        self.assertEqual(None, CLI.parse([])[0].schema_version)
 
     def test_it_should_accept_schema_version_options(self):
-        self.assertEqual("schema_version_value", self.cli.parse(["-m", "schema_version_value"])[0].schema_version)
-        self.assertEqual("schema_version_value", self.cli.parse(["--config", "schema_version_value"])[0].config_file)
+        self.assertEqual("schema_version_value", CLI.parse(["-m", "schema_version_value"])[0].schema_version)
+        self.assertEqual("schema_version_value", CLI.parse(["--config", "schema_version_value"])[0].config_file)
 
     def test_it_should_not_has_a_default_value_for_new_migration(self):
-        self.assertEqual(None, self.cli.parse([])[0].new_migration)
+        self.assertEqual(None, CLI.parse([])[0].new_migration)
 
     def test_it_should_accept_new_migration_options(self):
-        self.assertEqual("new_migration_value", self.cli.parse(["-n", "new_migration_value"])[0].new_migration)
-        self.assertEqual("new_migration_value", self.cli.parse(["--new", "new_migration_value"])[0].new_migration)
-        self.assertEqual("new_migration_value", self.cli.parse(["--create", "new_migration_value"])[0].new_migration)
+        self.assertEqual("new_migration_value", CLI.parse(["-n", "new_migration_value"])[0].new_migration)
+        self.assertEqual("new_migration_value", CLI.parse(["--new", "new_migration_value"])[0].new_migration)
+        self.assertEqual("new_migration_value", CLI.parse(["--create", "new_migration_value"])[0].new_migration)
 
     def test_it_should_has_a_default_value_for_paused_mode(self):
-        self.assertEqual(False, self.cli.parse([])[0].paused_mode)
+        self.assertEqual(False, CLI.parse([])[0].paused_mode)
 
     def test_it_should_accept_paused_mode_options(self):
-        self.assertEqual(True, self.cli.parse(["-p"])[0].paused_mode)
-        self.assertEqual(True, self.cli.parse(["--paused-mode"])[0].paused_mode)
+        self.assertEqual(True, CLI.parse(["-p"])[0].paused_mode)
+        self.assertEqual(True, CLI.parse(["--paused-mode"])[0].paused_mode)
 
     def test_it_should_has_a_default_value_for_simple_db_migrate_version(self):
-        self.assertEqual(False, self.cli.parse([])[0].simple_db_migrate_version)
+        self.assertEqual(False, CLI.parse([])[0].simple_db_migrate_version)
 
     def test_it_should_accept_simple_db_migrate_version_options(self):
-        self.assertEqual(True, self.cli.parse(["-v"])[0].simple_db_migrate_version)
-        self.assertEqual(True, self.cli.parse(["--version"])[0].simple_db_migrate_version)
+        self.assertEqual(True, CLI.parse(["-v"])[0].simple_db_migrate_version)
+        self.assertEqual(True, CLI.parse(["--version"])[0].simple_db_migrate_version)
 
     def test_it_should_has_a_default_value_for_show_colors(self):
-        self.assertEqual(False, self.cli.parse([])[0].show_colors)
+        self.assertEqual(False, CLI.parse([])[0].show_colors)
 
     def test_it_should_accept_show_colors_options(self):
-        self.assertEqual(True, self.cli.parse(["--color"])[0].show_colors)
+        self.assertEqual(True, CLI.parse(["--color"])[0].show_colors)
 
     def test_it_should_has_a_default_value_for_drop_db_first(self):
-        self.assertEqual(False, self.cli.parse([])[0].drop_db_first)
+        self.assertEqual(False, CLI.parse([])[0].drop_db_first)
 
     def test_it_should_accept_drop_db_first_options(self):
-        self.assertEqual(True, self.cli.parse(["--drop"])[0].drop_db_first)
-        self.assertEqual(True, self.cli.parse(["--drop-database-first"])[0].drop_db_first)
+        self.assertEqual(True, CLI.parse(["--drop"])[0].drop_db_first)
+        self.assertEqual(True, CLI.parse(["--drop-database-first"])[0].drop_db_first)
 
     def test_it_should_has_a_default_value_for_show_sql(self):
-        self.assertEqual(False, self.cli.parse([])[0].show_sql)
+        self.assertEqual(False, CLI.parse([])[0].show_sql)
 
     def test_it_should_accept_show_sql_options(self):
-        self.assertEqual(True, self.cli.parse(["--show-sql"])[0].show_sql)
+        self.assertEqual(True, CLI.parse(["--show-sql"])[0].show_sql)
 
     def test_it_should_has_a_default_value_for_show_sql_only(self):
-        self.assertEqual(False, self.cli.parse([])[0].show_sql_only)
+        self.assertEqual(False, CLI.parse([])[0].show_sql_only)
 
     def test_it_should_accept_show_sql_only_options(self):
-        self.assertEqual(True, self.cli.parse(["--show-sql-only"])[0].show_sql_only)
+        self.assertEqual(True, CLI.parse(["--show-sql-only"])[0].show_sql_only)
 
     def test_it_should_not_has_a_default_value_for_label_version(self):
-        self.assertEqual(None, self.cli.parse([])[0].label_version)
+        self.assertEqual(None, CLI.parse([])[0].label_version)
 
     def test_it_should_accept_label_version_options(self):
-        self.assertEqual("label_version_value", self.cli.parse(["--label", "label_version_value"])[0].label_version)
+        self.assertEqual("label_version_value", CLI.parse(["--label", "label_version_value"])[0].label_version)
 
     def test_it_should_not_has_a_default_value_for_password(self):
-        self.assertEqual(None, self.cli.parse([])[0].password)
+        self.assertEqual(None, CLI.parse([])[0].password)
 
     def test_it_should_accept_password_options(self):
-        self.assertEqual("password_value", self.cli.parse(["--password", "password_value"])[0].password)
+        self.assertEqual("password_value", CLI.parse(["--password", "password_value"])[0].password)
 
     def test_it_should_has_a_default_value_for_environment(self):
-        self.assertEqual("", self.cli.parse([])[0].environment)
+        self.assertEqual("", CLI.parse([])[0].environment)
 
     def test_it_should_accept_environment_options(self):
-        self.assertEqual("environment_value", self.cli.parse(["--env", "environment_value"])[0].environment)
-        self.assertEqual("environment_value", self.cli.parse(["--environment", "environment_value"])[0].environment)
+        self.assertEqual("environment_value", CLI.parse(["--env", "environment_value"])[0].environment)
+        self.assertEqual("environment_value", CLI.parse(["--environment", "environment_value"])[0].environment)
 
     def test_it_should_has_a_default_value_for_utc_timestamp(self):
-        self.assertEqual(False, self.cli.parse([])[0].utc_timestamp)
+        self.assertEqual(False, CLI.parse([])[0].utc_timestamp)
 
     def test_it_should_accept_utc_timestamp_options(self):
-        self.assertEqual(True, self.cli.parse(["--utc-timestamp"])[0].utc_timestamp)
+        self.assertEqual(True, CLI.parse(["--utc-timestamp"])[0].utc_timestamp)
 
     def test_it_should_not_has_a_default_value_for_database_engine(self):
         self.assertEqual(None, self.cli.parse([])[0].database_engine)
 
     def test_it_should_accept_database_engine_options(self):
-        self.assertEqual("engine_value", self.cli.parse(["--db-engine", "engine_value"])[0].database_engine)
+        self.assertEqual("engine_value", CLI.parse(["--db-engine", "engine_value"])[0].database_engine)
 
     def test_it_should_not_has_a_default_value_for_database_version_table(self):
         self.assertEqual(None, self.cli.parse([])[0].database_version_table)
 
     def test_it_should_accept_database_version_table_options(self):
-        self.assertEqual("version_table_value", self.cli.parse(["--db-version-table", "version_table_value"])[0].database_version_table)
+        self.assertEqual("version_table_value", CLI.parse(["--db-version-table", "version_table_value"])[0].database_version_table)
 
     def test_it_should_not_has_a_default_value_for_database_user(self):
-        self.assertEqual(None, self.cli.parse([])[0].database_user)
+        self.assertEqual(None, CLI.parse([])[0].database_user)
 
     def test_it_should_accept_database_user_options(self):
-        self.assertEqual("user_value", self.cli.parse(["--db-user", "user_value"])[0].database_user)
+        self.assertEqual("user_value", CLI.parse(["--db-user", "user_value"])[0].database_user)
 
     def test_it_should_not_has_a_default_value_for_database_password(self):
-        self.assertEqual(None, self.cli.parse([])[0].database_password)
+        self.assertEqual(None, CLI.parse([])[0].database_password)
 
     def test_it_should_accept_database_password_options(self):
-        self.assertEqual("password_value", self.cli.parse(["--db-password", "password_value"])[0].database_password)
+        self.assertEqual("password_value", CLI.parse(["--db-password", "password_value"])[0].database_password)
 
     def test_it_should_not_has_a_default_value_for_database_host(self):
-        self.assertEqual(None, self.cli.parse([])[0].database_host)
+        self.assertEqual(None, CLI.parse([])[0].database_host)
 
     def test_it_should_accept_database_host_options(self):
-        self.assertEqual("host_value", self.cli.parse(["--db-host", "host_value"])[0].database_host)
+        self.assertEqual("host_value", CLI.parse(["--db-host", "host_value"])[0].database_host)
 
     def test_it_should_not_has_a_default_value_for_database_name(self):
-        self.assertEqual(None, self.cli.parse([])[0].database_name)
+        self.assertEqual(None, CLI.parse([])[0].database_name)
 
     def test_it_should_accept_database_name_options(self):
-        self.assertEqual("name_value", self.cli.parse(["--db-name", "name_value"])[0].database_name)
+        self.assertEqual("name_value", CLI.parse(["--db-name", "name_value"])[0].database_name)
 
     def test_it_should_not_has_a_default_value_for_migrations_dir(self):
-        self.assertEqual(None, self.cli.parse([])[0].database_migrations_dir)
+        self.assertEqual(None, CLI.parse([])[0].database_migrations_dir)
 
     def test_it_should_accept_migrations_dir_options(self):
-        self.assertEqual(".:../:/tmp", self.cli.parse(["--db-migrations-dir", ".:../:/tmp"])[0].database_migrations_dir)
+        self.assertEqual(".:../:/tmp", CLI.parse(["--db-migrations-dir", ".:../:/tmp"])[0].database_migrations_dir)
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_it_should_call_print_statment_with_the_given_message(self, stdout_mock):
