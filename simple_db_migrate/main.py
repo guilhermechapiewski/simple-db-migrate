@@ -210,5 +210,5 @@ class Main(object):
 
     def _execution_log(self, msg, color="CYAN", log_level_limit=2):
         if self.config.get("log_level", 1) >= log_level_limit:
-            self.cli.msg(msg, color)
+            CLI.msg(msg, color)
         self.log.debug(msg)

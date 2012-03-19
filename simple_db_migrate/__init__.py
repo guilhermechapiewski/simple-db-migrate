@@ -19,7 +19,7 @@ def run(args=None):
 
         if options.simple_db_migrate_version:
             msg = 'simple-db-migrate v%s' % SIMPLE_DB_MIGRATE_VERSION
-            cli.info_and_exit(msg)
+            CLI.info_and_exit(msg)
 
         if options.show_colors:
             CLI.show_colors()
@@ -62,16 +62,16 @@ def run(args=None):
             if options.password:
                 passwd = options.password
             else:
-                cli.msg('\nPlease inform password to connect to database "%s@%s:%s"' % (config.get('database_user'), config.get('database_host'), config.get('database_name')))
+                CLI.msg('\nPlease inform password to connect to database "%s@%s:%s"' % (config.get('database_user'), config.get('database_host'), config.get('database_name')))
                 passwd = getpass()
             config.update('database_password', passwd)
 
         # If CLI was correctly parsed, execute db-migrate.
         Main(config).execute()
     except KeyboardInterrupt:
-        cli.info_and_exit("\nExecution interrupted by user...")
+        CLI.info_and_exit("\nExecution interrupted by user...")
     except Exception, e:
-        cli.error_and_exit(str(e))
+        CLI.error_and_exit(str(e))
 
 if __name__ == '__main__':
     run()

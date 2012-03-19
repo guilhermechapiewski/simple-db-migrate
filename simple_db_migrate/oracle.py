@@ -170,9 +170,8 @@ class Oracle(object):
                     failed_sqls = failed_sqls + "can't execute drop command '%s' in database '%s', %s\n" % (drop_sql, self.__db, str(e).strip())
 
             if failed_sqls != '':
-                cli = CLI()
-                cli.msg('\nThe following drop commands failed:\n%s' % (failed_sqls), "RED")
-                cli.msg('\nDo you want to continue anyway (y/N):', "END")
+                CLI.msg('\nThe following drop commands failed:\n%s' % (failed_sqls), "RED")
+                CLI.msg('\nDo you want to continue anyway (y/N):', "END")
                 to_continue = self.std_in.readline().strip()
                 if to_continue.upper() != 'Y':
                     raise Exception("can't drop database '%s'" % (self.__db) )
@@ -193,8 +192,7 @@ class Oracle(object):
 
     def _verify_if_exception_is_invalid_user(self, exception):
         if 'ORA-01017' in exception.__str__():
-            cli = CLI()
-            cli.msg('\nPlease inform dba user/password to connect to database "%s"\nUser:' % (self.__host), "END")
+            CLI.msg('\nPlease inform dba user/password to connect to database "%s"\nUser:' % (self.__host), "END")
             dba_user = self.std_in.readline().strip()
             passwd = self.get_pass()
             conn = self.__driver.connect(dsn=self.__host, user=dba_user, password=passwd)

@@ -163,13 +163,16 @@ class CLI(object):
     def parse(self, args=None):
         return self.__parser.parse_args(args)
 
-    def error_and_exit(self, msg):
-        self.msg("[ERROR] %s\n" % msg, "RED")
+    @classmethod
+    def error_and_exit(cls, msg):
+        cls.msg("[ERROR] %s\n" % msg, "RED")
         sys.exit(1)
 
-    def info_and_exit(self, msg):
-        self.msg("%s\n" % msg, "BLUE")
+    @classmethod
+    def info_and_exit(cls, msg):
+        cls.msg("%s\n" % msg, "BLUE")
         sys.exit(0)
 
-    def msg(self, msg, color="CYAN"):
-        print "%s%s%s" % (self.color[color], msg, self.color["END"])
+    @classmethod
+    def msg(cls, msg, color="CYAN"):
+        print "%s%s%s" % (cls.color[color], msg, cls.color["END"])

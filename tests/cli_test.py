@@ -199,25 +199,25 @@ class CLITest(unittest.TestCase):
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_it_should_call_print_statment_with_the_given_message(self, stdout_mock):
-        self.cli.msg("message to print")
+        CLI.msg("message to print")
         self.assertEqual("message to print\n", stdout_mock.getvalue())
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_it_should_call_print_statment_with_the_given_message_and_color_codes_when_colors_are_on(self, stdout_mock):
         CLI.show_colors()
-        self.cli.msg("message to print")
+        CLI.msg("message to print")
         self.assertEqual("\x1b[36mmessage to print\x1b[0m\n", stdout_mock.getvalue())
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_it_should_use_color_code_to_the_specified_color(self, stdout_mock):
         CLI.show_colors()
-        self.cli.msg("message to print", "RED")
+        CLI.msg("message to print", "RED")
         self.assertEqual("\x1b[31mmessage to print\x1b[0m\n", stdout_mock.getvalue())
 
     @patch('simple_db_migrate.cli.CLI.msg')
     def test_it_should_show_error_message_and_exit(self, msg_mock):
         try:
-            self.cli.error_and_exit("error test message, dont mind about it :)")
+            CLI.error_and_exit("error test message, dont mind about it :)")
             self.fail("it should not get here")
         except:
             pass
@@ -226,7 +226,7 @@ class CLITest(unittest.TestCase):
     @patch('simple_db_migrate.cli.CLI.msg')
     def test_it_should_show_info_message_and_exit(self, msg_mock):
         try:
-            self.cli.info_and_exit("info test message, dont mind about it :)")
+            CLI.info_and_exit("info test message, dont mind about it :)")
             self.fail("it should not get here")
         except:
             pass
