@@ -13,9 +13,8 @@ if sys.stdout.encoding != 'UTF-8':
     sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 
 def run(args=None):
-    cli = CLI()
     try:
-        (options, args) = cli.parse(args)
+        (options, args) = CLI.parse(args)
 
         if options.simple_db_migrate_version:
             msg = 'simple-db-migrate v%s' % SIMPLE_DB_MIGRATE_VERSION
