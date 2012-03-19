@@ -7,7 +7,6 @@ class CLITest(unittest.TestCase):
 
     def setUp(self):
         self.color = CLI.color
-        self.cli = CLI()
 
     def tearDown(self):
         CLI.color = self.color
@@ -156,13 +155,13 @@ class CLITest(unittest.TestCase):
         self.assertEqual(True, CLI.parse(["--utc-timestamp"])[0].utc_timestamp)
 
     def test_it_should_not_has_a_default_value_for_database_engine(self):
-        self.assertEqual(None, self.cli.parse([])[0].database_engine)
+        self.assertEqual(None, CLI.parse([])[0].database_engine)
 
     def test_it_should_accept_database_engine_options(self):
         self.assertEqual("engine_value", CLI.parse(["--db-engine", "engine_value"])[0].database_engine)
 
     def test_it_should_not_has_a_default_value_for_database_version_table(self):
-        self.assertEqual(None, self.cli.parse([])[0].database_version_table)
+        self.assertEqual(None, CLI.parse([])[0].database_version_table)
 
     def test_it_should_accept_database_version_table_options(self):
         self.assertEqual("version_table_value", CLI.parse(["--db-version-table", "version_table_value"])[0].database_version_table)
