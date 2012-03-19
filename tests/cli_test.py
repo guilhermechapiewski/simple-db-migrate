@@ -7,7 +7,6 @@ class CLITest(unittest.TestCase):
 
     def setUp(self):
         self.color = CLI.color
-        self.cli = CLI()
 
     def tearDown(self):
         CLI.color = self.color

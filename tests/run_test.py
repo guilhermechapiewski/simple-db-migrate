@@ -1,4 +1,3 @@
-import runpy
 import unittest
 import simple_db_migrate
 import os
@@ -35,7 +34,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
     def test_it_should_use_cli_to_parse_arguments(self, parse_mock):
         parse_mock.return_value = (Mock(simple_db_migrate_version=True), [])
         try:
-            simple_db_migrate.run()
+            simple_db_migrate.run_from_argv()
         except SystemExit, e:
             pass
 
@@ -44,7 +43,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
     @patch('sys.stdout', new_callable=StringIO)
     def test_it_should_print_simple_db_migrate_version_and_exit(self, stdout_mock):
         try:
-            simple_db_migrate.run(["-v"])
+            simple_db_migrate.run_from_argv(["-v"])
         except SystemExit, e:
             self.assertEqual(0, e.code)
 
@@ -53,29 +52,29 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
     @patch('simple_db_migrate.cli.CLI.show_colors')
     def test_it_should_activate_use_of_colors(self, show_colors_mock):
         try:
-            simple_db_migrate.run(["--color"])
+            simple_db_migrate.run_from_argv(["--color"])
         except SystemExit, e:
             pass
 
         self.assertEqual(1, show_colors_mock.call_count)
 
-    @patch('simple_db_migrate.cli.CLI.parse')
+    @patch('simple_db_migrate.cli.CLI.show_colors')
     @patch('sys.stdout', new_callable=StringIO)
-    def test_it_should_print_message_and_exit_when_user_interrupt_execution(self, stdout_mock, parse_mock):
-        parse_mock.side_effect = KeyboardInterrupt()
+    def test_it_should_print_message_and_exit_when_user_interrupt_execution(self, stdout_mock, show_colors_mock):
+        show_colors_mock.side_effect = KeyboardInterrupt()
         try:
-            simple_db_migrate.run(["-v"])
+            simple_db_migrate.run_from_argv(["--color"])
         except SystemExit, e:
             self.assertEqual(0, e.code)
 
         self.assertEqual('\nExecution interrupted by user...\n\n', stdout_mock.getvalue())
 
-    @patch('simple_db_migrate.cli.CLI.parse')
+    @patch('simple_db_migrate.cli.CLI.show_colors')
     @patch('sys.stdout', new_callable=StringIO)
-    def test_it_should_print_message_and_exit_when_user_an_error_happen(self, stdout_mock, parse_mock):
-        parse_mock.side_effect = Exception('occur an error')
+    def test_it_should_print_message_and_exit_when_user_an_error_happen(self, stdout_mock, show_colors_mock):
+        show_colors_mock.side_effect = Exception('occur an error')
         try:
-            simple_db_migrate.run(["-v"])
+            simple_db_migrate.run_from_argv(["--color"])
         except SystemExit, e:
             self.assertEqual(1, e.code)
 
@@ -85,7 +84,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
     @patch.object(simple_db_migrate.main.Main, '__init__', return_value=None)
     @patch.object(simple_db_migrate.helpers.Utils, 'get_variables_from_file', return_value = {'DATABASE_HOST':'host', 'DATABASE_USER': 'root', 'DATABASE_PASSWORD':'', 'DATABASE_NAME':'database', 'DATABASE_MIGRATIONS_DIR':'.'})
     def test_it_should_read_configuration_file_using_fileconfig_class_and_execute_with_default_configuration(self, get_variables_from_file_mock, main_mock, execute_mock):
-        simple_db_migrate.run(["-c", os.path.abspath('sample.conf')])
+        simple_db_migrate.run_from_argv(["-c", os.path.abspath('sample.conf')])
 
         get_variables_from_file_mock.assert_called_with(os.path.abspath('sample.conf'))
 
@@ -118,7 +117,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
     @patch.object(simple_db_migrate.main.Main, 'execute')
     @patch.object(simple_db_migrate.main.Main, '__init__', return_value=None)
     def test_it_should_get_configuration_exclusively_from_args_if_not_use_configuration_file_using_config_class_and_execute_with_default_configuration(self, main_mock, execute_mock):
-        simple_db_migrate.run(['--db-host', 'host', '--db-name', 'name', '--db-user', 'user', '--db-password', 'pass', '--db-engine', 'engine', '--db-migrations-dir', '.:/tmp:../migration'])
+        simple_db_migrate.run_from_argv(['--db-host', 'host', '--db-name', 'name', '--db-user', 'user', '--db-password', 'pass', '--db-engine', 'engine', '--db-migrations-dir', '.:/tmp:../migration'])
 
         self.assertEqual(1, execute_mock.call_count)
         execute_mock.assert_called_with()
@@ -150,7 +149,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
     @patch.object(simple_db_migrate.main.Main, '__init__', return_value=None)
     @patch.object(simple_db_migrate.helpers.Utils, 'get_variables_from_file', return_value = {'DATABASE_HOST':'host', 'DATABASE_USER': 'root', 'DATABASE_PASSWORD':'', 'DATABASE_NAME':'database', 'DATABASE_MIGRATIONS_DIR':'.'})
     def test_it_should_use_log_level_as_specified(self, import_file_mock, main_mock, execute_mock):
-        simple_db_migrate.run(["-c", os.path.abspath('sample.conf'), '--log-level', 4])
+        simple_db_migrate.run_from_argv(["-c", os.path.abspath('sample.conf'), '--log-level', 4])
         config_used = main_mock.call_args[0][0]
         self.assertEqual(4, config_used.get('log_level'))
 
@@ -158,7 +157,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
     @patch.object(simple_db_migrate.main.Main, '__init__', return_value=None)
     @patch.object(simple_db_migrate.helpers.Utils, 'get_variables_from_file', return_value = {'DATABASE_HOST':'host', 'DATABASE_USER': 'root', 'DATABASE_PASSWORD':'', 'DATABASE_NAME':'database', 'DATABASE_MIGRATIONS_DIR':'.'})
     def test_it_should_use_log_level_as_2_when_in_paused_mode(self, import_file_mock, main_mock, execute_mock):
-        simple_db_migrate.run(["-c", os.path.abspath('sample.conf'), '--pause'])
+        simple_db_migrate.run_from_argv(["-c", os.path.abspath('sample.conf'), '--pause'])
         config_used = main_mock.call_args[0][0]
         self.assertEqual(2, config_used.get('log_level'))
 
@@ -168,7 +167,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
     @patch.object(simple_db_migrate.main.Main, '__init__', return_value=None)
     @patch.object(simple_db_migrate.helpers.Utils, 'get_variables_from_file', return_value = {'DATABASE_HOST':'host', 'DATABASE_USER': 'root', 'DATABASE_PASSWORD':'<<ask_me>>', 'DATABASE_NAME':'database', 'DATABASE_MIGRATIONS_DIR':'.'})
     def test_it_should_ask_for_password_when_configuration_is_as_ask_me(self, import_file_mock, main_mock, execute_mock, stdout_mock, getpass_mock):
-        simple_db_migrate.run(["-c", os.path.abspath('sample.conf')])
+        simple_db_migrate.run_from_argv(["-c", os.path.abspath('sample.conf')])
         config_used = main_mock.call_args[0][0]
         self.assertEqual('password_asked', config_used.get('database_password'))
         self.assertEqual('\nPlease inform password to connect to database "root@host:database"\n', stdout_mock.getvalue())
@@ -177,7 +176,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
     @patch.object(simple_db_migrate.main.Main, '__init__', return_value=None)
     @patch.object(simple_db_migrate.helpers.Utils, 'get_variables_from_file', return_value = {'DATABASE_HOST':'host', 'DATABASE_USER': 'root', 'DATABASE_PASSWORD':'<<ask_me>>', 'DATABASE_NAME':'database', 'DATABASE_MIGRATIONS_DIR':'.'})
     def test_it_should_use_password_from_command_line_when_configuration_is_as_ask_me(self, import_file_mock, main_mock, execute_mock):
-        simple_db_migrate.run(["-c", os.path.abspath('sample.conf'), '--password', 'xpto_pass'])
+        simple_db_migrate.run_from_argv(["-c", os.path.abspath('sample.conf'), '--password', 'xpto_pass'])
         config_used = main_mock.call_args[0][0]
         self.assertEqual('xpto_pass', config_used.get('database_password'))
 
@@ -185,7 +184,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
     @patch.object(simple_db_migrate.main.Main, '__init__', return_value=None)
     @patch.object(simple_db_migrate.helpers.Utils, 'get_variables_from_file', return_value = {'force_execute_old_migrations_versions':True, 'label_version':'label', 'DATABASE_HOST':'host', 'DATABASE_USER': 'root', 'DATABASE_PASSWORD':'', 'DATABASE_NAME':'database', 'DATABASE_MIGRATIONS_DIR':'.'})
     def test_it_should_use_values_from_config_file_in_replacement_for_command_line(self, import_file_mock, main_mock, execute_mock):
-        simple_db_migrate.run(["-c", os.path.abspath('sample.conf')])
+        simple_db_migrate.run_from_argv(["-c", os.path.abspath('sample.conf')])
         config_used = main_mock.call_args[0][0]
         self.assertEqual('label', config_used.get('label_version'))
         self.assertEqual(True, config_used.get('force_execute_old_migrations_versions'))
