@@ -1,23 +1,45 @@
 #-*- coding:utf-8 -*-
+
 import os
-import glob
 import fnmatch
-from django.core.management.base import BaseCommand
+from optparse import make_option
+
+from django import db
 from django.conf import settings
+from django.core.management.base import BaseCommand
+
 import simple_db_migrate
 
 class Command(BaseCommand):
     help = "Migrate databases."
     args = "[db_migrate_options]"
-    option_list = BaseCommand.option_list + simple_db_migrate.cli.CLI.options_to_parser()
+
+    option_list = BaseCommand.option_list + simple_db_migrate.cli.CLI.options_to_parser() + (
+        make_option(
+            '--database', action='store', dest='database',
+            default=getattr(db, 'DEFAULT_DB_ALIAS', 'default'),
+            help='Nominates a database to synchronize. Defaults to the "default" database.'
+        ),
+    )
 
     def handle(self, *args, **options):
         if not options.get('database_migrations_dir'):
             options['database_migrations_dir'] = Command._locate_migrations()
-        for key in ['database_host', 'database_name', 'database_user', 'database_password']:
-            if options.get(key) == None:
-                options[key] = getattr(settings, key.upper()) if hasattr(settings, key.upper()) else None
+
+        for key in ['host', 'name', 'user', 'password']:
+            options_key = 'database_' + key
+            if options.get(options_key) == None:
+                options[options_key] = Command._get_database_option(options, key)
+
         simple_db_migrate.run(options=options)
+
+    @staticmethod
+    def _get_database_option(options, key):
+        # Handles Django 1.2+ database settings
+        if hasattr(settings, 'DATABASES'):
+            return settings.DATABASES[options.get('database')].get(key.upper(), '')
+        # Fallback for Django 1.1 or lower
+        return getattr(settings, 'DATABASE_' + key.upper(), None)
 
     @staticmethod
     def _locate_migrations():
