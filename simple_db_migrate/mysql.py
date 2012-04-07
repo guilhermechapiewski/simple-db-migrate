@@ -111,8 +111,8 @@ class MySQL(object):
         db = self.__mysql_connect(False)
         try:
             db.query("set foreign_key_checks=0; drop database if exists `%s`;" % self.__mysql_db)
-        except Exception:
-            raise Exception("can't drop database '%s'; database doesn't exist" % self.__mysql_db)
+        except Exception, e:
+            raise Exception("can't drop database '%s'; \n%s" % (self.__mysql_db, str(e)))
         finally:
             db.close()
 

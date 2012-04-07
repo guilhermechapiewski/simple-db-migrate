@@ -101,7 +101,7 @@ class MySQLTest(unittest.TestCase):
             mysql = MySQL(self.config_mock, self.db_driver_mock)
             self.fail("it should not get here")
         except Exception, e:
-            self.assertEqual("can't drop database 'migration_test'; database doesn't exist", str(e))
+            self.assertEqual("can't drop database 'migration_test'; \nerror when dropping", str(e))
 
         expected_query_calls = [
             call('set foreign_key_checks=0; drop database if exists `migration_test`;')
