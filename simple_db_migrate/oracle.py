@@ -62,8 +62,6 @@ class Oracle(object):
             conn.close()
             raise MigrationException("error executing migration: %s" % e, curr_statement)
 
-        return execution_log
-
     def __change_db_version(self, version, migration_file_name, sql_up, sql_down, up=True, execution_log=None, label_version=None):
         params = {}
         params['version'] = version
