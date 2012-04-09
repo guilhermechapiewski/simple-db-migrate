@@ -4,6 +4,22 @@ from core import Migration, SimpleDBMigrate
 from helpers import Lists
 from config import Config
 
+"""
+The sgbd class should implement the following methods
+- change(self, sql, new_db_version, migration_file_name, sql_up, sql_down, up=True, execution_log=None, label_version=None)
+  executes the migration (up or down) and records the change on version table
+- get_all_schema_migrations(self)
+  return all migrations saved on version table
+- get_all_schema_versions(self)
+  return all versions saved on version table
+- get_current_schema_version(self)
+  return the current schema version
+- get_version_id_from_version_number(self, version)
+  return the id from an specific version
+- get_version_number_from_label(self, label)
+  return the version of the last migration executed under the label
+"""
+
 class Main(object):
 
     def __init__(self, config, sgdb=None):
@@ -16,10 +32,10 @@ class Main(object):
 
         self.sgdb = sgdb
         if self.sgdb is None and not self.config.get("new_migration", None):
-            if self.config.get("db_engine") is 'mysql':
+            if self.config.get("db_engine") == 'mysql':
                 from mysql import MySQL
                 self.sgdb = MySQL(config)
-            elif self.config.get("db_engine") is 'oracle':
+            elif self.config.get("db_engine") == 'oracle':
                 from oracle import Oracle
                 self.sgdb = Oracle(config)
             else:
