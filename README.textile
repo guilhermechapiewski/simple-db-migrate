@@ -18,6 +18,11 @@ After installing, for usage tips type:
     $ db-migrate --help
 </pre>
 
+h2. Upgrading simple-db-migrate version
+
+The 1.5.0 version removed some legacy code which updates the version table from the old format to the actual.
+To whom use simple-db-migrate for MySQL or Oracle with version less than 1.4.1.1, and the Bruno Caimar version for MS-SQL Server should use the version 1.4.4 before use the new version, to have the version table updated.
+
 h2. Understanding how it works
 
 The first thing you'll need is a migration file. There are some example migration files on the "example" directory. The migration files have the following format:
