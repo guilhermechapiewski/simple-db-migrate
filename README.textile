@@ -108,7 +108,7 @@ You can set default values to internals configurations on your configuration fil
 | DATABASE_USER | username used to connect to database and execute the commands | - | - |
 | DATABASE_PASSWORD | password used to connect to database and execute the commands | - | - |
 | DATABASE_NAME | database name used where the commands will be executed | - | - |
-| DATABASE_ENGINE | the database type where migrations will me executed | mysql | oracle,mysql  |
+| DATABASE_ENGINE | the database type where migrations will me executed | mysql | oracle,mysql,mssql  |
 | DATABASE_VERSION_TABLE | the table name used to save database versions | __db_version__ | any name supported by the database |
 | UTC_TIMESTAMP | create migrations files using UTC time to format the name | False | True,False |
 | DATABASE_MIGRATIONS_DIR | directories to look for migrations files separated by _:_ | - | - |
@@ -125,9 +125,14 @@ You can set default values to internals configurations on your configuration fil
 | show_sql | if True show executed sql commands | False | True,False |
 | show_sql_only | if True only show the sqls, but not execute them | False | True,False |
 
+h2. Supported databases engines
+
+You can use this project to run migrations on MySQL, Oracle and MS-SQL server databases.
+The default database engine is MySQL, to use the others databases set the DATABASE_ENGINE constant on the configuration file.
+
 h2. Roadmap, bug reporting and feature requests
 
-For detailed info about future versions, bug reporting and feature requests, go to the project's ticket system at "Lighthouse":http://simple-db-migrate.lighthouseapp.com/projects/25437-simple-db-migrate/overview.
+For detailed info about future versions, bug reporting and feature requests, go to "issues":https://github.com/guilhermechapiewski/simple-db-migrate/issues page.
 
 h2. Other questions
 

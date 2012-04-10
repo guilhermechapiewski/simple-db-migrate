@@ -1,0 +1,11 @@
+SQL_UP = """
+CREATE TABLE chimps (
+  id int NOT NULL identity,
+  first_name varchar(255) default NULL,
+  PRIMARY KEY  (id)
+);
+"""
+
+SQL_DOWN = """
+DROP TABLE chimps;
+"""

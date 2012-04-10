@@ -1,0 +1,11 @@
+SQL_UP = """
+CREATE TABLE aleatory (
+  id int NOT NULL identity,
+  name varchar(255) default NULL,
+  PRIMARY KEY  (id)
+);
+"""
+
+SQL_DOWN = """
+DROP TABLE aleatory;
+"""

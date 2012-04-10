@@ -1,0 +1,7 @@
+SQL_UP = """
+ALTER TABLE users add age int NULL;
+"""
+
+SQL_DOWN = """
+ALTER TABLE users drop column age;
+"""

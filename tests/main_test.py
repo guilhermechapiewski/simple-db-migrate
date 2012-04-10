@@ -49,6 +49,12 @@ class MainTest(BaseTest):
         Main(config=config)
         oracle_mock.assert_called_with(config)
 
+    @patch('simple_db_migrate.mssql.MSSQL')
+    def test_it_should_use_mssql_class_if_choose_this_engine(self, mssql_mock):
+        config=Config({'log_dir':'.', 'db_engine': 'mssql', "migrations_dir":['.']})
+        Main(config=config)
+        mssql_mock.assert_called_with(config)
+
     def test_it_should_raise_error_if_config_is_not_an_instance_of_simple_db_migrate_config(self):
         self.assertRaisesWithMessage(Exception, "config must be an instance of simple_db_migrate.config.Config", Main, config={})
 
