@@ -132,7 +132,7 @@ class MainTest(BaseTest):
     @patch('simple_db_migrate.main.LOG')
     @patch('simple_db_migrate.main.CLI')
     def test_it_should_create_new_migration_with_different_encoding(self, cli_mock, log_mock, simpledbmigrate_mock, migration_mock):
-        self.initial_config.update({'new_migration':'new_test_migration', 'database_engine': 'invalid_engine', "database_migrations_dir":['migrations', '.'], 'db_script_encoding': 'iso8859-1'})
+        self.initial_config.update({'new_migration':'new_test_migration', 'database_engine': 'invalid_engine', "database_migrations_dir":['migrations', '.'], 'database_script_encoding': 'iso8859-1'})
         config=Config(self.initial_config)
         main = Main(sgdb=Mock(), config=config)
         main.execute()

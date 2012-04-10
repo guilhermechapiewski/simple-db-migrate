@@ -12,8 +12,8 @@ class OracleTest(unittest.TestCase):
         self.fetchone_returns = {'select count(*) from db_version': [0]}
         self.close_returns = {}
         self.last_execute_command = '';
-        self.config_dict = {'db_script_encoding': 'utf8',
-                   'db_encoding': 'American_America.UTF8',
+        self.config_dict = {'database_script_encoding': 'utf8',
+                   'database_encoding': 'American_America.UTF8',
                    'database_host': 'SID',
                    'database_user': 'root',
                    'database_password': '',

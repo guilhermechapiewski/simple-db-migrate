@@ -103,7 +103,7 @@ class SimpleDBMigrate(object):
 
     def __init__(self, config=None):
         self._migrations_dir = config.get("database_migrations_dir")
-        self._script_encoding=config.get("db_script_encoding", "utf-8")
+        self._script_encoding=config.get("database_script_encoding", "utf-8")
         self.all_migrations = None
 
     def get_all_migrations(self):

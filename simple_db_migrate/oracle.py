@@ -13,8 +13,8 @@ class Oracle(object):
     __re_anonymous = re.compile("(?ims)(?P<pre>.*?)(?P<principal>(declare[ \n\t\r]+.*?)?begin.*?\n[ \n\t\r]*)/([ \n\t\r]+(?P<pos>.*)|$)")
 
     def __init__(self, config=None, driver=None, get_pass=getpass, std_in=sys.stdin):
-        self.__script_encoding = config.get("db_script_encoding", "utf8")
-        self.__encoding = config.get("db_encoding", "American_America.UTF8")
+        self.__script_encoding = config.get("database_script_encoding", "utf8")
+        self.__encoding = config.get("database_encoding", "American_America.UTF8")
         self.__host = config.get("database_host")
         self.__user = config.get("database_user")
         self.__passwd = config.get("database_password")

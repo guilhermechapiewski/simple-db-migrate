@@ -12,8 +12,8 @@ class MySQLTest(unittest.TestCase):
         self.fetchone_returns = {'select count(*) from __db_version__;': [0]}
         self.close_returns = {}
         self.last_execute_command = '';
-        self.config_dict = {'db_script_encoding': 'utf8',
-                   'db_encoding': 'utf8',
+        self.config_dict = {'database_script_encoding': 'utf8',
+                   'database_encoding': 'utf8',
                    'database_host': 'localhost',
                    'database_user': 'root',
                    'database_password': '',

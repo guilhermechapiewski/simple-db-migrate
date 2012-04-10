@@ -5,13 +5,13 @@ from helpers import Utils
 class MSSQL(object):
 
     def __init__(self, config=None, mssql_driver=None):
-        self.__mssql_script_encoding = config.get("db_script_encoding", "utf8")
-        self.__mssql_encoding = config.get("db_encoding", "utf8")
-        self.__mssql_host = config.get("db_host")
-        self.__mssql_user = config.get("db_user")
-        self.__mssql_passwd = config.get("db_password")
-        self.__mssql_db = config.get("db_name")
-        self.__version_table = config.get("db_version_table")
+        self.__mssql_script_encoding = config.get("database_script_encoding", "utf8")
+        self.__mssql_encoding = config.get("database_encoding", "utf8")
+        self.__mssql_host = config.get("database_host")
+        self.__mssql_user = config.get("database_user")
+        self.__mssql_passwd = config.get("database_password")
+        self.__mssql_db = config.get("database_name")
+        self.__version_table = config.get("database_version_table")
 
         self.__mssql_driver = mssql_driver
         if not mssql_driver:
@@ -24,10 +24,10 @@ class MSSQL(object):
         self._create_database_if_not_exists()
         self._create_version_table_if_not_exists()
 
-    def __mssql_connect(self, connect_using_db_name=True):
+    def __mssql_connect(self, connect_using_database_name=True):
         try:
             conn = self.__mssql_driver.connect(server=self.__mssql_host, user=self.__mssql_user, password=self.__mssql_passwd, charset=self.__mssql_encoding)
-            if connect_using_db_name:
+            if connect_using_database_name:
                 conn.select_db(self.__mssql_db)
             return conn
         except Exception, e:

@@ -5,8 +5,8 @@ from helpers import Utils
 class MySQL(object):
 
     def __init__(self, config=None, mysql_driver=None):
-        self.__mysql_script_encoding = config.get("db_script_encoding", "utf8")
-        self.__mysql_encoding = config.get("db_encoding", "utf8")
+        self.__mysql_script_encoding = config.get("database_script_encoding", "utf8")
+        self.__mysql_encoding = config.get("database_encoding", "utf8")
         self.__mysql_host = config.get("database_host")
         self.__mysql_user = config.get("database_user")
         self.__mysql_passwd = config.get("database_password")
