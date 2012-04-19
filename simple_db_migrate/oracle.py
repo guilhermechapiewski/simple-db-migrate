@@ -48,7 +48,11 @@ class Oracle(object):
         cursor = conn.cursor()
         curr_statement = None
         try:
-            for statement in Oracle._parse_sql_statements(sql):
+            statments = Oracle._parse_sql_statements(sql)
+            if len(sql.strip(' \t\n\r')) != 0 and len(statments) == 0:
+                raise Exception("invalid sql syntax '%s'" % sql)
+
+            for statement in statments:
                 curr_statement = statement
                 affected_rows = cursor.execute(statement.encode(self.__script_encoding))
                 if execution_log:
@@ -136,7 +140,7 @@ class Oracle(object):
                 else:
                     last_statement = curr_statement
 
-        return [s.strip() for s in all_statements if s.strip() != ""]
+        return [s.strip() for s in all_statements if ((s.strip() != "") and (last_statement == ""))]
 
     def _drop_database(self):
         sql = """\

@@ -4,8 +4,9 @@ import simple_db_migrate
 from mock import patch, Mock, MagicMock, call
 from simple_db_migrate.config import *
 from simple_db_migrate.mssql import *
+from tests import BaseTest, create_file, create_migration_file, delete_files, create_config
 
-class MSSQLTest(unittest.TestCase):
+class MSSQLTest(BaseTest):
 
     def setUp(self):
         self.execute_returns = {'select count(*) from __db_version__;': 0}
@@ -164,6 +165,11 @@ class MSSQLTest(unittest.TestCase):
             call('select count(*) from __db_version__;')
         ]
         self.assertEqual(expected_execute_calls, self.db_mock.execute_scalar.mock_calls)
+
+    def test_it_should_raise_whem_migration_sql_has_a_syntax_error(self):
+        mssql = MSSQL(self.config_mock, self.db_driver_mock)
+        self.assertRaisesWithMessage(Exception, "error executing migration: invalid sql syntax 'create table foo(); create table spam());'", mssql.change,
+                                     "create table foo(); create table spam());", "20090212112104", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam());", "drop table spam;", label_version="label")
 
     def test_it_should_stop_process_when_an_error_occur_during_database_change(self):
         self.execute_returns["insert into spam"] = Exception("invalid sql")

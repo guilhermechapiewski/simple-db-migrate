@@ -37,7 +37,11 @@ class MSSQL(object):
         db = self.__mssql_connect()
         curr_statement = None
         try:
-            for statement in MSSQL._parse_sql_statements(sql):
+            statments = MSSQL._parse_sql_statements(sql)
+            if len(sql.strip(' \t\n\r')) != 0 and len(statments) == 0:
+                raise Exception("invalid sql syntax '%s'" % sql)
+
+            for statement in statments:
                 curr_statement = statement
                 db.execute_non_query(statement)
                 affected_rows = db.rows_affected
@@ -72,7 +76,7 @@ class MSSQL(object):
             else:
                 last_statement = curr_statement
 
-        return [s.strip() for s in all_statements if s.strip() != ""]
+        return [s.strip() for s in all_statements if ((s.strip() != "") and (last_statement == ""))]
 
     def _drop_database(self):
         db = self.__mssql_connect(False)
