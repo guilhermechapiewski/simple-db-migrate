@@ -6,7 +6,7 @@ from cli import CLI
 from config import FileConfig, Config
 from main import Main
 
-SIMPLE_DB_MIGRATE_VERSION = '1.5.0'
+SIMPLE_DB_MIGRATE_VERSION = '1.5.1'
 
 # fixing print in non-utf8 terminals
 if sys.stdout.encoding != 'UTF-8':

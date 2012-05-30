@@ -1,3 +1,6 @@
+### 1.5.1 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Wed, 30 May 2012 17:50:00 -0300
+- Fixing entry point db-migrate
+
 ### 1.5.0 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Tue, 10 Apr 2012 02:00:00 -0300
 - Removing some legacy code which updates version table, check *Upgrading simple-db-migrate version* on README.textile
 - Make configuration file optional, all configuration may be set by command line

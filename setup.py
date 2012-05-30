@@ -19,7 +19,7 @@ setup(
     # generate script automatically
     entry_points = {
         'console_scripts': [
-            'db-migrate = simple_db_migrate:run',
+            'db-migrate = simple_db_migrate:run_from_argv',
         ],
     },
 
