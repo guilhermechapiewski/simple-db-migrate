@@ -306,6 +306,7 @@ class MigrationTest(BaseTest):
 
     def test_it_should_validate_if_filename_has_only_alphanumeric_chars_and_migration_extension(self):
         self.assertTrue(Migration.is_file_name_valid('20090214120600_valid_migration_file_name.migration'))
+        self.assertFalse(Migration.is_file_name_valid('200902141206000_valid_migration_file_name.migration'))
         self.assertFalse(Migration.is_file_name_valid('20090214120600_invalid_migration_file_name.migration~'))
         self.assertFalse(Migration.is_file_name_valid('simple-db-migrate.conf'))
         self.assertFalse(Migration.is_file_name_valid('abra.cadabra'))
