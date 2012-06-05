@@ -223,42 +223,42 @@ class MigrationTest(BaseTest):
 
     def test_it_should_get_sql_command_containing_non_ascii_characters(self):
         file_name = '20090508155742_test_migration.migration'
-        create_file(file_name, content='SQL_UP=u"some sql command ç"\nSQL_DOWN=u"other sql command ã"')
+        create_file(file_name, content='SQL_UP=u"some sql command ç"\nSQL_DOWN=u"other sql command ã"'.decode('utf-8'))
         migration = Migration(file_name)
         self.assertEqual(u"some sql command ç", migration.sql_up)
         self.assertEqual(u"other sql command ã", migration.sql_down)
 
     def test_it_should_get_sql_command_containing_non_ascii_characters_and_python_code(self):
         file_name = '20090508155742_test_migration.migration'
-        create_file(file_name, content='import os\nSQL_UP=u"some sql command ç %s" % os.path.abspath(\'.\')\nSQL_DOWN=u"other sql command ã %s" % os.path.abspath(\'.\')')
+        create_file(file_name, content='import os\nSQL_UP=u"some sql command ç %s" % os.path.abspath(\'.\')\nSQL_DOWN=u"other sql command ã %s" % os.path.abspath(\'.\')'.decode('utf-8')   )
         migration = Migration(file_name)
         self.assertEqual(u"some sql command ç %s" % os.path.abspath('.'), migration.sql_up)
         self.assertEqual(u"other sql command ã %s" % os.path.abspath('.'), migration.sql_down)
 
     def test_it_should_get_sql_command_containing_non_ascii_characters_and_python_code_without_scope(self):
         file_name = '20090508155742_test_migration.migration'
-        create_file(file_name, content='SQL_UP=u"some sql command ç %s" % os.path.abspath(\'.\')\nSQL_DOWN=u"other sql command ã %s" % os.path.abspath(\'.\')')
+        create_file(file_name, content='SQL_UP=u"some sql command ç %s" % os.path.abspath(\'.\')\nSQL_DOWN=u"other sql command ã %s" % os.path.abspath(\'.\')'.decode('utf-8'))
         migration = Migration(file_name)
         self.assertEqual(u"some sql command ç %s" % os.path.abspath('.'), migration.sql_up)
         self.assertEqual(u"other sql command ã %s" % os.path.abspath('.'), migration.sql_down)
 
     def test_it_should_get_sql_command_containing_non_ascii_characters_with_non_utf8_encoding(self):
         file_name = '20090508155742_test_migration.migration'
-        create_file(file_name, content='SQL_UP=u"some sql command ç"\nSQL_DOWN=u"other sql command ã"', encoding='iso8859-1')
+        create_file(file_name, content='SQL_UP=u"some sql command ç"\nSQL_DOWN=u"other sql command ã"'.decode('iso8859-1'), encoding='iso8859-1')
         migration = Migration(file_name, script_encoding='iso8859-1')
         self.assertEqual(u"some sql command \xc3\xa7", migration.sql_up)
         self.assertEqual(u"other sql command \xc3\xa3", migration.sql_down)
 
     def test_it_should_get_sql_command_containing_non_ascii_characters_and_python_code_with_non_utf8_encoding(self):
         file_name = '20090508155742_test_migration.migration'
-        create_file(file_name, content='import os\nSQL_UP=u"some sql command ç %s" % os.path.abspath(\'.\')\nSQL_DOWN=u"other sql command ã %s" % os.path.abspath(\'.\')', encoding='iso8859-1')
+        create_file(file_name, content='import os\nSQL_UP=u"some sql command ç %s" % os.path.abspath(\'.\')\nSQL_DOWN=u"other sql command ã %s" % os.path.abspath(\'.\')'.decode('iso8859-1'), encoding='iso8859-1')
         migration = Migration(file_name, script_encoding='iso8859-1')
         self.assertEqual(u"some sql command \xc3\xa7 %s" % os.path.abspath('.'), migration.sql_up)
         self.assertEqual(u"other sql command \xc3\xa3 %s" % os.path.abspath('.'), migration.sql_down)
 
     def test_it_should_get_sql_command_containing_non_ascii_characters_and_python_code_without_scope_with_non_utf8_encoding(self):
         file_name = '20090508155742_test_migration.migration'
-        create_file(file_name, content='SQL_UP=u"some sql command ç %s" % os.path.abspath(\'.\')\nSQL_DOWN=u"other sql command ã %s" % os.path.abspath(\'.\')', encoding='iso8859-1')
+        create_file(file_name, content='SQL_UP=u"some sql command ç %s" % os.path.abspath(\'.\')\nSQL_DOWN=u"other sql command ã %s" % os.path.abspath(\'.\')'.decode('iso8859-1'), encoding='iso8859-1')
         migration = Migration(file_name, script_encoding='iso8859-1')
         self.assertEqual(u"some sql command \xc3\xa7 %s" % os.path.abspath('.'), migration.sql_up)
         self.assertEqual(u"other sql command \xc3\xa3 %s" % os.path.abspath('.'), migration.sql_down)
