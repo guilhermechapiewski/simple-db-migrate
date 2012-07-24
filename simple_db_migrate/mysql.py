@@ -172,7 +172,7 @@ class MySQL(object):
     def get_version_id_from_version_number(self, version):
         db = self.__mysql_connect()
         cursor = db.cursor()
-        cursor.execute("select id from %s where version = '%s';" % (self.__version_table, version))
+        cursor.execute("select id from %s where version = '%s' order by id desc;" % (self.__version_table, version))
         result = cursor.fetchone()
         id = result and int(result[0]) or None
         cursor.close()

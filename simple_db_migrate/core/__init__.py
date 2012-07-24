@@ -56,9 +56,20 @@ class Migration(object):
     def compare_to(self, another_migration):
         if self.version < another_migration.version:
             return -1
-        elif self.version > another_migration.version:
+        if self.version > another_migration.version:
+            return 1
+        if self.file_name < another_migration.file_name:
+            return -1
+        if self.file_name > another_migration.file_name:
             return 1
         return 0
+
+    def __eq__(self, other):
+        dict_1 = self.__dict__
+        dict_2 = other.__dict__
+        dict_1['id'] = dict_1['abspath'] = None
+        dict_2['id'] = dict_2['abspath'] = None
+        return dict_1 == dict_2
 
     @staticmethod
     def sort_migrations_list(migrations, reverse=False):

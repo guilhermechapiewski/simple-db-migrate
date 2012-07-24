@@ -1,0 +1,7 @@
+SQL_UP = u"""
+ALTER TABLE users add column address varchar(500) default NULL;
+"""
+
+SQL_DOWN = u"""
+ALTER TABLE users drop column address;
+"""

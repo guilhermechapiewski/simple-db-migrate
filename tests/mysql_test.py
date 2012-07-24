@@ -395,7 +395,7 @@ class MySQLTest(BaseTest):
             call('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))'),
             call('select count(*) from __db_version__;'),
             call('insert into __db_version__ (version) values ("0")'),
-            call("select id from __db_version__ where version = 'xxx';")
+            call("select id from __db_version__ where version = 'xxx' order by id desc;")
         ]
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
         self.assertEqual(4, self.cursor_mock.close.call_count)

@@ -731,7 +731,7 @@ class OracleTest(BaseTest):
             call('select version from db_version'),
             call('select count(*) from db_version'),
             call("insert into db_version (id, version) values (db_version_seq.nextval, '0')"),
-            call("select id from db_version where version = 'xxx'")
+            call("select id from db_version where version = 'xxx' order by id desc")
         ]
 
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)

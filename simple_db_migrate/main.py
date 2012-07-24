@@ -126,19 +126,20 @@ class Main(object):
     def _get_migration_files_to_be_executed(self, current_version, destination_version, is_migration_up):
         if current_version == destination_version and not self.config.get("force_execute_old_migrations_versions", False):
             return []
-        schema_versions = self.sgdb.get_all_schema_versions()
-        migration_versions = self.db_migrate.get_all_migration_versions()
+
+        schema_migrations = self.sgdb.get_all_schema_migrations()
+        available_migrations = self.db_migrate.get_all_migrations()
 
         # migration up
         if is_migration_up:
-            remaining_versions_to_execute = Lists.subtract(migration_versions, schema_versions)
-            remaining_migrations_to_execute = [self.db_migrate.get_migration_from_version_number(version) for version in remaining_versions_to_execute if version <= destination_version]
+            remaining_migrations = Lists.subtract(available_migrations, schema_migrations)
+            remaining_migrations_to_execute = [migration for migration in remaining_migrations if migration.version <= destination_version]
             return remaining_migrations_to_execute
 
         # migration down...
         destination_version_id = self.sgdb.get_version_id_from_version_number(destination_version)
-        migrations = self.sgdb.get_all_schema_migrations()
-        down_migrations_to_execute = [migration for migration in migrations if migration.id > destination_version_id]
+        migration_versions = self.db_migrate.get_all_migration_versions()
+        down_migrations_to_execute = [migration for migration in schema_migrations if migration.id > destination_version_id]
         force_files = self.config.get("force_use_files_on_down", False)
         for migration in down_migrations_to_execute:
             if not migration.sql_down or force_files:

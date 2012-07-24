@@ -156,7 +156,7 @@ class MSSQL(object):
 
     def get_version_id_from_version_number(self, version):
         db = self.__mssql_connect()
-        result = db.execute_row("select id from %s where version = '%s';" % (self.__version_table, version))
+        result = db.execute_row("select id from %s where version = '%s' order by id desc;" % (self.__version_table, version))
         id = result and int(result['id']) or None
         db.close()
         return id

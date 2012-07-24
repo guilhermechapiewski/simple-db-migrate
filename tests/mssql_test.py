@@ -386,7 +386,7 @@ class MSSQLTest(BaseTest):
         self.assertEqual(expected_execute_calls, self.db_mock.execute_scalar.mock_calls)
 
         expected_execute_calls = [
-            call("select id from __db_version__ where version = 'xxx';")
+            call("select id from __db_version__ where version = 'xxx' order by id desc;")
         ]
         self.assertEqual(expected_execute_calls, self.db_mock.execute_row.mock_calls)
 

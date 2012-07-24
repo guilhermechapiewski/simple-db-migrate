@@ -681,9 +681,16 @@ class MainTest(BaseTest):
         self.assertEqual([], main._get_migration_files_to_be_executed('20090214115300', '20090214115300', True))
 
     def test_it_should_check_if_has_any_old_files_to_execute_if_current_and_destiny_version_are_equals_and_force_old_migrations_is_set(self):
+        all_schema_migrations = [
+            Migration(file_name="20090214115100_01_test_migration.migration", version="20090214115100", sql_up="foo 1", sql_down="bar 1", id=1),
+            Migration(file_name="20090214115200_02_test_migration.migration", version="20090214115200", sql_up="foo 2", sql_down="bar 2", id=2),
+            Migration(file_name="20090214115300_03_test_migration.migration", version="20090214115300", sql_up="foo 3", sql_down="bar 3", id=3),
+            Migration(file_name="20090214115600_06_test_migration.migration", version="20090214115600", sql_up="foo 6", sql_down="bar 6", id=6),
+        ]
+
         self.initial_config.update({"schema_version":None, "label_version":None, "database_migrations_dir":['migrations', '.'], 'force_execute_old_migrations_versions':True})
         config=Config(self.initial_config)
-        main = Main(sgdb=Mock(**{'get_all_schema_versions.return_value':['20090214115100', '20090214115200', '20090214115300', '20090214115600']}), config=config)
+        main = Main(sgdb=Mock(**{'get_all_schema_migrations.return_value':all_schema_migrations, 'get_all_schema_versions.return_value':['20090214115100', '20090214115200', '20090214115300', '20090214115600']}), config=config)
         migrations = main._get_migration_files_to_be_executed('20090214115600', '20090214115600', True)
 
         self.assertEqual(2, len(migrations))
@@ -691,15 +698,39 @@ class MainTest(BaseTest):
         self.assertEqual('20090214115500_05_test_migration.migration', migrations[1].file_name)
 
     def test_it_should_check_if_has_any_old_files_to_execute_if_current_and_destiny_version_are_different(self):
+        all_schema_migrations = [
+            Migration(file_name="20090214115100_01_test_migration.migration", version="20090214115100", sql_up="foo 1", sql_down="bar 1", id=1),
+            Migration(file_name="20090214115300_03_test_migration.migration", version="20090214115300", sql_up="foo 3", sql_down="bar 3", id=3),
+        ]
+
         self.initial_config.update({"schema_version":None, "label_version":None, "database_migrations_dir":['migrations', '.']})
         config=Config(self.initial_config)
-        main = Main(sgdb=Mock(**{'get_all_schema_versions.return_value':['20090214115100', '20090214115300']}), config=config)
+        main = Main(sgdb=Mock(**{'get_all_schema_migrations.return_value':all_schema_migrations, 'get_all_schema_versions.return_value':['20090214115100', '20090214115300']}), config=config)
         migrations = main._get_migration_files_to_be_executed('20090214115300', '20090214115500', True)
 
         self.assertEqual(3, len(migrations))
         self.assertEqual('20090214115200_02_test_migration.migration', migrations[0].file_name)
         self.assertEqual('20090214115400_04_test_migration.migration', migrations[1].file_name)
         self.assertEqual('20090214115500_05_test_migration.migration', migrations[2].file_name)
+
+    def test_it_should_return_migrations_with_same_version_to_execute(self):
+        self.test_migration_files.append(os.path.abspath(create_migration_file('20090214115400_04_1_same_version_test_migration.migration', 'foo 4_1', 'bar 4_1')))
+
+        all_schema_migrations = [
+            Migration(file_name="20090214115100_01_test_migration.migration", version="20090214115100", sql_up="foo 1", sql_down="bar 1", id=1),
+            Migration(file_name="20090214115300_03_test_migration.migration", version="20090214115300", sql_up="foo 3", sql_down="bar 3", id=3),
+        ]
+
+        self.initial_config.update({"schema_version":None, "label_version":None, "database_migrations_dir":['migrations', '.']})
+        config=Config(self.initial_config)
+        main = Main(sgdb=Mock(**{'get_all_schema_migrations.return_value':all_schema_migrations, 'get_all_schema_versions.return_value':['20090214115100', '20090214115300']}), config=config)
+        migrations = main._get_migration_files_to_be_executed('20090214115300', '20090214115500', True)
+
+        self.assertEqual(4, len(migrations))
+        self.assertEqual('20090214115200_02_test_migration.migration', migrations[0].file_name)
+        self.assertEqual('20090214115400_04_1_same_version_test_migration.migration', migrations[1].file_name)
+        self.assertEqual('20090214115400_04_test_migration.migration', migrations[2].file_name)
+        self.assertEqual('20090214115500_05_test_migration.migration', migrations[3].file_name)
 
     def test_it_should_return_an_empty_list_of_files_to_execute_if_current_and_destiny_version_are_equals_and_is_down(self):
         self.initial_config.update({"schema_version":None, "label_version":None, "database_migrations_dir":['migrations', '.']})
@@ -794,6 +825,44 @@ class MainTest(BaseTest):
         ]
         main = Main(sgdb=Mock(**{'get_all_schema_migrations.return_value':all_schema_migrations, 'get_all_schema_versions.return_value':['20090214115200', '20090214115301', '20090214115400'], 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
         self.assertRaisesWithMessage(Exception, 'impossible to migrate down: one of the versions was not found (20090214115301)', main._get_migration_files_to_be_executed, '20090214115400', '20090214115200', False)
+
+    def test_it_should_return_migrations_with_same_version_to_execute_when_is_down(self):
+        self.initial_config.update({"schema_version":None, "label_version":None, "database_migrations_dir":['migrations', '.']})
+        config=Config(self.initial_config)
+        all_schema_migrations = [
+            Migration(file_name="20090214115200_02_test_migration.migration", version="20090214115200", sql_up="sql up 02", sql_down="sql down 02", id=2),
+            Migration(file_name="20090214115301_03_test_migration.migration", version="20090214115301", sql_up="sql up 03.1", sql_down="sql down 03.1", id=3),
+            Migration(file_name="20090214115400_04_test_migration.migration", version="20090214115400", sql_up="sql up 04", sql_down="sql down 04", id=4),
+            Migration(file_name="20090214115400_04_1_same_version_test_migration.migration", version="20090214115400", sql_up="sql up 04.1", sql_down="sql down 04.1", id=5)
+        ]
+        main = Main(sgdb=Mock(**{'get_all_schema_migrations.return_value':all_schema_migrations, 'get_all_schema_versions.return_value':['20090214115200', '20090214115301', '20090214115400', '20090214115400'], 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
+        migrations = main._get_migration_files_to_be_executed('20090214115400', '20090214115200', False)
+
+        self.assertEqual(3, len(migrations))
+        self.assertEqual('20090214115400_04_1_same_version_test_migration.migration', migrations[0].file_name)
+        self.assertEqual('20090214115400_04_test_migration.migration', migrations[1].file_name)
+        self.assertEqual('20090214115301_03_test_migration.migration', migrations[2].file_name)
+
+    def test_it_should_return_migrations_without_same_version_to_execute_when_is_down_and_the_duplicated_version_is_the_destination(self):
+        self.initial_config.update({"schema_version":None, "label_version":None, "database_migrations_dir":['migrations', '.']})
+        config=Config(self.initial_config)
+        all_schema_migrations = [
+            Migration(file_name="20090214115200_02_test_migration.migration", version="20090214115200", sql_up="sql up 02", sql_down="sql down 02", id=2),
+            Migration(file_name="20090214115301_03_test_migration.migration", version="20090214115301", sql_up="sql up 03.1", sql_down="sql down 03.1", id=3),
+            Migration(file_name="20090214115300_04_test_migration.migration", version="20090214115400", sql_up="sql up 04", sql_down="sql down 04", id=4),
+            Migration(file_name="20090214115400_04_1_same_version_test_migration.migration", version="20090214115400", sql_up="sql up 04.1", sql_down="sql down 04.1", id=5),
+            Migration(file_name="20090214115500_05_test_migration.migration", version="20090214115500", sql_up="sql up 05", sql_down="sql down 05", id=6)
+        ]
+
+        def get_version_id_from_version_number_side_effect(args):
+            return [migration.id for migration in Migration.sort_migrations_list(all_schema_migrations, reverse=True) if migration.version == str(args)][0]
+
+        main = Main(sgdb=Mock(**{'get_all_schema_migrations.return_value':all_schema_migrations, 'get_all_schema_versions.return_value':['20090214115200', '20090214115301', '20090214115400', '20090214115400', '20090214115500'], 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
+        migrations = main._get_migration_files_to_be_executed('20090214115500', '20090214115400', False)
+
+        self.assertEqual(1, len(migrations))
+        self.assertEqual('20090214115500_05_test_migration.migration', migrations[0].file_name)
+
 
 def get_version_id_from_version_number_side_effect(args):
     if str(args) == '20090214115100':
