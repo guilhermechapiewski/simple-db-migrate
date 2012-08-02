@@ -109,7 +109,7 @@ h2. Available configurations
 You can set default values for internal configurations in your configuration file and overwrite (some of them) using the command line parameters. Below is a list of all configuration options.
 
 (head). | Configuration | description | default value | possible values |
-| DATABASE_HOST | hostname used to connect to database | - | - |
+| DATABASE_HOST | hostname where database is located | - | - |
 | DATABASE_USER | username used to connect to database and execute the commands | - | - |
 | DATABASE_PASSWORD | password used to connect to database and execute the commands | - | - |
 | DATABASE_NAME | database name used where the commands will be executed | - | - |
