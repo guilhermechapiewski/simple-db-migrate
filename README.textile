@@ -2,7 +2,7 @@ h1. simple-db-migrate "quick" documentation
 
 h2. Quick start
 
-simple-db-migrate is damn simple. The best way to understand how it works is installing and using it.
+simple-db-migrate is damn simple. The best way to understand how it works is by installing and using it.
 
 You can install it by typing:
 
@@ -25,7 +25,7 @@ To whom use simple-db-migrate for MySQL or Oracle with version less than 1.4.1.1
 
 h2. Understanding how it works
 
-The first thing you'll need is a migration file. There are some example migration files on the "example" directory. The migration files have the following format:
+The first thing you'll need is a migration file. There are some example migration files in the "example" directory. The migration files have the following format:
 
 <pre>
     SQL_UP = """
@@ -42,7 +42,7 @@ The first thing you'll need is a migration file. There are some example migratio
 ... where SQL_UP and SQL_DOWN are two strings that contains respectively the SQL statements to upgrade and downgrade the database schema.
 </pre>
 
-You can use db-migrate to create the migrations by typing:
+You can use db-migrate to create new migrations by typing:
 
 <pre>
     $ db-migrate --create create_table_users
@@ -50,7 +50,7 @@ You can use db-migrate to create the migrations by typing:
 
 The file names need to respect the format "YYYYMMDDHHMMSS_migration_description.migration". simple-db-migrate uses the YYYYMMDDHHMMSS information to track the database schema version and to decide the order of execution of the scripts. simple-db-migrate will go through all .migration files in your directory and execute all of them in their creation (date) order.
 
-Second, you have to configure access to your database so simple-db-migrate can execute DDL. Just create a file named "simple-db-migrate.conf", with the following content (there is also an example on the "example" directory):
+Second, you have to configure access to your database so simple-db-migrate can execute DDL. Just create a file named "simple-db-migrate.conf", with the following content (there is also an example in the "example" directory):
 
 <pre>
     DATABASE_HOST = "localhost"
@@ -64,7 +64,7 @@ Second, you have to configure access to your database so simple-db-migrate can e
 
 You don't need to create the database. simple-db-migrate will create it for you.
 
-After this two things you are ready to go. Just navigate to the directory where you create your configuration file and type:
+After these two things you are ready to go. Just navigate to the directory where you created your configuration file and type:
 
 <pre>
     $ db-migrate
@@ -78,62 +78,63 @@ If you don't want to navigate to the directory, you can specify it path instead.
 
 h2. Migrating to a specific version
 
-If you want you can migrate your database schema to a specific version by informing the --migration (or -m) parameter. The version id is the YYYYMMDDHHMMSS identifier used at the migration file:
+If you want, you can migrate your database schema to a specific version by supplying the --migration (or -m) parameter. The version id is the YYYYMMDDHHMMSS identifier used at the migration file:
 
 <pre>
     $ db-migrate --migration=20090227000129
 </pre>
 
-If you don't specify any version, simple-db-migrate will migrate the schema to the latest version available on the migrations directories.
+If you don't specify any version, simple-db-migrate will migrate the schema to the latest version available in the migrations directories specified in the config file.
 
-h2. Configuration for many environments on same file
+h2. Configuring multiple database environments
 
-If you want to use the same configuration file to all your environments you can prefix the names with the name of your environment and specify it when executing, like the example bellow.
+If you want to use the same configuration file for multiple environments you can prefix the names with the name of your environment and specify it when executing, like the example below.
 
 <pre>
-    DATABASE_HOST = "localhost"                              #default database host
-    STAGING_DATABASE_HOST = "staging.host.com"               #staging database host
-    PRODUCTION_DATABASE_HOST = "production.host.com"         #production database host
+    DATABASE_HOST = "localhost"                              # default database host
+    STAGING_DATABASE_HOST = "staging.host.com"               # staging database host
+    PRODUCTION_DATABASE_HOST = "production.host.com"         # production database host
     DATABASE_USER = "root"
     DATABASE_PASSWORD = ""
     DATABASE_NAME = "migration_example"
     DATABASE_MIGRATIONS_DIR = "."
 
-    $ db-migrate --config=path/to/file.conf                  #will use default configurations
-    $ db-migrate --config=path/to/file.conf --env=staging    #will use staging configurations, and default to keys not prefixed
-    $ db-migrate --config=path/to/file.conf --env=production #will use production configurations, and default to keys not prefixed
+    $ db-migrate --config=path/to/file.conf                  # will use default configurations
+    $ db-migrate --config=path/to/file.conf --env=staging    # will use staging configurations, and default to keys not prefixed
+    $ db-migrate --config=path/to/file.conf --env=production # will use production configurations, and default to keys not prefixed
 </pre>
 
 h2. Available configurations
 
-You can set default values to internals configurations on your configuration file and overwrite (some of them) using the command line parameters. Bellow is a list of all configurations you can set on your configuration file.
+You can set default values for internal configurations in your configuration file and overwrite (some of them) using the command line parameters. Below is a list of all configuration options.
 
 (head). | Configuration | description | default value | possible values |
-| DATABASE_HOST | hostname where is the database to connect | - | - |
+| DATABASE_HOST | hostname used to connect to database | - | - |
 | DATABASE_USER | username used to connect to database and execute the commands | - | - |
 | DATABASE_PASSWORD | password used to connect to database and execute the commands | - | - |
 | DATABASE_NAME | database name used where the commands will be executed | - | - |
-| DATABASE_ENGINE | the database type where migrations will me executed | mysql | oracle,mysql,mssql  |
+| DATABASE_ENGINE | the database type where migrations will be executed | mysql | oracle,mysql,mssql  |
 | DATABASE_VERSION_TABLE | the table name used to save database versions | __db_version__ | any name supported by the database |
-| UTC_TIMESTAMP | create migrations files using UTC time to format the name | False | True,False |
-| DATABASE_MIGRATIONS_DIR | directories to look for migrations files separated by _:_ | - | - |
+| UTC_TIMESTAMP | create migration files using UTC time to format the name | False | True,False |
+| DATABASE_MIGRATIONS_DIR | directories to look for migration files separated by _:_ | - | - |
 | DATABASE_ENCODING | encoding used on database | utf-8 | any valid encoding |
-| DATABASE_SCRIPT_ENCODING | encoding used on migrations files | utf-8 | any valid encoding |
-| drop_db_first | if True drop the database before execute migrations | False | True,False |
-| force_execute_old_migrations_versions | if True and current and destination database versions are equal, execute any old migration not executed yet | False | True,False |
-| force_use_files_on_down | if True use SQL_DOWN from migrations files instead of that present on version table | False | True,False |
-| label_version | label to be applied to all executed migration when doing a upgrade on database | - | - |
-| log_dir | directory where will be created a file with a full log for the process, with the current time as name | - | - |
+| DATABASE_SCRIPT_ENCODING | encoding used on migration files | utf-8 | any valid encoding |
+| drop_db_first | if True drop the database before executing migrations | False | True,False |
+
+| force_execute_old_migrations_versions | if True and current and destination database versions are equal, execute any old migrations not executed yet | False | True,False |
+| force_use_files_on_down | if True use SQL_DOWN from migration files instead of that present on version table | False | True,False |
+| label_version | label to be applied to all executed migrations when doing a upgrade on database | - | - |
+| log_dir | directory where a file will be created with a full log of the process, with the current time as name | - | - |
 | new_migration | name for the migration to be created | - | any alpha numeric word, without spaces |
-| paused_mode | execute the migrations pausing after finish each one of the files | False | True,False |
-| schema_version | the desired version to the database, will do a upgrade or a downgrade to be sure that this will be the current version of database | - | - |
-| show_sql | if True show executed sql commands | False | True,False |
-| show_sql_only | if True only show the sqls, but not execute them | False | True,False |
+| paused_mode | execute migrations, pausing after finishing each one | False | True,False |
+| schema_version | the desired version of the database, will do a upgrade or a downgrade to be sure that this will be the current version of database | - | - |
+| show_sql | if True show executed SQL commands | False | True,False |
+| show_sql_only | if True only show the SQL, but do not execute them | False | True,False |
 
 h2. Supported databases engines
 
 You can use this project to run migrations on MySQL, Oracle and MS-SQL server databases.
-The default database engine is MySQL, to use the others databases set the DATABASE_ENGINE constant on the configuration file.
+The default database engine is MySQL. To use the other databases set the DATABASE_ENGINE constant in the configuration file.
 
 h2. Roadmap, bug reporting and feature requests
 
