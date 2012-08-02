@@ -120,7 +120,7 @@ You can set default values to internals configurations on your configuration fil
 | DATABASE_ENCODING | encoding used on database | utf-8 | any valid encoding |
 | DATABASE_SCRIPT_ENCODING | encoding used on migrations files | utf-8 | any valid encoding |
 | drop_db_first | if True drop the database before execute migrations | False | True,False |
-| force_execute_old_migrations_versions | if True and current and destiny database versions are equals, execute any old migration not executed yet | False | True,False |
+| force_execute_old_migrations_versions | if True and current and destination database versions are equal, execute any old migration not executed yet | False | True,False |
 | force_use_files_on_down | if True use SQL_DOWN from migrations files instead of that present on version table | False | True,False |
 | label_version | label to be applied to all executed migration when doing a upgrade on database | - | - |
 | log_dir | directory where will be created a file with a full log for the process, with the current time as name | - | - |
