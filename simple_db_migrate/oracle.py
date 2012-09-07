@@ -269,10 +269,10 @@ class Oracle(object):
         cursor = conn.cursor()
         cursor.execute("select id from %s where version = '%s' order by id desc" % (self.__version_table, version))
         result = cursor.fetchone()
-        id = result and int(result[0]) or None
+        _id = result and int(result[0]) or None
         cursor.close()
         conn.close()
-        return id
+        return _id
 
     def get_version_number_from_label(self, label):
         conn = self.__connect()

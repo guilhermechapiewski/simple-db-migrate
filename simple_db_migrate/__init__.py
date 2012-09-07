@@ -13,7 +13,7 @@ if sys.stdout.encoding != 'UTF-8':
     sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 
 def run_from_argv(args=None):
-    (options, args) = CLI.parse(args)
+    (options, _) = CLI.parse(args)
     run(options.__dict__)
 
 def run(options):

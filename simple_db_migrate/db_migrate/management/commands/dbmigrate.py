@@ -55,7 +55,7 @@ class Command(BaseCommand):
 
     @staticmethod
     def _locate_resource_dirs(complement, pattern):
-        dirs = []
+        _dirs = []
         for app in settings.INSTALLED_APPS:
             fromlist = ""
 
@@ -69,14 +69,14 @@ class Command(BaseCommand):
             resource_dir = os.path.join(app_dir, complement)
 
             if os.path.exists(resource_dir) and Command._locate_files(resource_dir, pattern):
-                dirs.append(resource_dir)
+                _dirs.append(resource_dir)
 
-        return dirs
+        return _dirs
 
     @staticmethod
     def _locate_files(root, pattern):
         return_files = []
-        for path, dirs, files in os.walk(root):
+        for path, _dirs, files in os.walk(root):
             for filename in fnmatch.filter(files, pattern):
                 return_files.append(os.path.join(path, filename))
         return return_files

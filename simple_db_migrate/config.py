@@ -1,6 +1,4 @@
 import os
-import sys
-import re
 import ast
 from helpers import Utils
 
@@ -42,9 +40,9 @@ class Config(object):
 
     #default_value was assigned as !@#$%&* to be more easy to check when the default value is None, empty string or False
     @staticmethod
-    def _get(dict, key, default_value='!@#$%&*'):
+    def _get(_dict, key, default_value='!@#$%&*'):
         try:
-            return dict[key]
+            return _dict[key]
         except KeyError:
             if default_value != '!@#$%&*':
                 return default_value
@@ -53,13 +51,13 @@ class Config(object):
     @staticmethod
     def _parse_migrations_dir(dirs, config_dir=''):
         abs_dirs = []
-        for dir in dirs.split(':'):
-            if os.path.isabs(dir):
-                abs_dirs.append(dir)
+        for _dir in dirs.split(':'):
+            if os.path.isabs(_dir):
+                abs_dirs.append(_dir)
             elif config_dir == '':
-                abs_dirs.append(os.path.abspath(dir))
+                abs_dirs.append(os.path.abspath(_dir))
             else:
-                abs_dirs.append(os.path.abspath('%s/%s' % (config_dir, dir)))
+                abs_dirs.append(os.path.abspath('%s/%s' % (config_dir, _dir)))
         return abs_dirs
 
 class FileConfig(Config):

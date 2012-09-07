@@ -112,7 +112,7 @@ class Migration(object):
 
 class SimpleDBMigrate(object):
 
-    def __init__(self, config=None):
+    def __init__(self, config):
         self._migrations_dir = config.get("database_migrations_dir")
         self._script_encoding=config.get("database_script_encoding", "utf-8")
         self.all_migrations = None
@@ -123,8 +123,8 @@ class SimpleDBMigrate(object):
 
         migrations = []
 
-        for dir in self._migrations_dir:
-            path = os.path.abspath(dir)
+        for _dir in self._migrations_dir:
+            path = os.path.abspath(_dir)
 
             dir_list = None
             try:
