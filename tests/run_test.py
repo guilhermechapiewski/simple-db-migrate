@@ -1,9 +1,9 @@
 import unittest
 import simple_db_migrate
 import os
+import sys
 from StringIO import StringIO
-from mock import patch, call, Mock, MagicMock
-from simple_db_migrate.config import Config
+from mock import patch, Mock
 
 class RunTest(unittest.TestCase):
 
@@ -23,9 +23,23 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
         f = open('sample.conf', 'w')
         f.write(config_file)
         f.close()
+        self.stdout_mock = patch('sys.stdout', new_callable=StringIO)
+        self.stdout_mock.start()
 
     def tearDown(self):
         os.remove('sample.conf')
+        self.stdout_mock.stop()
+
+    @patch('codecs.getwriter')
+    @patch('sys.stdout', encoding='iso-8859-1')
+    def test_it_should_ensure_stdout_is_using_an_utf8_encoding(self, stdout_mock, codecs_mock):
+        new_stdout = Mock()
+        codecs_mock.return_value = Mock(**{'return_value':new_stdout})
+
+        reload(simple_db_migrate)
+
+        codecs_mock.assert_called_with('utf-8')
+        self.assertEqual(new_stdout, sys.stdout)
 
     def test_it_should_define_a_version_string(self):
         self.assertTrue(isinstance(simple_db_migrate.SIMPLE_DB_MIGRATE_VERSION, str))
@@ -35,50 +49,47 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
         parse_mock.return_value = (Mock(simple_db_migrate_version=True), [])
         try:
             simple_db_migrate.run_from_argv()
-        except SystemExit, e:
+        except SystemExit:
             pass
 
         parse_mock.assert_called_with(None)
 
-    @patch('sys.stdout', new_callable=StringIO)
-    def test_it_should_print_simple_db_migrate_version_and_exit(self, stdout_mock):
+    def test_it_should_print_simple_db_migrate_version_and_exit(self):
         try:
             simple_db_migrate.run_from_argv(["-v"])
         except SystemExit, e:
             self.assertEqual(0, e.code)
 
-        self.assertEqual('simple-db-migrate v%s\n\n' % simple_db_migrate.SIMPLE_DB_MIGRATE_VERSION, stdout_mock.getvalue())
+        self.assertEqual('simple-db-migrate v%s\n\n' % simple_db_migrate.SIMPLE_DB_MIGRATE_VERSION, sys.stdout.getvalue())
 
     @patch('simple_db_migrate.cli.CLI.show_colors')
     def test_it_should_activate_use_of_colors(self, show_colors_mock):
         try:
             simple_db_migrate.run_from_argv(["--color"])
-        except SystemExit, e:
+        except SystemExit:
             pass
 
         self.assertEqual(1, show_colors_mock.call_count)
 
     @patch('simple_db_migrate.cli.CLI.show_colors')
-    @patch('sys.stdout', new_callable=StringIO)
-    def test_it_should_print_message_and_exit_when_user_interrupt_execution(self, stdout_mock, show_colors_mock):
+    def test_it_should_print_message_and_exit_when_user_interrupt_execution(self, show_colors_mock):
         show_colors_mock.side_effect = KeyboardInterrupt()
         try:
             simple_db_migrate.run_from_argv(["--color"])
         except SystemExit, e:
             self.assertEqual(0, e.code)
 
-        self.assertEqual('\nExecution interrupted by user...\n\n', stdout_mock.getvalue())
+        self.assertEqual('\nExecution interrupted by user...\n\n', sys.stdout.getvalue())
 
     @patch('simple_db_migrate.cli.CLI.show_colors')
-    @patch('sys.stdout', new_callable=StringIO)
-    def test_it_should_print_message_and_exit_when_user_an_error_happen(self, stdout_mock, show_colors_mock):
+    def test_it_should_print_message_and_exit_when_user_an_error_happen(self, show_colors_mock):
         show_colors_mock.side_effect = Exception('occur an error')
         try:
             simple_db_migrate.run_from_argv(["--color"])
         except SystemExit, e:
             self.assertEqual(1, e.code)
 
-        self.assertEqual('[ERROR] occur an error\n\n', stdout_mock.getvalue())
+        self.assertEqual('[ERROR] occur an error\n\n', sys.stdout.getvalue())
 
     @patch.object(simple_db_migrate.main.Main, 'execute')
     @patch.object(simple_db_migrate.main.Main, '__init__', return_value=None)
@@ -162,15 +173,14 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
         self.assertEqual(2, config_used.get('log_level'))
 
     @patch('simple_db_migrate.getpass', return_value='password_asked')
-    @patch('sys.stdout', new_callable=StringIO)
     @patch.object(simple_db_migrate.main.Main, 'execute')
     @patch.object(simple_db_migrate.main.Main, '__init__', return_value=None)
     @patch.object(simple_db_migrate.helpers.Utils, 'get_variables_from_file', return_value = {'DATABASE_HOST':'host', 'DATABASE_USER': 'root', 'DATABASE_PASSWORD':'<<ask_me>>', 'DATABASE_NAME':'database', 'DATABASE_MIGRATIONS_DIR':'.'})
-    def test_it_should_ask_for_password_when_configuration_is_as_ask_me(self, import_file_mock, main_mock, execute_mock, stdout_mock, getpass_mock):
+    def test_it_should_ask_for_password_when_configuration_is_as_ask_me(self, import_file_mock, main_mock, execute_mock, getpass_mock):
         simple_db_migrate.run_from_argv(["-c", os.path.abspath('sample.conf')])
         config_used = main_mock.call_args[0][0]
         self.assertEqual('password_asked', config_used.get('database_password'))
-        self.assertEqual('\nPlease inform password to connect to database "root@host:database"\n', stdout_mock.getvalue())
+        self.assertEqual('\nPlease inform password to connect to database "root@host:database"\n', sys.stdout.getvalue())
 
     @patch.object(simple_db_migrate.main.Main, 'execute')
     @patch.object(simple_db_migrate.main.Main, '__init__', return_value=None)

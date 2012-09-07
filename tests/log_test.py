@@ -4,11 +4,11 @@ import logging
 from datetime import datetime
 from mock import patch, call, Mock
 from simple_db_migrate.log import LOG
-from tests import BaseTest, create_file, create_migration_file, delete_files, create_config
+from tests import BaseTest, delete_files
 
 class LogTest(BaseTest):
     def tearDown(self):
-        BaseTest.tearDown(self)
+        super(LogTest, self).tearDown()
         delete_files('log_dir_test/path/subpath/*.log')
         if os.path.exists('log_dir_test/path/subpath'):
             os.rmdir('log_dir_test/path/subpath')
@@ -29,7 +29,7 @@ class LogTest(BaseTest):
 
     @patch('os.makedirs', side_effect=os.makedirs)
     def test_it_should_create_log_dir_if_does_not_exists(self, makedirs_mock):
-        log = LOG('log_dir_test/path/subpath')
+        LOG('log_dir_test/path/subpath')
         expected_calls = [
             call('log_dir_test/path/subpath'),
             call('log_dir_test/path', 511),

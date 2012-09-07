@@ -1,16 +1,16 @@
 import unittest
 import os
-import glob
 import re
 from StringIO import StringIO
 from mock import patch, call, Mock
-from simple_db_migrate.main import *
-from simple_db_migrate.core import Migration, SimpleDBMigrate
-from simple_db_migrate.config import *
-from tests import BaseTest, create_file, create_migration_file, delete_files, create_config
+from simple_db_migrate.core import Migration
+from simple_db_migrate.main import Main
+from simple_db_migrate.config import Config
+from tests import BaseTest, create_migration_file
 
 class MainTest(BaseTest):
     def setUp(self):
+        super(MainTest, self).setUp()
         self.initial_config = {
             'database_host': 'localhost',
             'database_name': 'test',

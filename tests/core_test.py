@@ -1,15 +1,15 @@
 # coding: utf-8
 import os
-import time
 import unittest
 from mock import patch, Mock
-from simple_db_migrate.config import *
-from simple_db_migrate.core import *
+from simple_db_migrate.core import Migration
+from simple_db_migrate.core import SimpleDBMigrate
 from tests import BaseTest, create_file, create_migration_file, delete_files, create_config
 
 class SimpleDBMigrateTest(BaseTest):
 
     def setUp(self):
+        super(SimpleDBMigrateTest, self).setUp()
         if not os.path.exists(os.path.abspath('migrations')):
             os.mkdir(os.path.abspath('migrations'))
         self.config = create_config(migrations_dir='.:migrations')
@@ -115,7 +115,7 @@ class SimpleDBMigrateTest(BaseTest):
         self.assertFalse(db_migrate.check_if_version_exists('19000101000000'))
 
     @patch('simple_db_migrate.core.SimpleDBMigrate.get_all_migration_versions', return_value=[])
-    def test_it_should_use_get_all_migrations_versions_method_to_get_all_migration_versions_up_to_a_version(self, get_all_migration_versions_mock):
+    def test_it_should_use_get_all_migrations_versions_method_to_check_if_migration_version_exists(self, get_all_migration_versions_mock):
         db_migrate = SimpleDBMigrate(self.config)
         db_migrate.check_if_version_exists('20090214115100')
         self.assertEqual(1, get_all_migration_versions_mock.call_count)
@@ -157,6 +157,8 @@ class MigrationTest(BaseTest):
         create_migration_file('20090727104700_test_migration.migration', sql_up='xxx', sql_down='yyy')
         create_migration_file('20090727141400_test_migration.migration', sql_up='xxx', sql_down='yyy')
         create_migration_file('20090727141503_test_migration.migration', sql_up='xxx', sql_down='yyy')
+        create_migration_file('20090727141505_01_test_migration.migration', sql_up='xxx', sql_down='yyy')
+        create_migration_file('20090727141505_02_test_migration.migration', sql_up='xxx', sql_down='yyy')
         create_migration_file('20090727113900_empty_sql_up_test_migration.migration', sql_up='', sql_down='zzz')
         create_migration_file('20090727113900_empty_sql_down_test_migration.migration', sql_up='zzz', sql_down='')
         create_file('20090727114700_empty_file_test_migration.migration')
@@ -273,25 +275,31 @@ class MigrationTest(BaseTest):
     def test_it_should_raise_exception_when_migration_file_do_not_have_sql_up_constant(self):
         self.assertRaisesWithMessage(Exception, "migration file is incorrect; it does not define 'SQL_UP' or 'SQL_DOWN' (%s)" % os.path.abspath('20090727114700_without_sql_up_test_migration.migration'), Migration, '20090727114700_without_sql_up_test_migration.migration')
 
-    def test_it_should_raise_exception_when_migration_file_do_not_have_sql_up_constant(self):
+    def test_it_should_raise_exception_when_migration_file_do_not_have_sql_down_constant(self):
         self.assertRaisesWithMessage(Exception, "migration file is incorrect; it does not define 'SQL_UP' or 'SQL_DOWN' (%s)" % os.path.abspath('20090727114700_without_sql_down_test_migration.migration'), Migration, '20090727114700_without_sql_down_test_migration.migration')
 
     def test_it_should_compare_to_migration_versions_and_tell_which_is_newer(self):
         m1 = Migration('20090727104700_test_migration.migration')
         m2 = Migration('20090727141400_test_migration.migration')
         m3 = Migration('20090727141503_test_migration.migration')
+        m4 = Migration('20090727141505_01_test_migration.migration')
+        m5 = Migration('20090727141505_02_test_migration.migration')
 
         self.assertEqual(-1, m1.compare_to(m2))
         self.assertEqual(-1, m2.compare_to(m3))
         self.assertEqual(-1, m1.compare_to(m3))
+        self.assertEqual(-1, m4.compare_to(m5))
 
         self.assertEqual(1, m2.compare_to(m1))
         self.assertEqual(1, m3.compare_to(m2))
         self.assertEqual(1, m3.compare_to(m1))
+        self.assertEqual(1, m5.compare_to(m4))
 
         self.assertEqual(0, m1.compare_to(m1))
         self.assertEqual(0, m2.compare_to(m2))
         self.assertEqual(0, m3.compare_to(m3))
+        self.assertEqual(0, m4.compare_to(m4))
+        self.assertEqual(0, m5.compare_to(m5))
 
     def test_it_should_raise_exception_when_file_does_not_exist(self):
         try:
@@ -301,8 +309,8 @@ class MigrationTest(BaseTest):
 
     @patch('simple_db_migrate.core.Migration.is_file_name_valid', return_value=False)
     def test_it_should_raise_exception_when_file_name_is_invalid(self, is_file_name_valid_mock):
-         self.assertRaisesWithMessage(Exception, 'invalid migration file name (simple-db-migrate.conf)', Migration, 'simple-db-migrate.conf')
-         is_file_name_valid_mock.assert_called_with('simple-db-migrate.conf')
+        self.assertRaisesWithMessage(Exception, 'invalid migration file name (simple-db-migrate.conf)', Migration, 'simple-db-migrate.conf')
+        is_file_name_valid_mock.assert_called_with('simple-db-migrate.conf')
 
     def test_it_should_validate_if_filename_has_only_alphanumeric_chars_and_migration_extension(self):
         self.assertTrue(Migration.is_file_name_valid('20090214120600_valid_migration_file_name.migration'))

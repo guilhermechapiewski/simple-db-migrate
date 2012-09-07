@@ -1,7 +1,7 @@
 import unittest
 from mock import patch
 from StringIO import StringIO
-from simple_db_migrate.cli import *
+from simple_db_migrate.cli import CLI
 
 class CLITest(unittest.TestCase):
 
@@ -30,12 +30,15 @@ class CLITest(unittest.TestCase):
         self.assertEqual("\033[31m", CLI.color["RED"])
         self.assertEqual("\033[0m", CLI.color["END"])
 
-    def test_it_should_exit_with_help_options(self):
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_it_should_exit_with_help_options(self, stdout_mock):
         try:
             CLI.parse(["-h"])
         except SystemExit, e:
             self.assertEqual(0, e.code)
+            self.assertTrue(stdout_mock.getvalue().find("Displays simple-db-migrate's version and exit") > 0)
 
+        stdout_mock.buf = ''
         try:
             CLI.parse(["--help"])
         except SystemExit, e:
@@ -80,7 +83,7 @@ class CLITest(unittest.TestCase):
 
     def test_it_should_accept_schema_version_options(self):
         self.assertEqual("schema_version_value", CLI.parse(["-m", "schema_version_value"])[0].schema_version)
-        self.assertEqual("schema_version_value", CLI.parse(["--config", "schema_version_value"])[0].config_file)
+        self.assertEqual("schema_version_value", CLI.parse(["--migration", "schema_version_value"])[0].schema_version)
 
     def test_it_should_not_has_a_default_value_for_new_migration(self):
         self.assertEqual(None, CLI.parse([])[0].new_migration)

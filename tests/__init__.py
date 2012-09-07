@@ -3,6 +3,8 @@ import os
 import unittest
 import codecs
 from simple_db_migrate.config import *
+from StringIO import StringIO
+from mock import patch
 
 def create_file(file_name, content=None, encoding='utf-8'):
     f = codecs.open(file_name, 'w', encoding)
@@ -17,8 +19,8 @@ def create_migration_file(file_name, sql_up='', sql_down=''):
 
 def delete_files(pattern):
     filelist=glob.glob(pattern)
-    for file in filelist:
-        os.remove(file)
+    for _file in filelist:
+        os.remove(_file)
 
 def create_config(host='localhost', username='root', password='', database='migration_example', migrations_dir='.', utc_timestamp=False, script_encoding='utf-8'):
     config_file = '''
@@ -34,7 +36,12 @@ DATABASE_SCRIPT_ENCODING = '%s'
     return FileConfig('test_config_file.conf')
 
 class BaseTest(unittest.TestCase):
+    def setUp(self):
+        self.stdout_mock = patch('sys.stdout', new_callable=StringIO)
+        self.stdout_mock.start()
+
     def tearDown(self):
+        self.stdout_mock.stop()
         delete_files('*.log')
         delete_files('*test_migration.migration')
         delete_files('migrations/*test_migration.migration')

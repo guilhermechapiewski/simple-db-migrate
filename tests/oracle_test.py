@@ -1,14 +1,14 @@
-import os
 import unittest
-import simple_db_migrate
+import sys
+import simple_db_migrate.core
 from mock import patch, Mock, MagicMock, call, sentinel
-from simple_db_migrate.config import *
-from simple_db_migrate.oracle import *
-from tests import BaseTest, create_file, create_migration_file, delete_files, create_config
+from simple_db_migrate.oracle import Oracle
+from tests import BaseTest
 
 class OracleTest(BaseTest):
 
     def setUp(self):
+        super(OracleTest, self).setUp()
         self.execute_returns = {}
         self.fetchone_returns = {'select count(*) from db_version': [0]}
         self.close_returns = {}
@@ -32,17 +32,16 @@ class OracleTest(BaseTest):
         self.stdin_mock = Mock(**{"readline.return_value":"dba_user"})
         self.getpass_mock = Mock(return_value = "dba_password")
 
+    @patch.dict('sys.modules', cx_Oracle=MagicMock())
     def test_it_should_use_cx_Oracle_as_driver(self):
-        cx_Oracle_mock = MagicMock()
-        with patch.dict('sys.modules', cx_Oracle=cx_Oracle_mock):
-            oracle = Oracle(self.config_mock)
-            self.assertNotEqual(0, cx_Oracle_mock.connect.call_count)
+        Oracle(self.config_mock)
+        self.assertNotEqual(0, sys.modules['cx_Oracle'].connect.call_count)
 
     def test_it_should_stop_process_when_an_error_occur_during_connect_database(self):
         self.db_driver_mock.connect.side_effect = Exception("error when connecting")
 
         try:
-            oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
+            Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
             self.fail("it should not get here")
         except Exception, e:
             self.assertEqual("could not connect to database: error when connecting", str(e))
@@ -66,7 +65,7 @@ class OracleTest(BaseTest):
         self.db_driver_mock.connect.side_effect = connect_side_effect
         self.execute_returns["select version from db_version"] = Exception("Table doesn't exist")
 
-        oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
+        Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
 
         self.assertEqual(8, self.db_driver_mock.connect.call_count)
         self.assertEqual(4, self.db_mock.commit.call_count)
@@ -90,7 +89,7 @@ class OracleTest(BaseTest):
     def test_it_should_create_version_table_on_init_if_not_exists(self):
         self.execute_returns["select version from db_version"] = Exception("Table doesn't exist")
 
-        oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
+        Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
 
         self.assertEqual(7, self.db_driver_mock.connect.call_count)
         self.assertEqual(4, self.db_mock.commit.call_count)
@@ -126,7 +125,7 @@ class OracleTest(BaseTest):
         self.cursor_mock.fetchall.return_value = [("DELETE TABLE DB_VERSION CASCADE CONSTRAINTS;",),]
         self.execute_returns["select version from db_version"] = Exception("Table doesn't exist")
 
-        oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
+        Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
 
         self.assertEqual(9, self.db_driver_mock.connect.call_count)
         self.assertEqual(5, self.db_mock.commit.call_count)
@@ -164,7 +163,7 @@ class OracleTest(BaseTest):
         self.config_dict["drop_db_first"] = True
         self.execute_returns[select_elements_to_drop_sql] = Exception("could not connect to database: ORA-01017 invalid user/password")
 
-        oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
+        Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
 
         self.assertEqual(6, self.db_driver_mock.connect.call_count)
         self.assertEqual(2, self.db_mock.commit.call_count)
@@ -204,7 +203,7 @@ class OracleTest(BaseTest):
         self.execute_returns['grant create public synonym to root'] = Exception("error when granting")
 
         try:
-            oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
+            Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
             self.fail("it should not get here")
         except Exception, e:
             self.assertEqual("check error: error when granting", str(e))
@@ -242,7 +241,7 @@ class OracleTest(BaseTest):
         self.execute_returns[select_elements_to_drop_sql] = Exception("error when dropping")
 
         try:
-            oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
+            Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
             self.fail("it should not get here")
         except Exception, e:
             self.assertEqual("error when dropping", str(e))
@@ -278,7 +277,7 @@ class OracleTest(BaseTest):
         self.stdin_mock.readline.return_value = "n"
 
         try:
-            oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
+            Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
             self.fail("it should not get here")
         except Exception, e:
             self.assertEqual("can't drop database 'migration_test'", str(e))
@@ -315,7 +314,7 @@ class OracleTest(BaseTest):
         self.execute_returns["DELETE TABLE DB_VERSION CASCADE CONSTRAINTS"] = Exception("error dropping table")
         self.stdin_mock.readline.return_value = "y"
 
-        oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
+        Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
 
         self.assertEqual(3, self.db_mock.commit.call_count)
         self.assertEqual(7, self.db_mock.close.call_count)

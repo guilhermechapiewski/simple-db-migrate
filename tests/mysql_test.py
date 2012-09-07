@@ -1,14 +1,14 @@
-import os
 import unittest
-import simple_db_migrate
+import sys
+import simple_db_migrate.core
 from mock import patch, Mock, MagicMock, call
-from simple_db_migrate.config import *
-from simple_db_migrate.mysql import *
-from tests import BaseTest, create_file, create_migration_file, delete_files, create_config
+from simple_db_migrate.mysql import MySQL
+from tests import BaseTest
 
 class MySQLTest(BaseTest):
 
     def setUp(self):
+        super(MySQLTest, self).setUp()
         self.execute_returns = {}
         self.fetchone_returns = {'select count(*) from __db_version__;': [0]}
         self.close_returns = {}
@@ -30,17 +30,16 @@ class MySQLTest(BaseTest):
         self.db_mock = Mock(**{"cursor.return_value": self.cursor_mock})
         self.db_driver_mock = Mock(**{"connect.return_value": self.db_mock})
 
+    @patch.dict('sys.modules', MySQLdb=MagicMock())
     def test_it_should_use_mysqldb_as_driver(self):
-        mysqldb_mock = MagicMock()
-        with patch.dict('sys.modules', MySQLdb=mysqldb_mock):
-            mysql = MySQL(self.config_mock)
-            self.assertNotEqual(0, mysqldb_mock.connect.call_count)
+        MySQL(self.config_mock)
+        self.assertNotEqual(0, sys.modules['MySQLdb'].connect.call_count)
 
     def test_it_should_stop_process_when_an_error_occur_during_connect_database(self):
         self.db_driver_mock.connect.side_effect = Exception("error when connecting")
 
         try:
-            mysql = MySQL(self.config_mock, self.db_driver_mock)
+            MySQL(self.config_mock, self.db_driver_mock)
             self.fail("it should not get here")
         except Exception, e:
             self.assertEqual("could not connect to database: error when connecting", str(e))
@@ -54,7 +53,7 @@ class MySQLTest(BaseTest):
 
 
     def test_it_should_create_database_and_version_table_on_init_if_not_exists(self):
-        mysql = MySQL(self.config_mock, self.db_driver_mock)
+        MySQL(self.config_mock, self.db_driver_mock)
 
         expected_query_calls = [
             call('create database if not exists `migration_test`;')
@@ -75,7 +74,7 @@ class MySQLTest(BaseTest):
     def test_it_should_drop_database_on_init_if_its_asked(self):
         self.config_dict["drop_db_first"] = True
 
-        mysql = MySQL(self.config_mock, self.db_driver_mock)
+        MySQL(self.config_mock, self.db_driver_mock)
 
         expected_query_calls = [
             call('set foreign_key_checks=0; drop database if exists `migration_test`;'),
@@ -99,7 +98,7 @@ class MySQLTest(BaseTest):
         self.db_mock.query.side_effect = Exception("error when dropping")
 
         try:
-            mysql = MySQL(self.config_mock, self.db_driver_mock)
+            MySQL(self.config_mock, self.db_driver_mock)
             self.fail("it should not get here")
         except Exception, e:
             self.assertEqual("can't drop database 'migration_test'; \nerror when dropping", str(e))

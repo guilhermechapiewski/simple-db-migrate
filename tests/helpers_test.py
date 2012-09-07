@@ -1,6 +1,7 @@
 import unittest
-
-from simple_db_migrate.helpers import *
+import os
+import sys
+from simple_db_migrate.helpers import Lists, Utils
 
 class ListsTest(unittest.TestCase):
 

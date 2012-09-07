@@ -1,7 +1,6 @@
-import codecs
+import os
 import unittest
-from mock import patch, MagicMock, NonCallableMagicMock
-from simple_db_migrate.config import *
+from simple_db_migrate.config import Config, FileConfig
 
 class ConfigTest(unittest.TestCase):
 
@@ -55,25 +54,25 @@ class ConfigTest(unittest.TestCase):
 
 
     def test_it_should_return_value_from_a_dict(self):
-        dict = {"some_key": "some_value"}
-        self.assertEqual("some_value", Config._get(dict, "some_key"))
+        _dict = {"some_key": "some_value"}
+        self.assertEqual("some_value", Config._get(_dict, "some_key"))
 
     def test_it_should_return_default_value_for_an_inexistent_dict_value(self):
-        dict = {"some_key": "some_value"}
-        self.assertEqual("default_value", Config._get(dict, "ANOTHER_KEY", "default_value"))
+        _dict = {"some_key": "some_value"}
+        self.assertEqual("default_value", Config._get(_dict, "ANOTHER_KEY", "default_value"))
 
-    def test_it_should_raise_exception_for_an_inexistent_config_value_without_specify_a_default_value(self):
-        dict = {"some_key": "some_value"}
+    def test_it_should_raise_exception_for_an_inexistent_dict_value_without_specify_a_default_value(self):
+        _dict = {"some_key": "some_value"}
         try:
-            Config._get(dict, "ANOTHER_KEY")
+            Config._get(_dict, "ANOTHER_KEY")
         except Exception, e:
             self.assertEqual("invalid key ('ANOTHER_KEY')", str(e))
 
     def test_it_should_accept_non_empty_stringand_false_as_default_value(self):
-        dict = {"some_key": "some_value"}
-        self.assertEqual(None, Config._get(dict,"ANOTHER_KEY", None))
-        self.assertEqual("", Config._get(dict,"ANOTHER_KEY", ""))
-        self.assertEqual(False, Config._get(dict,"ANOTHER_KEY", False))
+        _dict = {"some_key": "some_value"}
+        self.assertEqual(None, Config._get(_dict,"ANOTHER_KEY", None))
+        self.assertEqual("", Config._get(_dict,"ANOTHER_KEY", ""))
+        self.assertEqual(False, Config._get(_dict,"ANOTHER_KEY", False))
 
     def test_it_should_save_config_values(self):
         config = Config()

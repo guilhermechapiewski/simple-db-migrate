@@ -1,14 +1,14 @@
-import os
 import unittest
-import simple_db_migrate
+import sys
+import simple_db_migrate.core
 from mock import patch, Mock, MagicMock, call
-from simple_db_migrate.config import *
-from simple_db_migrate.mssql import *
-from tests import BaseTest, create_file, create_migration_file, delete_files, create_config
+from simple_db_migrate.mssql import MSSQL
+from tests import BaseTest
 
 class MSSQLTest(BaseTest):
 
     def setUp(self):
+        super(MSSQLTest, self).setUp()
         self.execute_returns = {'select count(*) from __db_version__;': 0}
         self.close_returns = {}
         self.last_execute_command = '';
@@ -31,17 +31,16 @@ class MSSQLTest(BaseTest):
                                "__iter__":Mock(side_effect=self.iter_side_effect)})
         self.db_driver_mock = Mock(**{"connect.return_value": self.db_mock})
 
+    @patch.dict('sys.modules', _mssql=MagicMock())
     def test_it_should_use_mssql_as_driver(self):
-        mssql_mock = MagicMock()
-        with patch.dict('sys.modules', _mssql=mssql_mock):
-            mssql = MSSQL(self.config_mock)
-            self.assertNotEqual(0, mssql_mock.connect.call_count)
+        MSSQL(self.config_mock)
+        self.assertNotEqual(0, sys.modules['_mssql'].connect.call_count)
 
     def test_it_should_stop_process_when_an_error_occur_during_connect_database(self):
         self.db_driver_mock.connect.side_effect = Exception("error when connecting")
 
         try:
-            mssql = MSSQL(self.config_mock, self.db_driver_mock)
+            MSSQL(self.config_mock, self.db_driver_mock)
             self.fail("it should not get here")
         except Exception, e:
             self.assertEqual("could not connect to database: error when connecting", str(e))
@@ -53,7 +52,7 @@ class MSSQLTest(BaseTest):
 
 
     def test_it_should_create_database_and_version_table_on_init_if_not_exists(self):
-        mssql = MSSQL(self.config_mock, self.db_driver_mock)
+        MSSQL(self.config_mock, self.db_driver_mock)
 
         expected_query_calls = [
             call("if not exists ( select 1 from sysdatabases where name = 'migration_test' ) create database migration_test;"),
@@ -72,7 +71,7 @@ class MSSQLTest(BaseTest):
     def test_it_should_drop_database_on_init_if_its_asked(self):
         self.config_dict["drop_db_first"] = True
 
-        mssql = MSSQL(self.config_mock, self.db_driver_mock)
+        MSSQL(self.config_mock, self.db_driver_mock)
 
         expected_query_calls = [
             call("if exists ( select 1 from sysdatabases where name = 'migration_test' ) drop database migration_test;"),
@@ -94,7 +93,7 @@ class MSSQLTest(BaseTest):
         self.db_mock.execute_non_query.side_effect = Exception("error when dropping")
 
         try:
-            mssql = MSSQL(self.config_mock, self.db_driver_mock)
+            MSSQL(self.config_mock, self.db_driver_mock)
             self.fail("it should not get here")
         except Exception, e:
             self.assertEqual("can't drop database 'migration_test'; \nerror when dropping", str(e))
