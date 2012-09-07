@@ -1,7 +1,5 @@
 import os
 import sys
-import codecs
-import imp
 import tempfile
 
 class Lists(object):
@@ -22,7 +20,6 @@ class Utils(object):
     @staticmethod
     def get_variables_from_file(full_filename, file_encoding='utf-8'):
         path, filename = os.path.split(full_filename)
-        name, extension = os.path.splitext(filename)
         temp_abspath = None
 
         global_dict = globals().copy()

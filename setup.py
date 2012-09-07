@@ -1,6 +1,4 @@
 from setuptools import setup, find_packages
-import re
-
 import simple_db_migrate
 
 setup(
