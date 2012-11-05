@@ -1,0 +1,12 @@
+Peon==0.3.0
+distribute==0.6.28
+git-remote-helpers==0.1.0
+mock==1.0.0
+nose==1.2.1
+pinocchio==0.3.1
+rope==0.9.4
+ropemode==0.1-rc2
+ropevim==0.3-rc
+virtualenv==1.7.1.2
+virtualenvwrapper==3.0.1
+wsgiref==0.1.2
