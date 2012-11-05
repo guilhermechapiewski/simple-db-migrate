@@ -17,7 +17,7 @@ class Migration(object):
     def __init__(self, file=None, id=0, file_name="", version="", label=None, sql_up="", sql_down="", script_encoding="utf-8"):
         self.id = id
         self.file_name = file_name
-        self.version = version
+        self.version = version if version else self._create_version()
         self.sql_up = sql_up
         self.sql_down = sql_down
         self.script_encoding = script_encoding
@@ -35,6 +35,9 @@ class Migration(object):
             self.file_name = file_name
             self.version = file_name[0:file_name.find("_")]
             self.sql_up, self.sql_down = self._get_commands()
+
+    def _create_version(self):
+        return strftime("%Y%m%d%H%M%S", localtime())
 
     def _get_commands(self):
         try:
@@ -70,6 +73,15 @@ class Migration(object):
         dict_1['id'] = dict_1['abspath'] = None
         dict_2['id'] = dict_2['abspath'] = None
         return dict_1 == dict_2
+
+    def generate_file(self):
+        file_name = "%s_%s%s" % (self.version, self.label, Migration.MIGRATION_FILES_EXTENSION)
+        content = '#-*- coding:%s -*-\nSQL_UP = u"""\n %s \n"""\n\nSQL_DOWN = u"""\n %s \n"""\n' % (self.script_encoding,
+                                                                                                    self.sql_up,
+                                                                                                    self.sql_down)
+        file = open(file_name, 'w')
+        file.write(content)
+        file.close()
 
     @staticmethod
     def sort_migrations_list(migrations, reverse=False):
