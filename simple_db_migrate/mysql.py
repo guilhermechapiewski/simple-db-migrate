@@ -84,6 +84,8 @@ class MySQL(object):
     def _parse_sql_statements(self, migration_sql):
         all_statements = []
         last_statement = ''
+        if migration_sql.find("-- EXECUTE_TOGETHER --") != -1:
+            return [migration_sql]
 
         for statement in migration_sql.split(';'):
             if len(last_statement) > 0:
