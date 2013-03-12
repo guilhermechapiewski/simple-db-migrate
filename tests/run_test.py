@@ -41,6 +41,11 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
         codecs_mock.assert_called_with('utf-8')
         self.assertEqual(new_stdout, sys.stdout)
 
+    @patch('sys.stdout', new_callable=object)
+    def test_it_should_not_break_when_sys_stdout_has_not_encoding_property(self, stdout_mock):
+        reload(simple_db_migrate)
+        self.assertIs(stdout_mock, sys.stdout)
+
     def test_it_should_define_a_version_string(self):
         self.assertTrue(isinstance(simple_db_migrate.SIMPLE_DB_MIGRATE_VERSION, str))
 
