@@ -6,10 +6,10 @@ from cli import CLI
 from config import FileConfig, Config
 from main import Main
 
-SIMPLE_DB_MIGRATE_VERSION = '1.5.2'
+SIMPLE_DB_MIGRATE_VERSION = '1.5.3'
 
 # fixing print in non-utf8 terminals
-if sys.stdout.encoding != 'UTF-8':
+if hasattr(sys.stdout, 'encoding') and sys.stdout.encoding != 'UTF-8':
     sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 
 def run_from_argv(args=None):
