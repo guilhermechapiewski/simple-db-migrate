@@ -15,9 +15,9 @@ class MySQLTest(BaseTest):
         self.last_execute_command = '';
         self.config_dict = {'database_script_encoding': 'utf8',
                    'database_encoding': 'utf8',
-                   'database_host': 'localhost',
+                   'database_host': 'somehost',
                    'database_user': 'root',
-                   'database_password': '',
+                   'database_password': 'pass',
                    'database_name': 'migration_test',
                    'database_version_table': '__db_version__',
                    'drop_db_first': False
@@ -34,6 +34,17 @@ class MySQLTest(BaseTest):
     def test_it_should_use_mysqldb_as_driver(self):
         MySQL(self.config_mock)
         self.assertNotEqual(0, sys.modules['MySQLdb'].connect.call_count)
+
+    @patch.dict('sys.modules', MySQLdb=MagicMock())
+    def test_it_should_use_default_port(self):
+        MySQL(self.config_mock)
+        self.assertEqual(call(passwd='pass', host='somehost', user='root', port=3306), sys.modules['MySQLdb'].connect.call_args)
+
+    @patch.dict('sys.modules', MySQLdb=MagicMock())
+    def test_it_should_use_given_configuration(self):
+        self.config_dict['database_port'] = 9876
+        MySQL(self.config_mock)
+        self.assertEqual(call(passwd='pass', host='somehost', user='root', port=9876), sys.modules['MySQLdb'].connect.call_args)
 
     def test_it_should_stop_process_when_an_error_occur_during_connect_database(self):
         self.db_driver_mock.connect.side_effect = Exception("error when connecting")

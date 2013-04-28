@@ -98,7 +98,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
 
     @patch.object(simple_db_migrate.main.Main, 'execute')
     @patch.object(simple_db_migrate.main.Main, '__init__', return_value=None)
-    @patch.object(simple_db_migrate.helpers.Utils, 'get_variables_from_file', return_value = {'DATABASE_HOST':'host', 'DATABASE_USER': 'root', 'DATABASE_PASSWORD':'', 'DATABASE_NAME':'database', 'DATABASE_MIGRATIONS_DIR':'.'})
+    @patch.object(simple_db_migrate.helpers.Utils, 'get_variables_from_file', return_value = {'DATABASE_HOST':'host', 'DATABASE_PORT':'1234', 'DATABASE_USER': 'root', 'DATABASE_PASSWORD':'', 'DATABASE_NAME':'database', 'DATABASE_MIGRATIONS_DIR':'.'})
     def test_it_should_read_configuration_file_using_fileconfig_class_and_execute_with_default_configuration(self, get_variables_from_file_mock, main_mock, execute_mock):
         simple_db_migrate.run_from_argv(["-c", os.path.abspath('sample.conf')])
 
@@ -115,6 +115,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
         self.assertEqual('', config_used.get('database_password'))
         self.assertEqual('database', config_used.get('database_name'))
         self.assertEqual('host', config_used.get('database_host'))
+        self.assertEqual(1234, config_used.get('database_port'))
         self.assertEqual(False, config_used.get('utc_timestamp'))
         self.assertEqual('__db_version__', config_used.get('database_version_table'))
         self.assertEqual([os.path.abspath('.')], config_used.get("database_migrations_dir"))
@@ -133,7 +134,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
     @patch.object(simple_db_migrate.main.Main, 'execute')
     @patch.object(simple_db_migrate.main.Main, '__init__', return_value=None)
     def test_it_should_get_configuration_exclusively_from_args_if_not_use_configuration_file_using_config_class_and_execute_with_default_configuration(self, main_mock, execute_mock):
-        simple_db_migrate.run_from_argv(['--db-host', 'host', '--db-name', 'name', '--db-user', 'user', '--db-password', 'pass', '--db-engine', 'engine', '--db-migrations-dir', '.:/tmp:../migration'])
+        simple_db_migrate.run_from_argv(['--db-host', 'host', '--db-port', '4321', '--db-name', 'name', '--db-user', 'user', '--db-password', 'pass', '--db-engine', 'engine', '--db-migrations-dir', '.:/tmp:../migration'])
 
         self.assertEqual(1, execute_mock.call_count)
         execute_mock.assert_called_with()
@@ -146,6 +147,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
         self.assertEqual('pass', config_used.get('database_password'))
         self.assertEqual('name', config_used.get('database_name'))
         self.assertEqual('host', config_used.get('database_host'))
+        self.assertEqual(4321, config_used.get('database_port'))
         self.assertEqual(False, config_used.get('utc_timestamp'))
         self.assertEqual('__db_version__', config_used.get('database_version_table'))
         self.assertEqual([os.path.abspath('.'), '/tmp', os.path.abspath('../migration')], config_used.get("database_migrations_dir"))

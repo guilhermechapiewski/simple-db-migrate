@@ -151,6 +151,12 @@ class CLI(object):
                 default=None,
                 help="Set the host where the database is."),
 
+        make_option("--db-port",
+                dest="database_port",
+                default=None,
+                type="int",
+                help="Set the port where the database is."),
+
         make_option("--db-name",
                 dest="database_name",
                 default=None,
