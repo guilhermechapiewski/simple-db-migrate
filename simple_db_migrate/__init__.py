@@ -45,7 +45,9 @@ def run(options):
         config.update('database_user', options.get('database_user'))
         config.update('database_password', options.get('database_password'))
         config.update('database_host', options.get('database_host'))
+        config.update('database_port', options.get('database_port'))
         config.update('database_name', options.get('database_name'))
+
         if options.get('database_migrations_dir'):
             config.update("database_migrations_dir", Config._parse_migrations_dir(options.get('database_migrations_dir')))
 
