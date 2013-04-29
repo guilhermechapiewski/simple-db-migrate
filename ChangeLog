@@ -1,3 +1,31 @@
+### 1.5.2 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Tue, 24 Jul 2012 12:30:00 -0300
+- Fixing bug which not allow to have two migrations with same timestamp
+
+### 1.5.1 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Wed, 30 May 2012 17:50:00 -0300
+- Fixing entry point db-migrate
+
+### 1.5.0 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Tue, 10 Apr 2012 02:00:00 -0300
+- Removing some legacy code which updates version table, check *Upgrading simple-db-migrate version* on README.textile
+- Make configuration file optional, all configuration may be set by command line
+- Added: an optional django app to integrate simple-db-migrate as a command to manage.py
+
+### 1.4.4 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Mon, 09 Apr 2012 23:20:00 -0300
+- Adding MS-SQL Server support, made by Bruno Caimar <bruno.caimar@gmail.com>
+
+### 1.4.3 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Wed, 07 Mar 2012 12:00:00 -0300
+- Removing support to make debian package installation
+- Refactoring tests
+- Make possible to set some command line options by configuration file
+- Updating README file
+
+### 1.4.2.1 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Tue, 24 Jan 2012 19:00:00 -0300
+- Bug fix: bug fix on get_migration_from_version_number, for performance reason (contribution: Francisco Alves <franciscoandre@gmail.com>).
+
+### 1.4.2 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Mon, 26 Sep 2011 16:35:00 -03:00
+- Added: password parameter
+- Added: backtick on database name
+- Added: parameter to create migrations using GMT
+
 ### 1.4.1.1 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Mon, 14 Mar 2011 10:30:00 -0300
 - Improvment: label will be registred for all migrations executed, not only for the last
 

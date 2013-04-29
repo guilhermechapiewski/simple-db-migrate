@@ -1,4 +1,4 @@
-from time import strftime
+from time import strftime, gmtime, localtime
 import codecs
 import os
 import shutil
@@ -6,11 +6,12 @@ import re
 import imp
 import tempfile
 import sys
+from simple_db_migrate.helpers import Utils
 
 class Migration(object):
 
     MIGRATION_FILES_EXTENSION = ".migration"
-    MIGRATION_FILES_MASK = r"[0-9]{14}\w+%s$" % MIGRATION_FILES_EXTENSION
+    MIGRATION_FILES_MASK = r"[0-9]{14}_\w+%s$" % MIGRATION_FILES_EXTENSION
     TEMPLATE = '#-*- coding:%s -*-\nSQL_UP = u"""\n\n"""\n\nSQL_DOWN = u"""\n\n"""\n'
 
     def __init__(self, file=None, id=0, file_name="", version="", label=None, sql_up="", sql_down="", script_encoding="utf-8"):
@@ -36,52 +37,12 @@ class Migration(object):
             self.sql_up, self.sql_down = self._get_commands()
 
     def _get_commands(self):
-        SQL_UP = ''
-        SQL_DOWN = ''
-        mod = None
-        temp_abspath = None
-
         try:
-            mod = imp.load_source(self.file_name, self.abspath)
-            SQL_UP = Migration.check_sql_unicode(mod.SQL_UP, self.script_encoding)
-            SQL_DOWN = Migration.check_sql_unicode(mod.SQL_DOWN, self.script_encoding)
-        except Exception:
-            try:
-                f = open(self.abspath, "rU")
-                content = f.read()
-                f.close()
-
-                temp_abspath = "%s/%s" %(tempfile.gettempdir().rstrip('/'), self.file_name)
-                f = open(temp_abspath, "w")
-                f.write('#-*- coding:%s -*-\n%s' % (self.script_encoding, content))
-                f.close()
-
-                mod = imp.load_source(self.file_name, temp_abspath)
-
-                SQL_UP = Migration.check_sql_unicode(mod.SQL_UP, self.script_encoding)
-                SQL_DOWN = Migration.check_sql_unicode(mod.SQL_DOWN, self.script_encoding)
-
-            except Exception:
-                f = codecs.open(self.abspath, "rU", self.script_encoding)
-                exec(f.read())
-                f.close()
-        finally:
-            #erase temp and compiled files
-            if temp_abspath and os.path.isfile(temp_abspath):
-                os.remove(temp_abspath)
-
-            if mod and sys.modules.has_key(self.file_name):
-                sys.modules.pop(self.file_name)
-
-            if temp_abspath and os.path.isfile(temp_abspath + "c"):
-                os.remove(temp_abspath + "c")
-
-            if os.path.isfile(self.abspath + "c"):
-                os.remove(self.abspath + "c")
-
-        try:
+            variables = Utils.get_variables_from_file(self.abspath, self.script_encoding)
+            SQL_UP = Migration.ensure_sql_unicode(variables['SQL_UP'], self.script_encoding)
+            SQL_DOWN = Migration.ensure_sql_unicode(variables['SQL_DOWN'], self.script_encoding)
             (SQL_UP, SQL_DOWN)
-        except NameError:
+        except KeyError:
             raise Exception("migration file is incorrect; it does not define 'SQL_UP' or 'SQL_DOWN' (%s)" % self.abspath)
 
         if SQL_UP is None or SQL_UP == "":
@@ -92,8 +53,30 @@ class Migration(object):
 
         return SQL_UP, SQL_DOWN
 
+    def compare_to(self, another_migration):
+        if self.version < another_migration.version:
+            return -1
+        if self.version > another_migration.version:
+            return 1
+        if self.file_name < another_migration.file_name:
+            return -1
+        if self.file_name > another_migration.file_name:
+            return 1
+        return 0
+
+    def __eq__(self, other):
+        dict_1 = self.__dict__
+        dict_2 = other.__dict__
+        dict_1['id'] = dict_1['abspath'] = None
+        dict_2['id'] = dict_2['abspath'] = None
+        return dict_1 == dict_2
+
     @staticmethod
-    def check_sql_unicode(sql, script_encoding):
+    def sort_migrations_list(migrations, reverse=False):
+        return sorted(migrations, cmp=lambda x,y: x.compare_to(y), reverse=reverse)
+
+    @staticmethod
+    def ensure_sql_unicode(sql, script_encoding):
         if not sql or not script_encoding:
             return ""
 
@@ -103,25 +86,14 @@ class Migration(object):
             sql = unicode(sql)
         return sql
 
-    def compare_to(self, another_migration):
-        if self.version < another_migration.version:
-            return -1
-        elif self.version > another_migration.version:
-            return 1
-        return 0
-
-    @staticmethod
-    def sort_migrations_list(migrations, reverse=False):
-        return sorted(migrations, cmp=lambda x,y: x.compare_to(y), reverse=reverse)
-
     @staticmethod
     def is_file_name_valid(file_name):
         match = re.match(Migration.MIGRATION_FILES_MASK, file_name, re.IGNORECASE)
         return match != None
 
     @staticmethod
-    def create(migration_name, migration_dir='.', script_encoding='utf-8'):
-        timestamp = strftime("%Y%m%d%H%M%S")
+    def create(migration_name, migration_dir='.', script_encoding='utf-8', utc_timestamp = False):
+        timestamp = strftime("%Y%m%d%H%M%S", gmtime() if utc_timestamp else localtime())
         file_name = "%s_%s%s" % (timestamp, migration_name, Migration.MIGRATION_FILES_EXTENSION)
 
         if not Migration.is_file_name_valid(file_name):
@@ -140,15 +112,19 @@ class Migration(object):
 
 class SimpleDBMigrate(object):
 
-    def __init__(self, config=None):
-        self._migrations_dir = config.get("migrations_dir")
-        self._script_encoding=config.get("db_script_encoding", "utf-8")
+    def __init__(self, config):
+        self._migrations_dir = config.get("database_migrations_dir")
+        self._script_encoding=config.get("database_script_encoding", "utf-8")
+        self.all_migrations = None
 
     def get_all_migrations(self):
+        if self.all_migrations:
+            return self.all_migrations
+
         migrations = []
 
-        for dir in self._migrations_dir:
-            path = os.path.abspath(dir)
+        for _dir in self._migrations_dir:
+            path = os.path.abspath(_dir)
 
             dir_list = None
             try:
@@ -164,7 +140,8 @@ class SimpleDBMigrate(object):
         if len(migrations) == 0:
             raise Exception("no migration files found")
 
-        return Migration.sort_migrations_list(migrations)
+        self.all_migrations = Migration.sort_migrations_list(migrations)
+        return self.all_migrations
 
     def get_all_migration_versions(self):
         return [migration.version for migration in self.get_all_migrations()]

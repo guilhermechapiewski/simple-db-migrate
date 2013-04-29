@@ -1,5 +1,7 @@
 .DS_Store
 .coverage
+cover
+*,cover
 *.pyc
 *~
 build
@@ -9,3 +11,4 @@ src/simple_db_migrate.egg-info
 simple_db_migrate.egg-info
 .project
 .pydevproject
+.settings
