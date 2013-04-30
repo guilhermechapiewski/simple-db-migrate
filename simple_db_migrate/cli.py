@@ -153,6 +153,7 @@ class CLI(object):
 
         make_option("--db-port",
                 dest="database_port",
+                type="int",
                 help="Set the port where the database is."),
 
         make_option("--db-name",

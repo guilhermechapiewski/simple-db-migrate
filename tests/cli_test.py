@@ -187,6 +187,12 @@ class CLITest(unittest.TestCase):
     def test_it_should_accept_database_host_options(self):
         self.assertEqual("host_value", CLI.parse(["--db-host", "host_value"])[0].database_host)
 
+    def test_it_should_not_has_a_default_value_for_database_port(self):
+        self.assertEqual(None, CLI.parse([])[0].database_port)
+
+    def test_it_should_accept_database_host_options(self):
+        self.assertEqual(42, CLI.parse(["--db-port", "42"])[0].database_port)
+
     def test_it_should_not_has_a_default_value_for_database_name(self):
         self.assertEqual(None, CLI.parse([])[0].database_name)
 
