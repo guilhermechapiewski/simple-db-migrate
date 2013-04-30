@@ -65,11 +65,7 @@ class Migration(object):
         return 0
 
     def __eq__(self, other):
-        dict_1 = self.__dict__
-        dict_2 = other.__dict__
-        dict_1['id'] = dict_1['abspath'] = None
-        dict_2['id'] = dict_2['abspath'] = None
-        return dict_1 == dict_2
+        return (self.version, self.file_name) == (other.version, other.file_name)
 
     @staticmethod
     def sort_migrations_list(migrations, reverse=False):
