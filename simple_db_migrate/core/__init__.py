@@ -65,7 +65,7 @@ class Migration(object):
         return 0
 
     def __eq__(self, other):
-        return (self.version, self.name) == (other.version, other.name)
+        return (self.version, self.file_name) == (other.version, other.file_name)
 
     @staticmethod
     def sort_migrations_list(migrations, reverse=False):
