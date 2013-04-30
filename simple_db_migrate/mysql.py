@@ -27,7 +27,6 @@ class MySQL(object):
 
     def __mysql_connect(self, connect_using_database_name=True):
         try:
-            print("connecting to %s:%d" % (self.__mysql_host, self.__mysql_port))
             conn = self.__mysql_driver.connect(host=self.__mysql_host, port=self.__mysql_port, user=self.__mysql_user, passwd=self.__mysql_passwd)
 
             conn.set_character_set(self.__mysql_encoding)
