@@ -168,18 +168,17 @@ class Main(object):
 
         is_migration_up = True
         # check if a version was passed to the program
-        if self.config.get("schema_version"):
-            # if was passed and this version is present in the database, check if is older than the current version
-            destination_version_id = self.sgdb.get_version_id_from_version_number(destination_version)
-            if destination_version_id:
-                current_version_id = self.sgdb.get_version_id_from_version_number(current_version)
-                # if this version is previous to the current version in database, then will be done a migration down to this version
-                if current_version_id > destination_version_id:
-                    is_migration_up = False
-            # if was passed and this version is not present in the database and is older than the current version, raise an exception
-            # cause is trying to go down to something that never was done
-            elif current_version > destination_version:
-                raise Exception("Trying to migrate to a lower version wich is not found on database (%s)" % destination_version)
+
+        destination_version_id = self.sgdb.get_version_id_from_version_number(destination_version)
+        if destination_version_id:
+            current_version_id = self.sgdb.get_version_id_from_version_number(current_version)
+            # if this version is previous to the current version in database, then will be done a migration down to this version
+            if current_version_id > destination_version_id:
+                is_migration_up = False
+        # if was passed and this version is not present in the database and is older than the current version, raise an exception
+        # cause is trying to go down to something that never was done
+        elif current_version > destination_version:
+            raise Exception("Trying to migrate to a lower version wich is not found on database (%s)" % destination_version)
 
         # getting only the migration sql files to be executed
         migrations_to_be_executed = self._get_migration_files_to_be_executed(current_version, destination_version, is_migration_up)
