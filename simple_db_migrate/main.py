@@ -128,19 +128,22 @@ class Main(object):
             return []
 
         schema_migrations = self.sgdb.get_all_schema_migrations()
-        available_migrations = self.db_migrate.get_all_migrations()
 
         # migration up
         if is_migration_up:
+            available_migrations = self.db_migrate.get_all_migrations()
             remaining_migrations = Lists.subtract(available_migrations, schema_migrations)
             remaining_migrations_to_execute = [migration for migration in remaining_migrations if migration.version <= destination_version]
             return remaining_migrations_to_execute
 
         # migration down...
         destination_version_id = self.sgdb.get_version_id_from_version_number(destination_version)
-        migration_versions = self.db_migrate.get_all_migration_versions()
         down_migrations_to_execute = [migration for migration in schema_migrations if migration.id > destination_version_id]
         force_files = self.config.get("force_use_files_on_down", False)
+        if force_files:
+            migration_versions = self.db_migrate.get_all_migration_versions()
+        else:
+            migration_versions = self.sgdb.get_all_schema_versions()
         for migration in down_migrations_to_execute:
             if not migration.sql_down or force_files:
                 if migration.version not in migration_versions:
@@ -165,18 +168,17 @@ class Main(object):
 
         is_migration_up = True
         # check if a version was passed to the program
-        if self.config.get("schema_version"):
-            # if was passed and this version is present in the database, check if is older than the current version
-            destination_version_id = self.sgdb.get_version_id_from_version_number(destination_version)
-            if destination_version_id:
-                current_version_id = self.sgdb.get_version_id_from_version_number(current_version)
-                # if this version is previous to the current version in database, then will be done a migration down to this version
-                if current_version_id > destination_version_id:
-                    is_migration_up = False
-            # if was passed and this version is not present in the database and is older than the current version, raise an exception
-            # cause is trying to go down to something that never was done
-            elif current_version > destination_version:
-                raise Exception("Trying to migrate to a lower version wich is not found on database (%s)" % destination_version)
+
+        destination_version_id = self.sgdb.get_version_id_from_version_number(destination_version)
+        if destination_version_id:
+            current_version_id = self.sgdb.get_version_id_from_version_number(current_version)
+            # if this version is previous to the current version in database, then will be done a migration down to this version
+            if current_version_id > destination_version_id:
+                is_migration_up = False
+        # if was passed and this version is not present in the database and is older than the current version, raise an exception
+        # cause is trying to go down to something that never was done
+        elif current_version > destination_version:
+            raise Exception("Trying to migrate to a lower version wich is not found on database (%s)" % destination_version)
 
         # getting only the migration sql files to be executed
         migrations_to_be_executed = self._get_migration_files_to_be_executed(current_version, destination_version, is_migration_up)
