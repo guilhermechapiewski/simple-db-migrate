@@ -7,7 +7,7 @@ simple-db-migrate is damn simple. The best way to understand how it works is by 
 You can install it by typing:
 
 <pre>
-    $ sudo easy_install simple-db-migrate
+    $ sudo pip simple-db-migrate
 </pre>
 
 There are more detailed instructions and information about installing directly from source on the "project website":http://guilhermechapiewski.github.com/simple-db-migrate.
