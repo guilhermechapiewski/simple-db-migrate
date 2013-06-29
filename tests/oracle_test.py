@@ -15,10 +15,10 @@ class OracleTest(BaseTest):
         self.last_execute_command = '';
         self.config_dict = {'database_script_encoding': 'utf8',
                    'database_encoding': 'American_America.UTF8',
-                   'database_host': 'SID',
+                   'database_host': 'somehost',
                    'database_user': 'root',
-                   'database_password': '',
-                   'database_name': 'migration_test',
+                   'database_password': 'migration_test',
+                   'database_name': 'SID',
                    'database_version_table': 'db_version',
                    'drop_db_first': False
                 }
@@ -36,6 +36,25 @@ class OracleTest(BaseTest):
     def test_it_should_use_cx_Oracle_as_driver(self):
         Oracle(self.config_mock)
         self.assertNotEqual(0, sys.modules['cx_Oracle'].connect.call_count)
+
+    @patch.dict('sys.modules', cx_Oracle=MagicMock())
+    def test_it_should_use_default_port(self):
+        sys.modules['cx_Oracle'].makedsn.side_effect = self.makedsn_side_effect
+        Oracle(self.config_mock)
+        self.assertEqual(call(dsn="(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=somehost)(PORT=1521)))(CONNECT_DATA=(SID=SID)))", password='migration_test', user='root'), sys.modules['cx_Oracle'].connect.call_args)
+
+    @patch.dict('sys.modules', cx_Oracle=MagicMock())
+    def test_it_should_use_given_configuration(self):
+        sys.modules['cx_Oracle'].makedsn.side_effect = self.makedsn_side_effect
+        self.config_dict['database_port'] = 9876
+        Oracle(self.config_mock)
+        self.assertEqual(call(dsn="(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=somehost)(PORT=9876)))(CONNECT_DATA=(SID=SID)))", password='migration_test', user='root'), sys.modules['cx_Oracle'].connect.call_args)
+
+    @patch.dict('sys.modules', cx_Oracle=MagicMock())
+    def test_it_should_use_database_name_as_dsn_when_database_host_is_not_set(self):
+        self.config_dict['database_host'] = None
+        Oracle(self.config_mock)
+        self.assertEqual(call(dsn='SID', password='migration_test', user='root'), sys.modules['cx_Oracle'].connect.call_args)
 
     def test_it_should_stop_process_when_an_error_occur_during_connect_database(self):
         self.db_driver_mock.connect.side_effect = Exception("error when connecting")
@@ -72,7 +91,7 @@ class OracleTest(BaseTest):
         self.assertEqual(7, self.db_mock.close.call_count)
 
         expected_execute_calls = [
-            call('create user root identified by '),
+            call('create user root identified by migration_test'),
             call('grant connect, resource to root'),
             call('grant create public synonym to root'),
             call('grant drop public synonym to root'),
@@ -171,7 +190,7 @@ class OracleTest(BaseTest):
 
         expected_execute_calls = [
             call(select_elements_to_drop_sql),
-            call('create user root identified by '),
+            call('create user root identified by migration_test'),
             call('grant connect, resource to root'),
             call('grant create public synonym to root'),
             call('grant drop public synonym to root'),
@@ -214,7 +233,7 @@ class OracleTest(BaseTest):
 
         expected_execute_calls = [
             call(select_elements_to_drop_sql),
-            call('create user root identified by '),
+            call('create user root identified by migration_test'),
             call('grant connect, resource to root'),
             call('grant create public synonym to root')
         ]
@@ -280,7 +299,7 @@ class OracleTest(BaseTest):
             Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
             self.fail("it should not get here")
         except Exception, e:
-            self.assertEqual("can't drop database 'migration_test'", str(e))
+            self.assertEqual("can't drop database objects for user 'root'", str(e))
 
         self.assertEqual(1, self.db_mock.commit.call_count)
         self.assertEqual(3, self.db_mock.close.call_count)
@@ -793,6 +812,9 @@ class OracleTest(BaseTest):
 
     def close_side_effect(self, *args):
         return self.side_effect(self.close_returns, None)
+
+    def makedsn_side_effect(self, host, port, sid):
+        return "(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=%s)(PORT=%s)))(CONNECT_DATA=(SID=%s)))" % (host, port, sid)
 
 if __name__ == "__main__":
     unittest.main()

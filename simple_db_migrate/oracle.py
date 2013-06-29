@@ -16,6 +16,7 @@ class Oracle(object):
         self.__script_encoding = config.get("database_script_encoding", "utf8")
         self.__encoding = config.get("database_encoding", "American_America.UTF8")
         self.__host = config.get("database_host")
+        self.__port = config.get("database_port", 1521)
         self.__user = config.get("database_user")
         self.__passwd = config.get("database_password")
         self.__db = config.get("database_name")
@@ -39,7 +40,11 @@ class Oracle(object):
 
     def __connect(self):
         try:
-            return self.__driver.connect(dsn=self.__host, user=self.__user, password=self.__passwd)
+            dsn = self.__db
+            if self.__host:
+                dsn = self.__driver.makedsn(self.__host, self.__port, self.__db)
+
+            return self.__driver.connect(dsn=dsn, user=self.__user, password=self.__passwd)
         except Exception, e:
             raise Exception("could not connect to database: %s" % e)
 
@@ -176,7 +181,7 @@ class Oracle(object):
                 CLI.msg('\nDo you want to continue anyway (y/N):', "END")
                 to_continue = self.std_in.readline().strip()
                 if to_continue.upper() != 'Y':
-                    raise Exception("can't drop database '%s'" % (self.__db) )
+                    raise Exception("can't drop database objects for user '%s'" % (self.__user) )
 
         except Exception, e:
             self._verify_if_exception_is_invalid_user(e)
