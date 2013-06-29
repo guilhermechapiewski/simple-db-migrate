@@ -776,6 +776,17 @@ class MainTest(BaseTest):
         main = Main(sgdb=Mock(**{'get_all_schema_migrations.return_value':all_schema_migrations, 'get_all_schema_versions.return_value':['20090214115200', '20090214115301', '20090214115400'], 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
         self.assertEqual([all_schema_migrations[-1], all_schema_migrations[-2]], main._get_migration_files_to_be_executed('20090214115400', '20090214115200', False))
 
+    def test_it_should_not_fail_when_there_is_no_migrations_files_and_is_down(self):
+        self.initial_config.update({"schema_version":None, "label_version":None, "database_migrations_dir":['no_migrations']})
+        config=Config(self.initial_config)
+        all_schema_migrations = [
+            Migration(file_name="20090214115200_02_test_migration.migration", version="20090214115200", sql_up="sql up 02", sql_down="sql down 02", id=2),
+            Migration(file_name="20090214115301_03_test_migration.migration", version="20090214115301", sql_up="sql up 03.1", sql_down="sql down 03.1", id=3),
+            Migration(file_name="20090214115300_04_test_migration.migration", version="20090214115400", sql_up="sql up 04", sql_down="sql down 04", id=4)
+        ]
+        main = Main(sgdb=Mock(**{'get_all_schema_migrations.return_value':all_schema_migrations, 'get_all_schema_versions.return_value':['20090214115200', '20090214115301', '20090214115400'], 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
+        self.assertEqual([all_schema_migrations[-1], all_schema_migrations[-2]], main._get_migration_files_to_be_executed('20090214115400', '20090214115200', False))
+
     def test_it_should_get_sql_down_from_file_if_sql_down_is_empty_on_database_and_is_down(self):
         self.initial_config.update({"schema_version":None, "label_version":None, "database_migrations_dir":['migrations', '.']})
         config=Config(self.initial_config)

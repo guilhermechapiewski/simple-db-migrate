@@ -128,17 +128,20 @@ class Main(object):
             return []
 
         schema_migrations = self.sgdb.get_all_schema_migrations()
-        available_migrations = self.db_migrate.get_all_migrations()
 
         # migration up
         if is_migration_up:
+            available_migrations = self.db_migrate.get_all_migrations()
             remaining_migrations = Lists.subtract(available_migrations, schema_migrations)
             remaining_migrations_to_execute = [migration for migration in remaining_migrations if migration.version <= destination_version]
             return remaining_migrations_to_execute
 
         # migration down...
         destination_version_id = self.sgdb.get_version_id_from_version_number(destination_version)
-        migration_versions = self.db_migrate.get_all_migration_versions()
+        try:
+            migration_versions = self.db_migrate.get_all_migration_versions()
+        except:
+            migration_versions = []
         down_migrations_to_execute = [migration for migration in schema_migrations if migration.id > destination_version_id]
         force_files = self.config.get("force_use_files_on_down", False)
         for migration in down_migrations_to_execute:
