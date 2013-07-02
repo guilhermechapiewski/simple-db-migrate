@@ -46,7 +46,7 @@ class Main(object):
         self.db_migrate = SimpleDBMigrate(self.config)
 
     def execute(self):
-        self._execution_log("\nStarting DB migration...", "PINK", log_level_limit=1)
+        self._execution_log('\nStarting DB migration on host/database "%s/%s" with user "%s"...' % (self.config.get('database_host'), self.config.get('database_name'), self.config.get('database_user')), "PINK", log_level_limit=1)        
         if self.config.get("new_migration", None):
             self._create_migration()
         else:

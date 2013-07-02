@@ -109,7 +109,7 @@ class MainTest(BaseTest):
         main.execute()
 
         expected_calls = [
-            call('\nStarting DB migration...', 'PINK', log_level_limit=1),
+            call('\nStarting DB migration on host/database "localhost/test" with user "user"...', 'PINK', log_level_limit=1),
             call("- Created file 'created_file'", log_level_limit=1),
             call('\nDone.\n', 'PINK', log_level_limit=1)
         ]
@@ -146,7 +146,7 @@ class MainTest(BaseTest):
         main.execute()
 
         expected_calls = [
-            call('\nStarting DB migration...', 'PINK', log_level_limit=1),
+            call('\nStarting DB migration on host/database "localhost/test" with user "user"...', 'PINK', log_level_limit=1),
             call('\nDone.\n', 'PINK', log_level_limit=1)
         ]
         self.assertEqual(expected_calls, _execution_log_mock.mock_calls)
@@ -355,7 +355,7 @@ class MainTest(BaseTest):
         main.execute()
 
         expected_calls = [
-            call('\nStarting DB migration...', 'PINK', log_level_limit=1),
+            call('\nStarting DB migration on host/database "localhost/test" with user "user"...', 'PINK', log_level_limit=1),
             call('- Current version is: 20090214115600', 'GREEN', log_level_limit=1),
             call('- Destination version is: 20090214115600', 'GREEN', log_level_limit=1),
             call('\nNothing to do.\n', 'PINK', log_level_limit=1),
@@ -388,7 +388,7 @@ class MainTest(BaseTest):
         main.execute()
 
         expected_calls = [
-            call('\nStarting DB migration...', 'PINK', log_level_limit=1),
+            call('\nStarting DB migration on host/database "localhost/test" with user "user"...', 'PINK', log_level_limit=1),
             call('- Current version is: 20090214115400', 'GREEN', log_level_limit=1),
             call('- Destination version is: 20090214115600', 'GREEN', log_level_limit=1),
             call("\nWARNING: database migrations are not being executed ('--showsqlonly' activated)", 'YELLOW', log_level_limit=1),
@@ -412,7 +412,7 @@ class MainTest(BaseTest):
         main.execute()
 
         expected_calls = [
-            call('\nStarting DB migration...', 'PINK', log_level_limit=1),
+            call('\nStarting DB migration on host/database "localhost/test" with user "user"...', 'PINK', log_level_limit=1),
             call('- Current version is: 20090214115600', 'GREEN', log_level_limit=1),
             call('- Destination version is: 20090214115400', 'GREEN', log_level_limit=1),
             call("\nWARNING: database migrations are not being executed ('--showsqlonly' activated)", 'YELLOW', log_level_limit=1),
@@ -436,7 +436,7 @@ class MainTest(BaseTest):
         main.execute()
 
         expected_calls = [
-            call('\nStarting DB migration...', 'PINK', log_level_limit=1),
+            call('\nStarting DB migration on host/database "localhost/test" with user "user"...', 'PINK', log_level_limit=1),
             call('- Current version is: 20090214115400', 'GREEN', log_level_limit=1),
             call('- Destination version is: 20090214115600', 'GREEN', log_level_limit=1),
             call('\nStarting migration up!', log_level_limit=1),
@@ -462,7 +462,7 @@ class MainTest(BaseTest):
         main.execute()
 
         expected_calls = [
-            call('\nStarting DB migration...', 'PINK', log_level_limit=1),
+            call('\nStarting DB migration on host/database "localhost/test" with user "user"...', 'PINK', log_level_limit=1),
             call('- Current version is: 20090214115600', 'GREEN', log_level_limit=1),
             call('- Destination version is: 20090214115400', 'GREEN', log_level_limit=1),
             call('\nStarting migration down!', log_level_limit=1),
@@ -488,7 +488,7 @@ class MainTest(BaseTest):
         main.execute()
 
         expected_calls = [
-            call('\nStarting DB migration...', 'PINK', log_level_limit=1),
+            call('\nStarting DB migration on host/database "localhost/test" with user "user"...', 'PINK', log_level_limit=1),
             call('- Current version is: 20090214115400', 'GREEN', log_level_limit=1),
             call('- Destination version is: 20090214115600', 'GREEN', log_level_limit=1),
             call('\nStarting migration up!', log_level_limit=1),
@@ -518,7 +518,7 @@ class MainTest(BaseTest):
         main.execute()
 
         expected_calls = [
-            call('\nStarting DB migration...', 'PINK', log_level_limit=1),
+            call('\nStarting DB migration on host/database "localhost/test" with user "user"...', 'PINK', log_level_limit=1),
             call('- Current version is: 20090214115600', 'GREEN', log_level_limit=1),
             call('- Destination version is: 20090214115400', 'GREEN', log_level_limit=1),
             call('\nStarting migration down!', log_level_limit=1),
@@ -561,7 +561,7 @@ class MainTest(BaseTest):
         self.assertRaisesWithMessage(Exception, 'error when executin sql', main.execute)
 
         expected_calls = [
-            call('\nStarting DB migration...', 'PINK', log_level_limit=1),
+            call('\nStarting DB migration on host/database "localhost/test" with user "user"...', 'PINK', log_level_limit=1),
             call('- Current version is: 20090214115400', 'GREEN', log_level_limit=1),
             call('- Destination version is: 20090214115600', 'GREEN', log_level_limit=1),
             call('\nStarting migration up!', log_level_limit=1),
@@ -585,7 +585,7 @@ class MainTest(BaseTest):
         self.assertRaisesWithMessage(Exception, 'error when executin sql', main.execute)
 
         expected_calls = [
-            call('\nStarting DB migration...', 'PINK', log_level_limit=1),
+            call('\nStarting DB migration on host/database "localhost/test" with user "user"...', 'PINK', log_level_limit=1),
             call('- Current version is: 20090214115600', 'GREEN', log_level_limit=1),
             call('- Destination version is: 20090214115400', 'GREEN', log_level_limit=1),
             call('\nStarting migration down!', log_level_limit=1),
@@ -609,7 +609,7 @@ class MainTest(BaseTest):
         self.assertRaisesWithMessage(Exception, 'error getting migrations to execute', main.execute)
 
         expected_calls = [
-            call('\nStarting DB migration...', 'PINK', log_level_limit=1),
+            call('\nStarting DB migration on host/database "localhost/test" with user "user"...', 'PINK', log_level_limit=1),
         ]
         self.assertEqual(expected_calls, _execution_log_mock.mock_calls)
         files_to_be_executed_mock.assert_called_with('20090214115400', '20090214115600', True)
@@ -626,7 +626,7 @@ class MainTest(BaseTest):
         self.assertRaisesWithMessage(Exception, 'error getting migrations to execute', main.execute)
 
         expected_calls = [
-            call('\nStarting DB migration...', 'PINK', log_level_limit=1),
+            call('\nStarting DB migration on host/database "localhost/test" with user "user"...', 'PINK', log_level_limit=1),
         ]
         self.assertEqual(expected_calls, _execution_log_mock.mock_calls)
         files_to_be_executed_mock.assert_called_with('20090214115600', '20090214115400', False)
