@@ -57,6 +57,14 @@ class ConfigTest(unittest.TestCase):
         _dict = {"some_key": "some_value"}
         self.assertEqual("some_value", Config._get(_dict, "some_key"))
 
+    def test_it_should_return_value_from_a_dict_even_if_a_default_value_given(self):
+        _dict = {"some_key": "some_value"}
+        self.assertEqual("some_value", Config._get(_dict, "some_key", "default_value"))
+
+    def test_it_should_return_default_value_for_an_none_dict_value(self):
+        _dict = {"some_key": None}
+        self.assertEqual("default_value", Config._get(_dict, "some_key", "default_value"))
+
     def test_it_should_return_default_value_for_an_inexistent_dict_value(self):
         _dict = {"some_key": "some_value"}
         self.assertEqual("default_value", Config._get(_dict, "ANOTHER_KEY", "default_value"))
@@ -68,7 +76,7 @@ class ConfigTest(unittest.TestCase):
         except Exception, e:
             self.assertEqual("invalid key ('ANOTHER_KEY')", str(e))
 
-    def test_it_should_accept_non_empty_stringand_false_as_default_value(self):
+    def test_it_should_accept_non_empty_string_and_false_as_default_value(self):
         _dict = {"some_key": "some_value"}
         self.assertEqual(None, Config._get(_dict,"ANOTHER_KEY", None))
         self.assertEqual("", Config._get(_dict,"ANOTHER_KEY", ""))
@@ -161,6 +169,10 @@ class ConfigTest(unittest.TestCase):
         self.assertEqual("new_value", config.get("some_KEY"))
         config.remove("SOME_KEY")
         self.assertRaises(Exception, config.get, "sOMe_KEY")
+
+    def test_it_should_transform_keys_to_lower_case_on_init(self):
+        config = Config({"sOmE_kEy": "original_value"})
+        self.assertEqual(["some_key"] ,config._config.keys())
 
 class FileConfigTest(unittest.TestCase):
 

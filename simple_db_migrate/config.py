@@ -7,7 +7,7 @@ class Config(object):
     def __init__(self, inital_config=None):
         self._config = inital_config or {}
         for key in self._config.keys():
-            self._config[key.lower()] = self._config[key]
+            self._config[key.lower()] = self._config.pop(key)
 
     def __repr__(self):
         return str(self._config)
@@ -42,6 +42,8 @@ class Config(object):
     @staticmethod
     def _get(_dict, key, default_value='!@#$%&*'):
         try:
+            if ((_dict[key] is None) and (default_value != '!@#$%&*')):
+                return default_value
             return _dict[key]
         except KeyError:
             if default_value != '!@#$%&*':
