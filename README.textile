@@ -59,7 +59,7 @@ Second, you have to configure access to your database so simple-db-migrate can e
     DATABASE_NAME = "migration_example"
     DATABASE_MIGRATIONS_DIR = "."
 
-*** The MIGRATIONS_DIR directive may have relative (from the location of this file) or absolute paths separated by _:_ pointing to the migrations directories.
+*** The MIGRATIONS_DIR directive may have relative (from the location of this file) or absolute paths separated by ':' pointing to the migrations directories.
 </pre>
 
 You don't need to create the database. simple-db-migrate will create it for you.

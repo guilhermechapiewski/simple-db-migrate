@@ -1,6 +1,7 @@
 from getpass import getpass
 import codecs
 import sys
+import os
 
 from cli import CLI
 from config import FileConfig, Config
@@ -26,8 +27,8 @@ def run(options):
             CLI.show_colors()
 
         # Create config
-        if options.get('config_file'):
-            config = FileConfig(options.get('config_file'), options.get('environment'))
+        if options.get('config_file') or os.path.exists('simple-db-migrate.conf'):
+            config = FileConfig(options.get('config_file') or 'simple-db-migrate.conf', options.get('environment'))
         else:
             config = Config()
 

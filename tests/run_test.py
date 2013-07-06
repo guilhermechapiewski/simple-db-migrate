@@ -28,6 +28,8 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
 
     def tearDown(self):
         os.remove('sample.conf')
+        if os.path.exists('simple-db-migrate.conf'):
+            os.remove('simple-db-migrate.conf')
         self.stdout_mock.stop()
 
     @patch('codecs.getwriter')
@@ -205,6 +207,31 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
         config_used = main_mock.call_args[0][0]
         self.assertEqual('label', config_used.get('label_version'))
         self.assertEqual(True, config_used.get('force_execute_old_migrations_versions'))
+
+    @patch.object(simple_db_migrate.main.Main, 'execute')
+    @patch.object(simple_db_migrate.main.Main, '__init__', return_value=None)
+    def test_it_should_check_if_has_a_default_configuration_file(self, main_mock, execute_mock):
+        f = open('simple-db-migrate.conf', 'w')
+        f.write("DATABASE_HOST = 'host_on_default_configuration_filename'")
+        f.close()
+
+        simple_db_migrate.run_from_argv([])
+        self.assertEqual(1, main_mock.call_count)
+        config_used = main_mock.call_args[0][0]
+        self.assertTrue(isinstance(config_used, simple_db_migrate.config.FileConfig))
+        self.assertEqual('host_on_default_configuration_filename', config_used.get('database_host'))
+
+        main_mock.reset_mock()
+
+        f = open('sample.conf', 'w')
+        f.write("DATABASE_HOST = 'host_on_sample_configuration_filename'")
+        f.close()
+
+        simple_db_migrate.run_from_argv(["-c", os.path.abspath('sample.conf')])
+        self.assertEqual(1, main_mock.call_count)
+        config_used = main_mock.call_args[0][0]
+        self.assertTrue(isinstance(config_used, simple_db_migrate.config.FileConfig))
+        self.assertEqual('host_on_sample_configuration_filename', config_used.get('database_host'))
 
 if __name__ == '__main__':
     unittest.main()
