@@ -61,9 +61,10 @@ class Oracle(object):
 
             for statement in statments:
                 curr_statement = statement.encode(self.__script_encoding)
-                affected_rows = cursor.execute(curr_statement)
+                cursor.execute(curr_statement)
+                affected_rows = max(cursor.rowcount, 0)
                 if execution_log:
-                    execution_log("%s\n-- %d row(s) affected\n" % (curr_statement, affected_rows and int(affected_rows) or 0))
+                    execution_log("%s\n-- %d row(s) affected\n" % (curr_statement, affected_rows))
             cursor.close()
             conn.commit()
             conn.close()

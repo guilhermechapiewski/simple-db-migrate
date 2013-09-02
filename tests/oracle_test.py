@@ -27,7 +27,8 @@ class OracleTest(BaseTest):
         self.config_mock = MagicMock(spec_set=dict, wraps=self.config_dict)
         self.cursor_mock = Mock(**{"execute": Mock(side_effect=self.execute_side_effect),
                                    "close": Mock(side_effect=self.close_side_effect),
-                                   "fetchone": Mock(side_effect=self.fetchone_side_effect)})
+                                   "fetchone": Mock(side_effect=self.fetchone_side_effect),
+                                   "rowcount": 0})
         self.db_mock = Mock(**{"cursor.return_value": self.cursor_mock})
         self.db_driver_mock = Mock(**{"connect.return_value": self.db_mock})
         self.stdin_mock = Mock(**{"readline.return_value":"dba_user"})
