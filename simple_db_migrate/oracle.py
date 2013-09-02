@@ -11,6 +11,8 @@ from cli import CLI
 class Oracle(object):
     __re_objects = re.compile("(?ims)(?P<pre>.*?)(?P<principal>create[ \n\t\r]*(or[ \n\t\r]+replace[ \n\t\r]*)?(trigger|function|procedure|package|package body).*?)\n[ \n\t\r]*/([ \n\t\r]+(?P<pos>.*)|$)")
     __re_anonymous = re.compile("(?ims)(?P<pre>.*?)(?P<principal>(declare[ \n\t\r]+.*?)?begin.*?\n[ \n\t\r]*)/([ \n\t\r]+(?P<pos>.*)|$)")
+    __re_comments_multi_line = re.compile("(?P<pre>(^|[^\"\'])[ ]*)/\*[^+][^\*]*[^/]*\*/")
+    __re_comments_single_line = re.compile("(?P<pre>(^|[^\"\'])[ ]*)--[^+].*(?=\n|$)")
 
     def __init__(self, config=None, driver=None, get_pass=getpass, std_in=sys.stdin):
         self.__script_encoding = config.get("database_script_encoding", "utf8")
@@ -58,10 +60,10 @@ class Oracle(object):
                 raise Exception("invalid sql syntax '%s'" % sql)
 
             for statement in statments:
-                curr_statement = statement
-                affected_rows = cursor.execute(statement.encode(self.__script_encoding))
+                curr_statement = statement.encode(self.__script_encoding)
+                affected_rows = cursor.execute(curr_statement)
                 if execution_log:
-                    execution_log("%s\n-- %d row(s) affected\n" % (statement, affected_rows and int(affected_rows) or 0))
+                    execution_log("%s\n-- %d row(s) affected\n" % (curr_statement, affected_rows and int(affected_rows) or 0))
             cursor.close()
             conn.commit()
             conn.close()
@@ -69,7 +71,7 @@ class Oracle(object):
             conn.rollback()
             cursor.close()
             conn.close()
-            raise MigrationException("error executing migration: %s" % e, curr_statement)
+            raise MigrationException(("error executing migration: %s" % e), curr_statement)
 
     def __change_db_version(self, version, migration_file_name, sql_up, sql_down, up=True, execution_log=None, label_version=None):
         params = {}
@@ -105,7 +107,7 @@ class Oracle(object):
                 execution_log("migration %s registered\n" % (migration_file_name))
         except Exception, e:
             conn.rollback()
-            raise MigrationException("error logging migration: %s" % e, migration_file_name)
+            raise MigrationException(("error logging migration: %s" % e), migration_file_name)
         finally:
             conn.close()
 
@@ -113,6 +115,10 @@ class Oracle(object):
     def _parse_sql_statements(self, migration_sql):
         all_statements = []
         last_statement = ''
+
+        #remove comments
+        migration_sql = Oracle.__re_comments_multi_line.sub("\g<pre>", migration_sql)
+        migration_sql = Oracle.__re_comments_single_line.sub("\g<pre>", migration_sql)
 
         match_stmt = Oracle.__re_objects.match(migration_sql)
         if not match_stmt:
