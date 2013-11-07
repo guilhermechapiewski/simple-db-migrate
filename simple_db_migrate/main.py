@@ -40,6 +40,9 @@ class Main(object):
             elif self.config.get("database_engine") == 'mssql':
                 from mssql import MSSQL
                 self.sgdb = MSSQL(config)
+            elif self.config.get("database_engine") == 'postgresql':
+                from postgresql import PostgreSQL
+                self.sgdb = PostgreSQL(config)
             else:
                 raise Exception("engine not supported '%s'" % self.config.get("database_engine"))
 

@@ -3,6 +3,7 @@
 cover
 *,cover
 *.pyc
+.idea
 *~
 build
 dist
