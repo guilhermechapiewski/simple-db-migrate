@@ -41,7 +41,6 @@ class Migration(object):
             variables = Utils.get_variables_from_file(self.abspath, self.script_encoding)
             SQL_UP = Migration.ensure_sql_unicode(variables['SQL_UP'], self.script_encoding)
             SQL_DOWN = Migration.ensure_sql_unicode(variables['SQL_DOWN'], self.script_encoding)
-            (SQL_UP, SQL_DOWN)
         except KeyError:
             raise Exception("migration file is incorrect; it does not define 'SQL_UP' or 'SQL_DOWN' (%s)" % self.abspath)
 
@@ -65,10 +64,10 @@ class Migration(object):
         return 0
 
     def __eq__(self, other):
-        dict_1 = self.__dict__
-        dict_2 = other.__dict__
-        dict_1['id'] = dict_1['abspath'] = None
-        dict_2['id'] = dict_2['abspath'] = None
+        dict_1 = self.__dict__.copy()
+        dict_2 = other.__dict__.copy()
+        dict_1['id'] = dict_1['abspath'] = dict_1['sql_up'] = dict_1['sql_down'] = None
+        dict_2['id'] = dict_2['abspath'] = dict_2['sql_up'] = dict_2['sql_down'] = None
         return dict_1 == dict_2
 
     @staticmethod
