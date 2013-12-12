@@ -100,7 +100,6 @@ class MySQL(object):
                 curr_statement = statement
             
             normalized_statement = Utils.normalize_sql(curr_statement)
-            # normalized_statement = curr_statement
             
             count = Utils.count_occurrences(normalized_statement)
             single_quotes = count.get("'", 0)
