@@ -110,7 +110,6 @@ class MySQL(object):
             if single_quotes % 2 == 0 and double_quotes % 2 == 0 and left_parenthesis == right_parenthesis:
                 all_statements.append(curr_statement)
                 last_statement = ''
-                counter = 0
             else:
                 last_statement = curr_statement
 
