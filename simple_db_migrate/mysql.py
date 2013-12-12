@@ -43,11 +43,12 @@ class MySQL(object):
         cursor._defer_warnings = True
         curr_statement = None
         try:
-            statments = MySQL._parse_sql_statements(sql)
-            if len(sql.strip(' \t\n\r')) != 0 and len(statments) == 0:
+            statements = MySQL._parse_sql_statements(sql)
+            
+            if len(sql.strip(' \t\n\r')) != 0 and len(statements) == 0:
                 raise Exception("invalid sql syntax '%s'" % sql)
 
-            for statement in statments:
+            for statement in statements:
                 curr_statement = statement
                 affected_rows = cursor.execute(statement.encode(self.__mysql_script_encoding))
                 if execution_log:
@@ -91,14 +92,17 @@ class MySQL(object):
     def _parse_sql_statements(cls, migration_sql):
         all_statements = []
         last_statement = ''
-
+        
         for statement in migration_sql.split(';'):
             if len(last_statement) > 0:
                 curr_statement = '%s;%s' % (last_statement, statement)
             else:
                 curr_statement = statement
-
-            count = Utils.count_occurrences(curr_statement)
+            
+            normalized_statement = Utils.normalize_sql(curr_statement)
+            # normalized_statement = curr_statement
+            
+            count = Utils.count_occurrences(normalized_statement)
             single_quotes = count.get("'", 0)
             double_quotes = count.get('"', 0)
             left_parenthesis = count.get('(', 0)
@@ -107,6 +111,7 @@ class MySQL(object):
             if single_quotes % 2 == 0 and double_quotes % 2 == 0 and left_parenthesis == right_parenthesis:
                 all_statements.append(curr_statement)
                 last_statement = ''
+                counter = 0
             else:
                 last_statement = curr_statement
 
