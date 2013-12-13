@@ -1,3 +1,10 @@
+### 2.0.0 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Fri, 13 Dec 2013 16:00:00 -0300
+- Changed: using only name and version to compare migrations. Changes on its content will be ignored on further executions
+- Added: information on log about database (host, name and user)
+- Fix: use of configuration file on current dir by default
+- Fix: remove comments before parse sql statments on Oracle engine
+- Fix: log number of affected rows on Oracle engine
+
 ### 1.6.0 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Sat, 29 Jun 2013 16:30:00 -0300
 - Added: option to set database port number
 - Changed the use of database_host/database_name on Oracle engine.
