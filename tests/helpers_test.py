@@ -46,9 +46,22 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
         f.write(config_file)
         f.close()
 
+        f = open('sample2.conf', 'w')
+        f.write(config_file)
+        f.write('''
+some_var = "1"
+
+def some_function(a):
+    return a + some_var
+
+SOME_CONSTANT = some_function("5")
+        ''')
+        f.close()
+
     def tearDown(self):
         os.remove('sample.conf')
         os.remove('sample.py')
+        os.remove('sample2.conf')
 
     def test_it_should_count_chars_in_a_string(self):
         word = 'abbbcd;;;;;;;;;;;;;;'
@@ -67,6 +80,10 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
         self.assertEqual(True, variables['UTC_TIMESTAMP'])
         self.assertEqual('localhost', variables['DATABASE_HOST'])
         self.assertEqual('', variables['DATABASE_PASSWORD'])
+
+    def test_it_should_extract_variables_from_a_file_with_python_code(self):
+        variables = Utils.get_variables_from_file(os.path.abspath('sample2.conf'))
+        self.assertEqual('51', variables['SOME_CONSTANT'])
 
     def test_it_should_extract_variables_from_a_config_file_with_py_extension(self):
         variables = Utils.get_variables_from_file(os.path.abspath('sample.py'))

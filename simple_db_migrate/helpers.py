@@ -23,13 +23,12 @@ class Utils(object):
         temp_abspath = None
 
         global_dict = globals().copy()
-        local_dict = {}
 
         try:
             # add settings dir from path
             sys.path.insert(0, path)
 
-            execfile(full_filename, global_dict, local_dict)
+            execfile(full_filename, global_dict, global_dict)
         except IOError:
             raise Exception("%s: file not found" % full_filename)
         except Exception, e:
@@ -43,7 +42,7 @@ class Utils(object):
                 f.write('#-*- coding:%s -*-\n%s' % (file_encoding, content))
                 f.close()
 
-                execfile(temp_abspath, global_dict, local_dict)
+                execfile(temp_abspath, global_dict, global_dict)
             except Exception, e:
                 raise Exception("error interpreting config file '%s': %s" % (filename, str(e)))
         finally:
@@ -54,5 +53,12 @@ class Utils(object):
             # remove settings dir from path
             if path in sys.path:
                 sys.path.remove(path)
+
+
+        local_dict = {}
+        globals_keys = globals().keys()
+        for key in global_dict:
+            if key not in globals_keys:
+                local_dict[key] = global_dict[key]
 
         return local_dict
