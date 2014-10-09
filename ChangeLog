@@ -1,3 +1,6 @@
+### 2.1.0 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Thu, 13 Oct 2014 17:50:00 -0300
+- Fix: support to execute python code when loading migrations and config files
+
 ### 2.0.0 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Fri, 13 Dec 2013 16:00:00 -0300
 - Changed: using only name and version to compare migrations. Changes on its content will be ignored on further executions
 - Added: information on log about database (host, name and user)
