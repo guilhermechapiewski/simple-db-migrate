@@ -70,7 +70,7 @@ class PostgreSQL(object):
             else:
                 label_version = "\'%s\'" % (str(label_version))
             # moving up and storing history
-            sql = "insert into %s (version, label, name, sql_up, sql_down) values (\'%s\', %s, \'%s\', \'%s\', \'%s\');" % (self.__version_table, str(version), label_version, migration_file_name, sql_up.replace('"', '\\"'), sql_down.replace('"', '\\"'))
+            sql = "insert into %s (version, label, name, sql_up, sql_down) values (\'%s\', %s, \'%s\', \'%s\', \'%s\');" % (self.__version_table, str(version), label_version, migration_file_name, sql_up.replace('"', '\\"').replace("'","''"), sql_down.replace('"', '\\"').replace("'","''"))
         else:
             # moving down and deleting from history
             sql = "delete from %s where version = \'%s\';" % (self.__version_table, str(version))
