@@ -1,3 +1,6 @@
+### 2.2.0 - João Carlos Mendes Luís <jonny@jonny.eng.br>      Fri, 05 Dec 2014 19:26:31 -0200
+- Added: Option to list labels and last label
+
 ### 2.1.0 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Thu, 13 Oct 2014 17:50:00 -0300
 - Fix: support to execute python code when loading migrations and config files
 
