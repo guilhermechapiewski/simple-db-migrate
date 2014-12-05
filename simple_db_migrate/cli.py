@@ -166,16 +166,21 @@ class CLI(object):
                 dest="database_migrations_dir",
                 default=None,
                 help="List of directories where migrations are separated by a colon"),
+
+        make_option("--info",
+                dest="info_database",
+                default=None,
+                help="List of migrations info (label)"),
         )
 
     @classmethod
     def error_and_exit(cls, msg):
-        cls.msg("[ERROR] %s\n" % msg, "RED")
+        cls.msg("[ERROR] %s" % msg, "RED")
         sys.exit(1)
 
     @classmethod
     def info_and_exit(cls, msg):
-        cls.msg("%s\n" % msg, "BLUE")
+        cls.msg("%s" % msg.rstrip(), "BLUE")
         sys.exit(0)
 
     @classmethod

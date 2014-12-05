@@ -401,10 +401,10 @@ class MSSQLTest(BaseTest):
         self.assertEqual(expected_execute_calls, self.db_mock.execute_row.mock_calls)
 
     def test_it_should_get_most_recent_version_for_a_existent_label_in_database(self):
-        self.execute_returns = {'select count(*) from __db_version__;': 0, "select version from __db_version__ where label = 'xxx' order by id desc": {'version':"vesion"}}
+        self.execute_returns = {'select count(*) from __db_version__;': 0, "select version from __db_version__ where label = 'xxx' order by id desc": {'version':"version"}}
         mssql = MSSQL(self.config_mock, self.db_driver_mock)
         ret = mssql.get_version_number_from_label('xxx')
-        self.assertEqual("vesion", ret)
+        self.assertEqual("version", ret)
 
         expected_query_calls = [
             call("if not exists ( select 1 from sysdatabases where name = 'migration_test' ) create database migration_test;"),
@@ -424,6 +424,12 @@ class MSSQLTest(BaseTest):
             call("select version from __db_version__ where label = 'xxx' order by id desc")
         ]
         self.assertEqual(expected_execute_calls, self.db_mock.execute_row.mock_calls)
+
+    def test_it_should_get_most_recent_label_in_database(self):
+        self.execute_returns = {'select count(*) from __db_version__;': 0, "select top 1 label from __db_version__ order by id desc": {'label':"d5b405f2b16fc51b95ad6513771323922e058689"}}
+        mssql = MSSQL(self.config_mock, self.db_driver_mock)
+        ret = mssql.get_current_label()
+        self.assertEqual("d5b405f2b16fc51b95ad6513771323922e058689", ret)
 
     def test_it_should_get_none_for_a_non_existent_label_in_database(self):
         mssql = MSSQL(self.config_mock, self.db_driver_mock)

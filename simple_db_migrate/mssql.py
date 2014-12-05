@@ -184,3 +184,21 @@ class MSSQL(object):
             migrations.append(migration)
         db.close()
         return migrations
+
+    def get_current_label(self):
+        db = self.__mssql_connect()
+        result = db.execute_scalar("select top 1 label from %s order by id desc" % self.__version_table)
+        label = result and result['label'] or None
+        db.close()
+        return label     # string
+
+    def get_all_labels(self):
+        labels = []
+        db = self.__mssql_connect()
+        db.execute_query("select label from %s where label is not null group by label order by id;" % self.__version_table)
+        for row in db:
+            labels.append(row['label'])
+        db.close()
+        return labels    # array of strings
+
+# EOF

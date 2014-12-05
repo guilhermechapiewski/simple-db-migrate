@@ -819,12 +819,12 @@ class OracleTest(BaseTest):
         self.assertEqual(4, self.cursor_mock.close.call_count)
 
     def test_it_should_get_most_recent_version_for_a_existent_label_in_database(self):
-        self.fetchone_returns["select version from db_version where label = 'xxx' order by id desc"] = ["vesion", "version2", "version3"]
+        self.fetchone_returns["select version from db_version where label = 'xxx' order by id desc"] = ["version", "version2", "version3"]
 
         oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
         ret = oracle.get_version_number_from_label('xxx')
 
-        self.assertEqual("vesion", ret)
+        self.assertEqual("version", ret)
 
         self.assertEqual(5, self.db_driver_mock.connect.call_count)
         self.assertEqual(2, self.db_mock.commit.call_count)
@@ -839,6 +839,12 @@ class OracleTest(BaseTest):
 
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
         self.assertEqual(4, self.cursor_mock.close.call_count)
+
+    def test_it_should_get_most_recent_label_in_database(self):
+        self.fetchone_returns["select label from db_version order by id desc"] = ["d5b405f2b16fc51b95ad6513771323922e058689"]
+        oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
+        ret = oracle.get_current_label()
+        self.assertEqual("d5b405f2b16fc51b95ad6513771323922e058689", ret)
 
     def test_it_should_get_none_for_a_non_existent_label_in_database(self):
         oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)

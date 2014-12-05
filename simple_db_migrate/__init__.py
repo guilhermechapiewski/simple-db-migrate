@@ -7,7 +7,7 @@ from cli import CLI
 from config import FileConfig, Config
 from main import Main
 
-SIMPLE_DB_MIGRATE_VERSION = '2.1.0'
+SIMPLE_DB_MIGRATE_VERSION = '2.2.0'
 
 # fixing print in non-utf8 terminals
 if hasattr(sys.stdout, 'encoding') and sys.stdout.encoding != 'UTF-8':
@@ -78,6 +78,17 @@ def run(options):
                 CLI.msg('\nPlease inform password to connect to database "%s@%s:%s"' % (config.get('database_user'), config.get('database_host'), config.get('database_name')))
                 passwd = getpass()
             config.update('database_password', passwd)
+
+        # If CLI was correctly parsed, and info is flaged
+
+        if options.get('info_database'):
+            config.update('info_database', options.get('info_database'))
+            if config.get('info_database', None).lower() == 'lastlabel':
+               CLI.info_and_exit(Main(config)._info_lastlabel())
+            elif config.get('info_database', None).lower() == 'labels':
+                CLI.info_and_exit(Main(config)._info_labels())
+            else:
+                CLI.info_and_exit('The %s is a wrong parameter for info' % config.get('info_database').lower())
 
         # If CLI was correctly parsed, execute db-migrate.
         Main(config).execute()
