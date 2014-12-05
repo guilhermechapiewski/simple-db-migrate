@@ -175,12 +175,12 @@ class CLI(object):
 
     @classmethod
     def error_and_exit(cls, msg):
-        cls.msg("[ERROR] %s\n" % msg, "RED")
+        cls.msg("[ERROR] %s" % msg, "RED")
         sys.exit(1)
 
     @classmethod
     def info_and_exit(cls, msg):
-        cls.msg("%s\n" % msg.rstrip('\n'), "BLUE")
+        cls.msg("%s" % msg.rstrip(), "BLUE")
         sys.exit(0)
 
     @classmethod
