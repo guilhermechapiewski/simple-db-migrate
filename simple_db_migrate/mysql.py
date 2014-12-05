@@ -207,3 +207,26 @@ class MySQL(object):
         cursor.close()
         db.close()
         return migrations
+
+    def get_current_label(self):
+        db = self.__mysql_connect()
+        cursor = db.cursor()
+        cursor.execute("select label from %s order by id desc limit 0,1;" % self.__version_table)
+        result = cursor.fetchone()
+        label = result and result[0] or None
+        cursor.close()
+        db.close()
+        return label    # string
+
+    def get_all_labels(self):
+        labels = []
+        db = self.__mysql_connect()
+        cursor = db.cursor()
+        cursor.execute("select label from %s where label is not null group by label order by id;" % self.__version_table)
+        for row in cursor.fetchall():
+            labels.append(row[0])
+        cursor.close()
+        db.close()
+        return labels    # array of strings
+
+# EOF

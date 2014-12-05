@@ -166,6 +166,11 @@ class CLI(object):
                 dest="database_migrations_dir",
                 default=None,
                 help="List of directories where migrations are separated by a colon"),
+
+        make_option("--info",
+                dest="info_database",
+                default=None,
+                help="List of migrations info (label)"),
         )
 
     @classmethod

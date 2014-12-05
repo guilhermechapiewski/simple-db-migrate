@@ -79,6 +79,17 @@ def run(options):
                 passwd = getpass()
             config.update('database_password', passwd)
 
+        # If CLI was correctly parsed, and info is flaged
+
+        if options.get('info_database'):
+            config.update('info_database', options.get('info_database'))
+            if config.get('info_database', None).lower() == 'lastlabel':
+               CLI.info_and_exit(Main(config)._info_lastlabel())
+            elif config.get('info_database', None).lower() == 'labels':
+                CLI.info_and_exit(Main(config)._info_labels())
+            else:
+                CLI.info_and_exit('The %s is a wrong parameter for info' % config.get('info_database').lower())
+
         # If CLI was correctly parsed, execute db-migrate.
         Main(config).execute()
     except KeyboardInterrupt:

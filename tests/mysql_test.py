@@ -433,6 +433,12 @@ class MySQLTest(BaseTest):
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
         self.assertEqual(4, self.cursor_mock.close.call_count)
 
+    def test_it_should_get_most_recent_label_in_database(self):
+        self.fetchone_returns["select label from __db_version__ order by id desc limit 0,1;"] = ["d5b405f2b16fc51b95ad6513771323922e058689"]
+        mysql = MySQL(self.config_mock, self.db_driver_mock)
+        ret = mysql.get_current_label()
+        self.assertEqual("d5b405f2b16fc51b95ad6513771323922e058689", ret)
+
     def test_it_should_get_none_for_a_non_existent_label_in_database(self):
         mysql = MySQL(self.config_mock, self.db_driver_mock)
         ret = mysql.get_version_number_from_label('xxx')

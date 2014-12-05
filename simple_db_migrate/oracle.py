@@ -313,3 +313,26 @@ class Oracle(object):
         cursor.close()
         conn.close()
         return migrations
+
+    def get_current_label(self):
+        conn = self.__connect()
+        cursor = conn.cursor()
+        cursor.execute("select label from %s order by id desc" % self.__version_table)
+        result = cursor.fetchone()
+        label = result and result[0] or None
+        cursor.close()
+        conn.close()
+        return label    # string
+
+    def get_all_labels(self):
+        labels = []
+        conn = self.__connect()
+        cursor = conn.cursor()
+        cursor.execute("select label from %s where label is not null group by label order by id" % self.__version_table)
+        for row in cursor.fetchall():
+            labels.append(row[0])
+        cursor.close()
+        conn.close()
+        return labels    # array of strings
+
+# EOF

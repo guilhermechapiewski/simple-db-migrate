@@ -66,6 +66,20 @@ class Main(object):
             #check if config has the key, if do not have will raise exception
             config.get(key)
 
+    def _info_lastlabel(self):
+        label = self.sgdb.get_current_label()
+        if label is None:
+            return "NONE"
+        else:
+            return label
+
+    def _info_labels(self):
+        labels = self.sgdb.get_all_labels()
+        if len(labels) == 0:
+            return "NONE"
+        else:
+            return "\n".join(labels)
+
     def _create_migration(self):
         migrations_dir = self.config.get("database_migrations_dir")
         new_file = Migration.create(self.config.get("new_migration", None), migrations_dir[0], self.config.get("database_script_encoding", "utf-8"), self.config.get("utc_timestamp", False))
