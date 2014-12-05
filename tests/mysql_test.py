@@ -411,10 +411,10 @@ class MySQLTest(BaseTest):
         self.assertEqual(4, self.cursor_mock.close.call_count)
 
     def test_it_should_get_most_recent_version_for_a_existent_label_in_database(self):
-        self.fetchone_returns["select version from __db_version__ where label = 'xxx' order by id desc"] = ["vesion", "version2", "version3"]
+        self.fetchone_returns["select version from __db_version__ where label = 'xxx' order by id desc"] = ["version", "version2", "version3"]
         mysql = MySQL(self.config_mock, self.db_driver_mock)
         ret = mysql.get_version_number_from_label('xxx')
-        self.assertEqual("vesion", ret)
+        self.assertEqual("version", ret)
 
         expected_query_calls = [
             call('create database if not exists `migration_test`;')
