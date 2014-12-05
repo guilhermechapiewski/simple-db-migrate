@@ -180,7 +180,7 @@ class CLI(object):
 
     @classmethod
     def info_and_exit(cls, msg):
-        cls.msg("%s\n" % msg, "BLUE")
+        cls.msg("%s\n" % msg.rstrip('\n'), "BLUE")
         sys.exit(0)
 
     @classmethod
