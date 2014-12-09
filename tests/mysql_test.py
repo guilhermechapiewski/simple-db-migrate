@@ -195,6 +195,11 @@ class MySQLTest(BaseTest):
         self.assertRaisesWithMessage(Exception, "error executing migration: invalid sql syntax 'create table foo(); create table spam());'", mysql.change,
                                      "create table foo(); create table spam());", "20090212112104", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table foo(); create table spam());", "drop table spam;", label_version="label")
 
+    def test_it_should_not_fail_if_column_value_contains_brackets_or_quotes(self):
+        mysql = MySQL(self.config_mock, self.db_driver_mock)
+        
+        mysql.change("create table spam( `test` varchar(255) ); insert into spam values ('(\\''''); drop table spam;", "20131212093900", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam( `test` varchar(255) );", "drop table spam;", label_version="label")
+        
     def test_it_should_stop_process_when_an_error_occur_during_database_change(self):
         self.execute_returns["insert into spam"] = Exception("invalid sql")
 

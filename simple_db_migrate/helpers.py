@@ -1,6 +1,7 @@
 import os
 import sys
 import tempfile
+import re
 
 class Lists(object):
 
@@ -9,7 +10,17 @@ class Lists(object):
         return [l for l in list_a if l not in list_b]
 
 class Utils(object):
-
+    
+    @staticmethod
+    def normalize_sql(string):
+        # Basically just remove all the content between quotes so we can see if it's valid-ish later
+        
+        enclosed_quotes = re.compile("'.*?[^\\\\]'", re.S | re.U)
+        
+        sql = enclosed_quotes.sub("", string.strip())
+        
+        return sql
+    
     @staticmethod
     def count_occurrences(string):
         count = {}
