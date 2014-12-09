@@ -874,6 +874,61 @@ class MainTest(BaseTest):
         self.assertEqual(1, len(migrations))
         self.assertEqual('20090214115500_05_test_migration.migration', migrations[0].file_name)
 
+    def test_it_should_return_all_labels_on_database(self):
+        all_schema_migrations = [
+            Migration(label="v1", file_name="20090214115100_01_test_migration.migration", version="20090214115100", sql_up="foo 1", sql_down="bar 1", id=1),
+            Migration(label="v1", file_name="20090214115200_02_test_migration.migration", version="20090214115200", sql_up="foo 2", sql_down="bar 2", id=2),
+            Migration(label=None, file_name="20090214115300_03_test_migration.migration", version="20090214115300", sql_up="foo 3", sql_down="bar 3", id=3),
+            Migration(label="v2", file_name="20090214115400_04_1_same_version_test_migration.migration", version="20090214115400", sql_up="sql up 04.1", sql_down="sql down 04.1", id=5),
+            Migration(label=None, file_name="20090214115600_06_test_migration.migration", version="20090214115600", sql_up="foo 6", sql_down="bar 6", id=6),
+        ]
+
+        config=Config(self.initial_config)
+        main = Main(sgdb=Mock(**{'get_all_schema_migrations.return_value':all_schema_migrations}), config=config)
+        labels = main.labels()
+
+        self.assertEqual(2, len(labels))
+        self.assertEqual('v1', labels[0])
+        self.assertEqual('v2', labels[1])
+
+    def test_it_should_return_empty_array_when_does_not_have_labels_on_database(self):
+        all_schema_migrations = [
+            Migration(label=None, file_name="20090214115300_03_test_migration.migration", version="20090214115300", sql_up="foo 3", sql_down="bar 3", id=3),
+            Migration(label=None, file_name="20090214115600_06_test_migration.migration", version="20090214115600", sql_up="foo 6", sql_down="bar 6", id=6),
+        ]
+
+        config=Config(self.initial_config)
+        main = Main(sgdb=Mock(**{'get_all_schema_migrations.return_value':all_schema_migrations}), config=config)
+        labels = main.labels()
+
+        self.assertEqual(0, len(labels))
+
+    def test_it_should_return_last_label_on_database(self):
+        all_schema_migrations = [
+            Migration(label="v1", file_name="20090214115100_01_test_migration.migration", version="20090214115100", sql_up="foo 1", sql_down="bar 1", id=1),
+            Migration(label="v1", file_name="20090214115200_02_test_migration.migration", version="20090214115200", sql_up="foo 2", sql_down="bar 2", id=2),
+            Migration(label=None, file_name="20090214115300_03_test_migration.migration", version="20090214115300", sql_up="foo 3", sql_down="bar 3", id=3),
+            Migration(label="v2", file_name="20090214115400_04_1_same_version_test_migration.migration", version="20090214115400", sql_up="sql up 04.1", sql_down="sql down 04.1", id=5),
+            Migration(label=None, file_name="20090214115600_06_test_migration.migration", version="20090214115600", sql_up="foo 6", sql_down="bar 6", id=6),
+        ]
+
+        config=Config(self.initial_config)
+        main = Main(sgdb=Mock(**{'get_all_schema_migrations.return_value':all_schema_migrations}), config=config)
+        label = main.last_label()
+
+        self.assertEqual('v2', label)
+
+    def test_it_should_return_none_as_the_last_label_when_does_not_have_labels_on_database(self):
+        all_schema_migrations = [
+            Migration(label=None, file_name="20090214115300_03_test_migration.migration", version="20090214115300", sql_up="foo 3", sql_down="bar 3", id=3),
+            Migration(label=None, file_name="20090214115600_06_test_migration.migration", version="20090214115600", sql_up="foo 6", sql_down="bar 6", id=6),
+        ]
+
+        config=Config(self.initial_config)
+        main = Main(sgdb=Mock(**{'get_all_schema_migrations.return_value':all_schema_migrations}), config=config)
+        label = main.last_label()
+
+        self.assertEqual(None, label)
 
 def get_version_id_from_version_number_side_effect(args):
     if str(args) == '20090214115100':

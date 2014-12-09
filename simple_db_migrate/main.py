@@ -46,12 +46,26 @@ class Main(object):
         self.db_migrate = SimpleDBMigrate(self.config)
 
     def execute(self):
-        self._execution_log('\nStarting DB migration on host/database "%s/%s" with user "%s"...' % (self.config.get('database_host'), self.config.get('database_name'), self.config.get('database_user')), "PINK", log_level_limit=1)        
+        self._execution_log('\nStarting DB migration on host/database "%s/%s" with user "%s"...' % (self.config.get('database_host'), self.config.get('database_name'), self.config.get('database_user')), "PINK", log_level_limit=1)
         if self.config.get("new_migration", None):
             self._create_migration()
         else:
             self._migrate()
         self._execution_log("\nDone.\n", "PINK", log_level_limit=1)
+
+    def last_label(self):
+        labels = self.labels()
+        return labels and labels[-1] or None
+
+    def labels(self):
+        labels = []
+
+        migrations = self.sgdb.get_all_schema_migrations()
+        for migration in migrations:
+            if migration.label and (migration.label not in labels):
+                labels.append(migration.label)
+
+        return labels
 
     @staticmethod
     def _check_configuration(config):

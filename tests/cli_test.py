@@ -205,6 +205,9 @@ class CLITest(unittest.TestCase):
     def test_it_should_accept_migrations_dir_options(self):
         self.assertEqual(".:../:/tmp", CLI.parse(["--db-migrations-dir", ".:../:/tmp"])[0].database_migrations_dir)
 
+    def test_it_should_accept_database_info_options(self):
+        self.assertEqual("labels", CLI.parse(["--info", "labels"])[0].info_database)
+
     @patch('sys.stdout', new_callable=StringIO)
     def test_it_should_call_print_statment_with_the_given_message(self, stdout_mock):
         CLI.msg("message to print")
