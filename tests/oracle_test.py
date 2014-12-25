@@ -14,6 +14,7 @@ class OracleTest(BaseTest):
         self.fetchone_returns = {'select count(*) from db_version': [0]}
         self.close_returns = {}
         self.last_execute_command = '';
+        self.last_execute_commands = [];
         self.config_dict = {'database_script_encoding': 'utf8',
                    'database_encoding': 'American_America.UTF8',
                    'database_host': 'somehost',
@@ -88,8 +89,45 @@ class OracleTest(BaseTest):
 
         Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
 
+        self.assertEqual(1, self.db_mock.rollback.call_count)
         self.assertEqual(8, self.db_driver_mock.connect.call_count)
         self.assertEqual(4, self.db_mock.commit.call_count)
+        self.assertEqual(7, self.db_mock.close.call_count)
+
+        expected_execute_calls = [
+            call('create user root identified by migration_test'),
+            call('grant connect, resource to root'),
+            call('grant create public synonym to root'),
+            call('grant drop public synonym to root'),
+            call('select version from db_version'),
+            call("create table db_version ( id number(11) not null, version varchar2(20) default '0' NOT NULL, label varchar2(255), name varchar2(255), sql_up clob, sql_down clob, CONSTRAINT db_version_pk PRIMARY KEY (id) ENABLE)"),
+            call('drop sequence db_version_seq'),
+            call('create sequence db_version_seq start with 1 increment by 1 nomaxvalue'),
+            call('select count(*) from db_version'),
+            call("insert into db_version (id, version) values (db_version_seq.nextval, '0')")
+        ]
+        self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
+        self.assertEqual(7, self.cursor_mock.close.call_count)
+
+    def test_it_should_ignore_errors_while_dropping_the_sequence_duringthe_create_database_process(self):
+        self.first_return = Exception("could not connect to database: ORA-01017 invalid user/password")
+        def connect_side_effect(*args, **kwargs):
+            ret = sentinel.DEFAULT
+            if (kwargs['user'] == 'root') and self.first_return:
+                ret = self.first_return
+                self.first_return = None
+                raise ret
+            return ret
+
+        self.db_driver_mock.connect.side_effect = connect_side_effect
+        self.execute_returns["select version from db_version"] = Exception("Table doesn't exist")
+        self.execute_returns["drop sequence db_version_seq"] = Exception("Sequence doesn't exist")
+
+        Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
+
+        self.assertEqual(2, self.db_mock.rollback.call_count)
+        self.assertEqual(8, self.db_driver_mock.connect.call_count)
+        self.assertEqual(3, self.db_mock.commit.call_count)
         self.assertEqual(7, self.db_mock.close.call_count)
 
         expected_execute_calls = [
@@ -143,7 +181,7 @@ class OracleTest(BaseTest):
             WHERE OBJECT_TYPE = 'TABLE' AND OBJECT_NAME NOT LIKE 'BIN$%%'""" % ('ROOT','ROOT','ROOT')
 
         self.config_dict["drop_db_first"] = True
-        self.cursor_mock.fetchall.return_value = [("DELETE TABLE DB_VERSION CASCADE CONSTRAINTS;",),]
+        self.fetchone_returns[select_elements_to_drop_sql] = [("DELETE TABLE DB_VERSION CASCADE CONSTRAINTS;",)]
         self.execute_returns["select version from db_version"] = Exception("Table doesn't exist")
 
         Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
@@ -293,7 +331,7 @@ class OracleTest(BaseTest):
             WHERE OBJECT_TYPE = 'TABLE' AND OBJECT_NAME NOT LIKE 'BIN$%%'""" % ('ROOT','ROOT','ROOT')
 
         self.config_dict["drop_db_first"] = True
-        self.cursor_mock.fetchall.return_value = [("DELETE TABLE DB_VERSION CASCADE CONSTRAINTS;",),("DELETE TABLE AUX CASCADE CONSTRAINTS;",)]
+        self.fetchone_returns[select_elements_to_drop_sql] = [("DELETE TABLE DB_VERSION CASCADE CONSTRAINTS;",),("DELETE TABLE AUX CASCADE CONSTRAINTS;",)]
         self.execute_returns["DELETE TABLE DB_VERSION CASCADE CONSTRAINTS"] = Exception("error dropping table")
         self.stdin_mock.readline.return_value = "n"
 
@@ -303,6 +341,7 @@ class OracleTest(BaseTest):
         except Exception, e:
             self.assertEqual("can't drop database objects for user 'root'", str(e))
 
+        self.assertEqual(1, self.db_mock.rollback.call_count)
         self.assertEqual(1, self.db_mock.commit.call_count)
         self.assertEqual(3, self.db_mock.close.call_count)
 
@@ -331,12 +370,13 @@ class OracleTest(BaseTest):
             WHERE OBJECT_TYPE = 'TABLE' AND OBJECT_NAME NOT LIKE 'BIN$%%'""" % ('ROOT','ROOT','ROOT')
 
         self.config_dict["drop_db_first"] = True
-        self.cursor_mock.fetchall.return_value = [("DELETE TABLE DB_VERSION CASCADE CONSTRAINTS;",),("DELETE TABLE AUX CASCADE CONSTRAINTS;",)]
+        self.fetchone_returns[select_elements_to_drop_sql] = [("DELETE TABLE DB_VERSION CASCADE CONSTRAINTS;",),("DELETE TABLE AUX CASCADE CONSTRAINTS;",)]
         self.execute_returns["DELETE TABLE DB_VERSION CASCADE CONSTRAINTS"] = Exception("error dropping table")
         self.stdin_mock.readline.return_value = "y"
 
         Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
 
+        self.assertEqual(1, self.db_mock.rollback.call_count)
         self.assertEqual(3, self.db_mock.commit.call_count)
         self.assertEqual(7, self.db_mock.close.call_count)
 
@@ -515,7 +555,7 @@ class OracleTest(BaseTest):
         expected_versions.append("20090211120002")
         expected_versions.append("20090211120003")
 
-        self.cursor_mock.fetchall.return_value = tuple(zip(expected_versions))
+        self.fetchone_returns["select version from db_version order by id"] = list(zip(expected_versions))
 
         oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
         schema_versions = oracle.get_all_schema_versions()
@@ -542,7 +582,7 @@ class OracleTest(BaseTest):
         expected_versions.append([1, "0", None, None, None, None])
         expected_versions.append([2, "20090211120001", "label", "20090211120001_name", Mock(**{"read.return_value":"sql_up"}), Mock(**{"read.return_value":"sql_down"})])
 
-        self.cursor_mock.fetchall.return_value = tuple(expected_versions)
+        self.fetchone_returns["select id, version, label, name, sql_up, sql_down from db_version order by id"] = list(expected_versions)
 
         oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
         schema_migrations = oracle.get_all_schema_migrations()
@@ -568,7 +608,6 @@ class OracleTest(BaseTest):
         ]
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
         self.assertEqual(4, self.cursor_mock.close.call_count)
-
 
     def test_it_should_parse_sql_statements(self):
         #TODO include other types of sql
@@ -771,7 +810,6 @@ class OracleTest(BaseTest):
         self.assertEqual(expected_sql_1, statements[1])
         self.assertEqual(expected_sql_2, statements[2])
 
-
     def test_it_should_parse_sql_statements_with_html_inside(self):
 
         sql = u"""
@@ -861,13 +899,34 @@ class OracleTest(BaseTest):
         self.assertEqual(4, self.cursor_mock.close.call_count)
 
     def side_effect(self, returns, default_value):
-        result = returns.get(self.last_execute_command, default_value)
+        commands = len(self.last_execute_commands)
+        if commands > 0:
+            self.last_execute_command = self.last_execute_commands[commands - 1]
+
+        value = result = returns.pop(self.last_execute_command, default_value)
+
         if isinstance(result, Exception):
+            if commands > 0:
+                self.last_execute_commands.pop()
             raise result
-        return result
+
+        if isinstance(result, list) and len(result) > 0 and (isinstance(result[0], tuple) or isinstance(result[0], list)):
+            returns[self.last_execute_command] = result
+            value = result.pop(0)
+
+        elif isinstance(result, list) and len(result) == 0:
+            value = None
+
+        if commands > 0 and \
+                self.execute_returns.get(self.last_execute_command, None) is None and \
+                self.fetchone_returns.get(self.last_execute_command, None) is None and \
+                self.close_returns.get(self.last_execute_command, None) is None:
+            self.last_execute_commands.pop()
+
+        return value
 
     def execute_side_effect(self, *args):
-        self.last_execute_command = args[0]
+        self.last_execute_commands.append(args[0])
         return self.side_effect(self.execute_returns, 0)
 
     def fetchone_side_effect(self, *args):

@@ -9,8 +9,8 @@ from getpass import getpass
 from cli import CLI
 
 class Oracle(object):
-    __re_objects = re.compile("(?ims)(?P<pre>.*?)(?P<principal>create[ \n\t\r]*(or[ \n\t\r]+replace[ \n\t\r]*)?(trigger|function|procedure|package|package body).*?)\n[ \n\t\r]*/([ \n\t\r]+(?P<pos>.*)|$)")
-    __re_anonymous = re.compile("(?ims)(?P<pre>.*?)(?P<principal>(declare[ \n\t\r]+.*?)?begin.*?\n[ \n\t\r]*)/([ \n\t\r]+(?P<pos>.*)|$)")
+    __re_objects = re.compile("(?ims)(?P<pre>.*?)(?P<main>create[ \n\t\r]*(or[ \n\t\r]+replace[ \n\t\r]*)?(trigger|function|procedure|package|package body).*?)\n[ \n\t\r]*/([ \n\t\r]+(?P<pos>.*)|$)")
+    __re_anonymous = re.compile("(?ims)(?P<pre>.*?)(?P<main>(declare[ \n\t\r]+.*?)?begin.*?\n[ \n\t\r]*)/([ \n\t\r]+(?P<pos>.*)|$)")
     __re_comments_multi_line = re.compile("(?P<pre>(^|[^\"\'])[ ]*)/\*[^+][^\*]*[^/]*\*/")
     __re_comments_single_line = re.compile("(?P<pre>(^|[^\"\'])[ ]*)--[^+].*(?=\n|$)")
 
@@ -65,8 +65,8 @@ class Oracle(object):
                 affected_rows = max(cursor.rowcount, 0)
                 if execution_log:
                     execution_log("%s\n-- %d row(s) affected\n" % (curr_statement, affected_rows))
-            cursor.close()
             conn.commit()
+            cursor.close()
             conn.close()
         except Exception, e:
             conn.rollback()
@@ -128,8 +128,8 @@ class Oracle(object):
         if match_stmt and match_stmt.re.groups > 0:
             if match_stmt.group('pre'):
                 all_statements = all_statements + Oracle._parse_sql_statements(match_stmt.group('pre'))
-            if match_stmt.group('principal'):
-                all_statements.append(match_stmt.group('principal'))
+            if match_stmt.group('main'):
+                all_statements.append(match_stmt.group('main'))
             if match_stmt.group('pos'):
                 all_statements = all_statements + Oracle._parse_sql_statements(match_stmt.group('pos'))
 
@@ -173,10 +173,12 @@ class Oracle(object):
         cursor = conn.cursor()
         try:
             cursor.execute(sql)
-            rows = cursor.fetchall()
-
             failed_sqls = ''
-            for row in rows:
+            while True:
+                row = cursor.fetchone()
+                if row is None:
+                    break
+
                 drop_sql = row[0]
                 try:
                     self.__execute(drop_sql)
@@ -234,6 +236,8 @@ class Oracle(object):
             self.__execute(sql)
             try:
                 self.__execute("drop sequence %s_seq" % self.__version_table)
+            except:
+                pass
             finally:
                 self.__execute("create sequence %s_seq start with 1 increment by 1 nomaxvalue" % self.__version_table)
 
@@ -268,8 +272,10 @@ class Oracle(object):
         conn = self.__connect()
         cursor = conn.cursor()
         cursor.execute("select version from %s order by id" % self.__version_table)
-        all_versions = cursor.fetchall()
-        for version in all_versions:
+        while True:
+            version = cursor.fetchone()
+            if version is None:
+                break
             versions.append(version[0])
         cursor.close()
         conn.close()
@@ -301,8 +307,11 @@ class Oracle(object):
         conn = self.__connect()
         cursor = conn.cursor()
         cursor.execute("select id, version, label, name, sql_up, sql_down from %s order by id" % self.__version_table)
-        all_migrations = cursor.fetchall()
-        for migration_db in all_migrations:
+        while True:
+            migration_db = cursor.fetchone()
+            if migration_db is None:
+                break
+
             migration = Migration(id = int(migration_db[0]),
                                   version = migration_db[1] and str(migration_db[1]) or None,
                                   label = migration_db[2] and str(migration_db[2]) or None,
