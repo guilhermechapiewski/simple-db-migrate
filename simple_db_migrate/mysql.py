@@ -1,8 +1,10 @@
+import re
 from core import Migration
 from core.exceptions import MigrationException
 from helpers import Utils
 
 class MySQL(object):
+    __re_objects = re.compile("(?ims)(?P<pre>.*?)(?P<main>create[ \n\t\r]*(definer[ \n\t\r]*=[ \n\t\r]*[^ \n\t\r]*[ \n\t\r]*)?(trigger|function|procedure).*?)\n[ \n\t\r]*/([ \n\t\r]+(?P<pos>.*)|$)")
 
     def __init__(self, config=None, mysql_driver=None):
         self.__mysql_script_encoding = config.get("database_script_encoding", "utf8")
@@ -92,23 +94,34 @@ class MySQL(object):
         all_statements = []
         last_statement = ''
 
-        for statement in migration_sql.split(';'):
-            if len(last_statement) > 0:
-                curr_statement = '%s;%s' % (last_statement, statement)
-            else:
-                curr_statement = statement
+        match_stmt = MySQL.__re_objects.match(migration_sql)
 
-            count = Utils.count_occurrences(curr_statement)
-            single_quotes = count.get("'", 0)
-            double_quotes = count.get('"', 0)
-            left_parenthesis = count.get('(', 0)
-            right_parenthesis = count.get(')', 0)
+        if match_stmt and match_stmt.re.groups > 0:
+            if match_stmt.group('pre'):
+                all_statements = all_statements + MySQL._parse_sql_statements(match_stmt.group('pre'))
+            if match_stmt.group('main'):
+                all_statements.append(match_stmt.group('main'))
+            if match_stmt.group('pos'):
+                all_statements = all_statements + MySQL._parse_sql_statements(match_stmt.group('pos'))
 
-            if single_quotes % 2 == 0 and double_quotes % 2 == 0 and left_parenthesis == right_parenthesis:
-                all_statements.append(curr_statement)
-                last_statement = ''
-            else:
-                last_statement = curr_statement
+        else:
+            for statement in migration_sql.split(';'):
+                if len(last_statement) > 0:
+                    curr_statement = '%s;%s' % (last_statement, statement)
+                else:
+                    curr_statement = statement
+
+                count = Utils.count_occurrences(curr_statement)
+                single_quotes = count.get("'", 0)
+                double_quotes = count.get('"', 0)
+                left_parenthesis = count.get('(', 0)
+                right_parenthesis = count.get(')', 0)
+
+                if single_quotes % 2 == 0 and double_quotes % 2 == 0 and left_parenthesis == right_parenthesis:
+                    all_statements.append(curr_statement)
+                    last_statement = ''
+                else:
+                    last_statement = curr_statement
 
         return [s.strip() for s in all_statements if ((s.strip() != "") and (last_statement == ""))]
 

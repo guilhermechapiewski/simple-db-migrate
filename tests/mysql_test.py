@@ -1,3 +1,4 @@
+#-*- coding:utf-8 -*-
 import unittest
 import sys
 import simple_db_migrate.core
@@ -363,11 +364,67 @@ class MySQLTest(BaseTest):
         self.assertEqual(4, self.cursor_mock.close.call_count)
 
     def test_it_should_parse_sql_statements(self):
-        statements = MySQL._parse_sql_statements('; ; create table eggs; drop table spam; ; ;')
+        #TODO include other types of sql
+        sql = "; ; create table eggs; drop table spam; ; ;\
+        CREATE PRoCeDUrE country_hos \n\
+        (IN con CHAR(20)) \n\
+        BEGIN \n\
+          SELECT Name, HeadOfState FROM Country \n\
+          WHERE Continent = con; \n\
+        END \n\
+        / \n\
+        CREATE DEFINER = 'admin'@'localhost' FUNCTION simple \n\
+        RETURN VARCHAR2 IS \n\
+        BEGIN \n\
+        RETURN 'Simple Function'; \n\
+        END \n\
+        \t/ \n\
+        drop table eggs; \n\
+        create TRIGGER \"FOLDER_TR\" \n\
+        BEFORE INSERT ON \"FOLDER\" \n\
+        FOR EACH ROW WHEN \n\
+        (\n\
+            new.\"FOLDER_ID\" IS NULL \n\
+        )\n\
+        BEGIN\n\
+            SELECT \"FOLDER_SQ\".nextval\n\
+            INTO :new.\"FOLDER_ID\"\n\
+            FROM dual;\n\
+        EnD;\n\
+        /\n\
+        "
 
-        self.assertEqual(2, len(statements))
+        statements = MySQL._parse_sql_statements(sql)
+
+        self.assertEqual(6, len(statements))
         self.assertEqual('create table eggs', statements[0])
         self.assertEqual('drop table spam', statements[1])
+        self.assertEqual("CREATE PRoCeDUrE country_hos \n\
+        (IN con CHAR(20)) \n\
+        BEGIN \n\
+          SELECT Name, HeadOfState FROM Country \n\
+          WHERE Continent = con; \n\
+        END", statements[2])
+
+        self.assertEqual("CREATE DEFINER = 'admin'@'localhost' FUNCTION simple \n\
+        RETURN VARCHAR2 IS \n\
+        BEGIN \n\
+        RETURN 'Simple Function'; \n\
+        END", statements[3])
+
+        self.assertEqual('drop table eggs', statements[4])
+
+        self.assertEqual('create TRIGGER \"FOLDER_TR\" \n\
+        BEFORE INSERT ON \"FOLDER\" \n\
+        FOR EACH ROW WHEN \n\
+        (\n\
+            new.\"FOLDER_ID\" IS NULL \n\
+        )\n\
+        BEGIN\n\
+            SELECT \"FOLDER_SQ\".nextval\n\
+            INTO :new.\"FOLDER_ID\"\n\
+            FROM dual;\n\
+        EnD;', statements[5])
 
     def test_it_should_parse_sql_statements_with_html_inside(self):
         sql = u"""
