@@ -45,7 +45,7 @@ class MySQL(object):
         try:
             statments = MySQL._parse_sql_statements(sql)
             if len(sql.strip(' \t\n\r')) != 0 and len(statments) == 0:
-                raise Exception("invalid sql syntax '%s'" % sql)
+                raise Exception("invalid sql syntax '%s'" % sql.encode("utf-8"))
 
             for statement in statments:
                 curr_statement = statement

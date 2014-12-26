@@ -1,3 +1,4 @@
+#encoding: utf-8
 import unittest
 import sys
 import simple_db_migrate.core
@@ -194,6 +195,13 @@ class MySQLTest(BaseTest):
         mysql = MySQL(self.config_mock, self.db_driver_mock)
         self.assertRaisesWithMessage(Exception, "error executing migration: invalid sql syntax 'create table foo(); create table spam());'", mysql.change,
                                      "create table foo(); create table spam());", "20090212112104", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table foo(); create table spam());", "drop table spam;", label_version="label")
+
+    def test_it_should_raise_whem_migration_sql_has_a_syntax_error_sql_with_codec_error(self):
+        mysql = MySQL(self.config_mock, self.db_driver_mock)
+        expected_raised_message = u"error executing migration: invalid sql syntax 'create table foo(); create table spam()); -- ônibus'".encode("utf-8")
+        self.assertRaisesWithMessage(Exception, expected_raised_message, mysql.change,
+                                     u"create table foo(); create table spam()); -- ônibus", "20090212112104", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table foo(); create table spam());", "drop table spam;", label_version="label")
+
 
     def test_it_should_stop_process_when_an_error_occur_during_database_change(self):
         self.execute_returns["insert into spam"] = Exception("invalid sql")
