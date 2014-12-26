@@ -1,3 +1,4 @@
+#-*- coding:utf-8 -*-
 import unittest
 from simple_db_migrate.core.exceptions import MigrationException
 
@@ -18,6 +19,10 @@ class MigrationExceptionTest(unittest.TestCase):
     def test_it_should_use_custom_message_and_sql_command(self):
         exception = MigrationException(sql='sql command executed', msg='custom error message')
         self.assertEqual('custom error message\n\n[ERROR DETAILS] SQL command was:\nsql command executed', str(exception))
+
+    def test_it_should_encode_error_message(self):
+        exception = MigrationException(sql=u'sql command executed with special chars çõá', msg=u'custom error message with special chars öá')
+        self.assertEqual('custom error message with special chars öá\n\n[ERROR DETAILS] SQL command was:\nsql command executed with special chars çõá', str(exception))
 
 if __name__ == '__main__':
     unittest.main()
