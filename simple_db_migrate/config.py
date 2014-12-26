@@ -71,7 +71,7 @@ class FileConfig(Config):
         super(FileConfig, self).__init__(inital_config=settings)
 
         if environment:
-            prefix = environment + "_"
+            prefix = environment.lower() + "_"
             for key in self._config.keys():
                 if key.startswith(prefix):
                     self.update(key[len(prefix):], self.get(key))

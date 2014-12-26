@@ -226,6 +226,12 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
         self.assertEquals('migration_example_env1', config.get('database_name'))
         self.assertEquals('root', config.get('database_user'))
 
+    def test_it_should_accept_environment_in_any_case(self):
+        config_path = os.path.abspath('sample.conf')
+        config = FileConfig(config_path, "EnV1")
+        self.assertEquals('migration_example_env1', config.get('database_name'))
+        self.assertEquals('root', config.get('database_user'))
+
     def test_it_should_stop_execution_when_an_invalid_key_is_requested(self):
         config_path = os.path.abspath('sample.conf')
         config = FileConfig(config_path)
