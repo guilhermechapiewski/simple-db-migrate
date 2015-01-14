@@ -11,8 +11,6 @@ from cli import CLI
 class Oracle(object):
     __re_objects = re.compile("(?ims)(?P<pre>.*?)(?P<main>create[ \n\t\r]*(or[ \n\t\r]+replace[ \n\t\r]*)?(trigger|function|procedure|package|package body).*?)\n[ \n\t\r]*/([ \n\t\r]+(?P<pos>.*)|$)")
     __re_anonymous = re.compile("(?ims)(?P<pre>.*?)(?P<main>(declare[ \n\t\r]+.*?)?begin.*?\n[ \n\t\r]*)/([ \n\t\r]+(?P<pos>.*)|$)")
-    __re_comments_multi_line = re.compile("(?P<pre>(^|[^\"\'])[ ]*)/\*[^+][^\*]*[^/]*\*/")
-    __re_comments_single_line = re.compile("(?P<pre>(^|[^\"\'])[ ]*)--[^+].*(?=\n|$)")
 
     def __init__(self, config=None, driver=None, get_pass=getpass, std_in=sys.stdin):
         self.__script_encoding = config.get("database_script_encoding", "utf8")
@@ -116,10 +114,6 @@ class Oracle(object):
     def _parse_sql_statements(self, migration_sql):
         all_statements = []
         last_statement = ''
-
-        #remove comments
-        migration_sql = Oracle.__re_comments_multi_line.sub("\g<pre>", migration_sql)
-        migration_sql = Oracle.__re_comments_single_line.sub("\g<pre>", migration_sql)
 
         match_stmt = Oracle.__re_objects.match(migration_sql)
         if not match_stmt:

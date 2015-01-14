@@ -756,66 +756,6 @@ class OracleTest(BaseTest):
             dbms_output.put_line(select 1 from dual); \n\
         END;", statements[9])
 
-    def test_it_should_remove_comments_when_parse_sql_statments(self):
-        sql = u"""-- Teste Migration 1  $ > < = @ # ( comentários -- )
-            -- Teste Migration 1 ( comentários na outra linha -- ) */
-            DELETE --+ Teste Migration
-            FROM TABLE TEST_MIGRATION;
-            CREATE TABLE DB_ARQ.TESTE_MIGRATION
-            (
-                id_teste INT,-- Teste Migration 1 ( comentários -- )
-                nome_teste VARCHAR2 (30)
-            );-- Teste Migration 1 ( comentários -- )
-            INSERT INTO TESTE_MIGRATION VALUES (1, '-- comentário $ > < = @ # no insert');
-            -- Teste Migration 1 ( comentários -- )
--- Teste Migration 1 ( comentários -- )"""
-
-        expected_sql_0 = u"""DELETE --+ Teste Migration
-            FROM TABLE TEST_MIGRATION"""
-
-        expected_sql_1 = u"""CREATE TABLE DB_ARQ.TESTE_MIGRATION
-            (
-                id_teste INT,
-                nome_teste VARCHAR2 (30)
-            )"""
-
-        expected_sql_2 = u"""INSERT INTO TESTE_MIGRATION VALUES (1, '-- comentário $ > < = @ # no insert')"""
-
-        statements = Oracle._parse_sql_statements(sql)
-
-        self.assertEqual(3, len(statements))
-        self.assertEqual(expected_sql_0, statements[0])
-        self.assertEqual(expected_sql_1, statements[1])
-        self.assertEqual(expected_sql_2, statements[2])
-
-        sql = u"""/* Teste Migration 2 ( comentário * ) */
-            /*Teste Migration 2  $ > < = @ # ( comentário * )*/
-            /* Teste Migration 2
-            ( comentário * ) */
-            DELETE /*+ Teste Migration */ FROM TEST_MIGRATION;
-            CREATE TABLE DB_ARQ.TESTE_MIGRATION
-            (/* Teste Migration 2
-                ( comentário * ) */
-                id_teste INT,
-                nome_teste VARCHAR2 (30)
-            );/* Teste Migration 2 ( comentário * ) */
-            /*Teste Migration 2 ( comentário * ) */
-            INSERT INTO TESTE_MIGRATION VALUES (1, '/* comentário $ > < = @ # no insert*/');
-            /* Teste Migration 2
-            ( comentário * ) */
-/* Teste Migration 2 ( comentário * ) */"""
-
-        statements = Oracle._parse_sql_statements(sql)
-
-        expected_sql_0 = u"""DELETE /*+ Teste Migration */ FROM TEST_MIGRATION"""
-
-        expected_sql_2 = u"""INSERT INTO TESTE_MIGRATION VALUES (1, '/* comentário $ > < = @ # no insert*/')"""
-
-        self.assertEqual(3, len(statements))
-        self.assertEqual(expected_sql_0, statements[0])
-        self.assertEqual(expected_sql_1, statements[1])
-        self.assertEqual(expected_sql_2, statements[2])
-
     def test_it_should_parse_sql_statements_with_html_inside(self):
 
         sql = u"""
