@@ -135,6 +135,30 @@ h2. Supported databases engines
 You can use this project to run migrations on MySQL, Oracle and MS-SQL server databases.
 The default database engine is MySQL. To use the other databases set the DATABASE_ENGINE constant in the configuration file.
 
+h2. Procedure, Function, Trigger (Oracle and MySQL), and Packages (Oracle) support
+
+You can use db-migrate to manage procedures, functions, triggers and packages using "/" as final delimiter.
+Examples:
+
+```
+-- Oracle
+CREATE OR REPLACE FUNCTION simple
+RETURN VARCHAR2 IS
+BEGIN
+    RETURN 'Simple Function';
+END simple;
+/
+
+-- MySQL
+CREATE PROCEDURE country_hos
+(IN con CHAR(20))
+BEGIN
+  SELECT Name, HeadOfState FROM Country
+  WHERE Continent = con;
+END
+/
+```
+
 h2. Roadmap, bug reporting and feature requests
 
 For detailed info about future versions, bug reporting and feature requests, go to "issues":https://github.com/guilhermechapiewski/simple-db-migrate/issues page.

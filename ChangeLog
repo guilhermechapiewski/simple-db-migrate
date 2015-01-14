@@ -1,3 +1,10 @@
+### 2.2.0 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Wed, 14 Jan 2015 21:00:00 -0300
+- Added: support procedure, trigger and function on mysql
+- Added: parameter to show info about database
+- Changed: ignore case on --env parameter value
+- Changed: stop removing comments from sql statements on Oracle
+- Fix: handle big db_version table on Oracle due to many migrations or big migrations SQL_UP/SQL_DOWN content
+
 ### 2.1.0 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Thu, 13 Oct 2014 17:50:00 -0300
 - Fix: support to execute python code when loading migrations and config files
 
