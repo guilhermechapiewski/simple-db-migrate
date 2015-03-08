@@ -154,6 +154,7 @@ class SimpleDBMigrateTest(BaseTest):
 class MigrationTest(BaseTest):
     def setUp(self):
         create_migration_file('20090214120600_example_file_name_test_migration.migration', sql_up='xxx', sql_down='yyy')
+        create_migration_file('20090214121600_example_file_name_with_dash-test_migration.migration', sql_up='xxx', sql_down='yyy')
         create_migration_file('20090727104700_test_migration.migration', sql_up='xxx', sql_down='yyy')
         create_migration_file('20090727141400_test_migration.migration', sql_up='xxx', sql_down='yyy')
         create_migration_file('20090727141503_test_migration.migration', sql_up='xxx', sql_down='yyy')
@@ -171,6 +172,10 @@ class MigrationTest(BaseTest):
     def test_it_should_get_migration_version_from_file(self):
         migration = Migration('20090214120600_example_file_name_test_migration.migration')
         self.assertEqual('20090214120600', migration.version)
+
+    def test_it_should_accept_a_dash_on_migration_file(self):
+        migration = Migration('20090214121600_example_file_name_with_dash-test_migration.migration')
+        self.assertEqual('20090214121600', migration.version)
 
     def test_it_should_get_basic_properties_when_path_is_relative1(self):
         migration = Migration(file='20090727104700_test_migration.migration')
