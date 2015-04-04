@@ -31,7 +31,7 @@ class Utils(object):
             execfile(full_filename, global_dict, global_dict)
         except IOError:
             raise Exception("%s: file not found" % full_filename)
-        except Exception, e:
+        except Exception as e:
             try:
                 f = open(full_filename, "rU")
                 content = f.read()
@@ -43,7 +43,7 @@ class Utils(object):
                 f.close()
 
                 execfile(temp_abspath, global_dict, global_dict)
-            except Exception, e:
+            except Exception as e:
                 raise Exception("error interpreting config file '%s': %s" % (filename, str(e)))
         finally:
             #erase temp and compiled files

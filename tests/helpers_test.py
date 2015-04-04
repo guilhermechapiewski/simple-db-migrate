@@ -112,14 +112,14 @@ SOME_CONSTANT = some_function("5")
         try:
             Utils.get_variables_from_file(os.path.abspath('sample.py'))
             self.fail("it should not get here")
-        except Exception, e:
+        except Exception as e:
             self.assertEqual("error interpreting config file 'sample.py': No module named some_not_imported_module", str(e))
 
     def test_it_should_raise_exception_config_file_not_exists(self):
         try:
             Utils.get_variables_from_file(os.path.abspath('unexistent.conf'))
             self.fail("it should not get here")
-        except Exception, e:
+        except Exception as e:
             self.assertEqual("%s: file not found" % os.path.abspath('unexistent.conf'), str(e))
 
     def test_it_should_delete_compiled_module_file(self):

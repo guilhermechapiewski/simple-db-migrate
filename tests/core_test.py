@@ -309,7 +309,7 @@ class MigrationTest(BaseTest):
     def test_it_should_raise_exception_when_file_does_not_exist(self):
         try:
             Migration('20090727104700_this_file_does_not_exist.migration')
-        except Exception, e:
+        except Exception as e:
             self.assertEqual('migration file does not exist (20090727104700_this_file_does_not_exist.migration)', str(e))
 
     @patch('simple_db_migrate.core.Migration.is_file_name_valid', return_value=False)
@@ -341,15 +341,15 @@ class MigrationTest(BaseTest):
         try:
             Migration.create('test_migration')
             self.fail('it should not pass here')
-        except Exception, e:
+        except Exception as e:
             self.assertEqual("could not create file ('./20120303194030_test_migration.migration')", str(e))
 
-    @patch('simple_db_migrate.core.gmtime', return_value=(2012,03,03,19,40,30,0,0,0))
+    @patch('simple_db_migrate.core.gmtime', return_value=(2012,3,3,19,40,30,0,0,0))
     def test_it_should_use_gmt_time_when_asked_to_use_utc(self, gmtime_mock):
         Migration.create('test_migration', utc_timestamp=True)
         gmtime_mock.assert_called_once()
 
-    @patch('simple_db_migrate.core.localtime', return_value=(2012,03,03,19,40,30,0,0,0))
+    @patch('simple_db_migrate.core.localtime', return_value=(2012,3,3,19,40,30,0,0,0))
     def test_it_should_use_local_time_when_asked_to_not_use_utc(self, localtime_mock):
         Migration.create('test_migration', utc_timestamp=False)
         localtime_mock.assert_called_once()

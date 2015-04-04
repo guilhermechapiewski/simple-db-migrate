@@ -48,7 +48,7 @@ class Command(BaseCommand):
         if hasattr(settings, 'OTHER_MIGRATION_DIRS'):
             other_dirs = settings.OTHER_MIGRATION_DIRS
             if not isinstance(other_dirs, (tuple, list)):
-                raise TypeError, 'The setting "OTHER_MIGRATION_DIRS" must be a tuple or a list'
+                raise TypeError('The setting "OTHER_MIGRATION_DIRS" must be a tuple or a list')
             files.extend(other_dirs)
 
         return ':'.join(files)

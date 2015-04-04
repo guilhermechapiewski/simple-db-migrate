@@ -1,8 +1,8 @@
-from cli import CLI
-from log import LOG
-from core import Migration, SimpleDBMigrate
-from helpers import Lists
-from config import Config
+from .cli import CLI
+from .log import LOG
+from .core import Migration, SimpleDBMigrate
+from .helpers import Lists
+from .config import Config
 
 """
 The sgbd class should implement the following methods
@@ -228,7 +228,7 @@ class Main(object):
 
                 try:
                     self.sgdb.change(sql, migration.version, migration.file_name, migration.sql_up, migration.sql_down, is_migration_up, self._execution_log, label)
-                except Exception, e:
+                except Exception as e:
                     self._execution_log("===== ERROR executing %s (%s) =====" % (migration.abspath, up_down_label), log_level_limit=1)
                     raise e
 

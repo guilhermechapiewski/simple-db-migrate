@@ -45,7 +45,7 @@ class Oracle(object):
                 dsn = self.__driver.makedsn(self.__host, self.__port, self.__db)
 
             return self.__driver.connect(dsn=dsn, user=self.__user, password=self.__passwd)
-        except Exception, e:
+        except Exception as e:
             raise Exception("could not connect to database: %s" % e)
 
     def __execute(self, sql, execution_log=None):
@@ -66,7 +66,7 @@ class Oracle(object):
             conn.commit()
             cursor.close()
             conn.close()
-        except Exception, e:
+        except Exception as e:
             conn.rollback()
             cursor.close()
             conn.close()
@@ -104,7 +104,7 @@ class Oracle(object):
             conn.commit()
             if execution_log:
                 execution_log("migration %s registered\n" % (migration_file_name))
-        except Exception, e:
+        except Exception as e:
             conn.rollback()
             raise MigrationException(("error logging migration: %s" % e), migration_file_name)
         finally:
@@ -176,7 +176,7 @@ class Oracle(object):
                 drop_sql = row[0]
                 try:
                     self.__execute(drop_sql)
-                except Exception, e:
+                except Exception as e:
                     failed_sqls = failed_sqls + "can't execute drop command '%s' in database '%s', %s\n" % (drop_sql, self.__db, str(e).strip())
 
             if failed_sqls != '':
@@ -186,7 +186,7 @@ class Oracle(object):
                 if to_continue.upper() != 'Y':
                     raise Exception("can't drop database objects for user '%s'" % (self.__user) )
 
-        except Exception, e:
+        except Exception as e:
             self._verify_if_exception_is_invalid_user(e)
         finally:
             cursor.close()
@@ -197,7 +197,7 @@ class Oracle(object):
         try:
             conn = self.__connect()
             conn.close()
-        except Exception, e:
+        except Exception as e:
             self._verify_if_exception_is_invalid_user(e)
 
     def _verify_if_exception_is_invalid_user(self, exception):
@@ -212,7 +212,7 @@ class Oracle(object):
                 cursor.execute("grant connect, resource to %s" % (self.__user))
                 cursor.execute("grant create public synonym to %s" % (self.__user))
                 cursor.execute("grant drop public synonym to %s" % (self.__user))
-            except Exception, e:
+            except Exception as e:
                 raise Exception("check error: %s" % e)
             finally:
                 cursor.close()

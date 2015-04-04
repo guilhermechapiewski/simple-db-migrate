@@ -36,7 +36,7 @@ class MySQL(object):
             if connect_using_database_name:
                 conn.select_db(self.__mysql_db)
             return conn
-        except Exception, e:
+        except Exception as e:
             raise Exception("could not connect to database: %s" % e)
 
     def __execute(self, sql, execution_log=None):
@@ -56,7 +56,7 @@ class MySQL(object):
                     execution_log("%s\n-- %d row(s) affected\n" % (statement, affected_rows and int(affected_rows) or 0))
             cursor.close()
             db.commit()
-        except Exception, e:
+        except Exception as e:
             db.rollback()
             raise MigrationException("error executing migration: %s" % e, curr_statement)
         finally:
@@ -83,7 +83,7 @@ class MySQL(object):
             db.commit()
             if execution_log:
                 execution_log("migration %s registered\n" % (migration_file_name))
-        except Exception, e:
+        except Exception as e:
             db.rollback()
             raise MigrationException("error logging migration: %s" % e, migration_file_name)
         finally:
@@ -129,7 +129,7 @@ class MySQL(object):
         db = self.__mysql_connect(False)
         try:
             db.query("set foreign_key_checks=0; drop database if exists `%s`;" % self.__mysql_db)
-        except Exception, e:
+        except Exception as e:
             raise Exception("can't drop database '%s'; \n%s" % (self.__mysql_db, str(e)))
         finally:
             db.close()

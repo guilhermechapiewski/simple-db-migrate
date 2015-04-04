@@ -53,7 +53,7 @@ class MySQLTest(BaseTest):
         try:
             MySQL(self.config_mock, self.db_driver_mock)
             self.fail("it should not get here")
-        except Exception, e:
+        except Exception as e:
             self.assertEqual("could not connect to database: error when connecting", str(e))
 
         self.assertEqual(0, self.db_mock.query.call_count)
@@ -112,7 +112,7 @@ class MySQLTest(BaseTest):
         try:
             MySQL(self.config_mock, self.db_driver_mock)
             self.fail("it should not get here")
-        except Exception, e:
+        except Exception as e:
             self.assertEqual("can't drop database 'migration_test'; \nerror when dropping", str(e))
 
         expected_query_calls = [
@@ -208,7 +208,7 @@ class MySQLTest(BaseTest):
         try:
             mysql = MySQL(self.config_mock, self.db_driver_mock)
             mysql.change("create table spam(); insert into spam", "20090212112104", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam();", "drop table spam;", label_version="label")
-        except Exception, e:
+        except Exception as e:
             self.assertEqual("error executing migration: invalid sql\n\n[ERROR DETAILS] SQL command was:\ninsert into spam", str(e))
             self.assertTrue(isinstance(e, simple_db_migrate.core.exceptions.MigrationException))
 
@@ -237,7 +237,7 @@ class MySQLTest(BaseTest):
         try:
             mysql = MySQL(self.config_mock, self.db_driver_mock)
             mysql.change("create table spam();", "20090212112104", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam();", "drop table spam;", label_version="label")
-        except Exception, e:
+        except Exception as e:
             self.assertEqual('error logging migration: invalid sql\n\n[ERROR DETAILS] SQL command was:\n20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration', str(e))
             self.assertTrue(isinstance(e, simple_db_migrate.core.exceptions.MigrationException))
 

@@ -1,6 +1,6 @@
 import os
 import ast
-from helpers import Utils
+from .helpers import Utils
 
 class Config(object):
 

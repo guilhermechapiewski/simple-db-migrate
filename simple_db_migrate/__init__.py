@@ -3,9 +3,9 @@ import codecs
 import sys
 import os
 
-from cli import CLI
-from config import FileConfig, Config
-from main import Main
+from .cli import CLI
+from .config import FileConfig, Config
+from .main import Main
 
 SIMPLE_DB_MIGRATE_VERSION = '2.2.0'
 
@@ -92,7 +92,7 @@ def run(options):
         Main(config).execute()
     except KeyboardInterrupt:
         CLI.info_and_exit("\nExecution interrupted by user...")
-    except Exception, e:
+    except Exception as e:
         CLI.error_and_exit(str(e))
 
 if __name__ == '__main__':

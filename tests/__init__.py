@@ -54,11 +54,11 @@ class BaseTest(unittest.TestCase):
         raisedMessage = ''
         try:
             callableObj(*args, **kwargs)
-        except excClass, e:
+        except excClass as e:
             raisedMessage = str(e)
             if excMessage == raisedMessage:
                 return
 
         if hasattr(excClass,'__name__'): excName = excClass.__name__
         else: excName = str(excClass)
-        raise self.failureException, "%s not raised with message '%s', the message was '%s'" % (excName, excMessage, raisedMessage)
+        raise self.failureException("%s not raised with message '%s', the message was '%s'" % (excName, excMessage, raisedMessage))

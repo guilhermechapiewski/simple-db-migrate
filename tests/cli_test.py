@@ -34,14 +34,14 @@ class CLITest(unittest.TestCase):
     def test_it_should_exit_with_help_options(self, stdout_mock):
         try:
             CLI.parse(["-h"])
-        except SystemExit, e:
+        except SystemExit as e:
             self.assertEqual(0, e.code)
             self.assertTrue(stdout_mock.getvalue().find("Displays simple-db-migrate's version and exit") > 0)
 
         stdout_mock.buf = ''
         try:
             CLI.parse(["--help"])
-        except SystemExit, e:
+        except SystemExit as e:
             self.assertEqual(0, e.code)
 
     def test_it_should_not_has_a_default_value_for_configuration_file(self):

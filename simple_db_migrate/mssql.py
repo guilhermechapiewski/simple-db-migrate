@@ -31,7 +31,7 @@ class MSSQL(object):
             if connect_using_database_name:
                 conn.select_db(self.__mssql_db)
             return conn
-        except Exception, e:
+        except Exception as e:
             raise Exception("could not connect to database: %s" % e)
 
     def __execute(self, sql, execution_log=None):
@@ -48,7 +48,7 @@ class MSSQL(object):
                 affected_rows = db.rows_affected
                 if execution_log:
                     execution_log("%s\n-- %d row(s) affected\n" % (statement, affected_rows and int(affected_rows) or 0))
-        except Exception, e:
+        except Exception as e:
             db.cancel()
             raise MigrationException("error executing migration: %s" % e, curr_statement)
         finally:
@@ -83,7 +83,7 @@ class MSSQL(object):
         db = self.__mssql_connect(False)
         try:
             db.execute_non_query("if exists ( select 1 from sysdatabases where name = '%s' ) drop database %s;" % (self.__mssql_db, self.__mssql_db))
-        except Exception, e:
+        except Exception as e:
             raise Exception("can't drop database '%s'; \n%s" % (self.__mssql_db, str(e)))
         finally:
             db.close()
@@ -128,7 +128,7 @@ class MSSQL(object):
             db.execute_non_query(sql.encode(self.__mssql_script_encoding), tuple(params))
             if execution_log:
                 execution_log("migration %s registered\n" % (migration_file_name))
-        except Exception, e:
+        except Exception as e:
             db.cancel()
             raise MigrationException("error logging migration: %s" % e, migration_file_name)
         finally:

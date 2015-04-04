@@ -64,7 +64,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
     def test_it_should_print_simple_db_migrate_version_and_exit(self):
         try:
             simple_db_migrate.run_from_argv(["-v"])
-        except SystemExit, e:
+        except SystemExit as e:
             self.assertEqual(0, e.code)
 
         self.assertEqual('simple-db-migrate v%s\n\n' % simple_db_migrate.SIMPLE_DB_MIGRATE_VERSION, sys.stdout.getvalue())
@@ -83,7 +83,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
         show_colors_mock.side_effect = KeyboardInterrupt()
         try:
             simple_db_migrate.run_from_argv(["--color"])
-        except SystemExit, e:
+        except SystemExit as e:
             self.assertEqual(0, e.code)
 
         self.assertEqual('\nExecution interrupted by user...\n\n', sys.stdout.getvalue())
@@ -93,7 +93,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
         show_colors_mock.side_effect = Exception('occur an error')
         try:
             simple_db_migrate.run_from_argv(["--color"])
-        except SystemExit, e:
+        except SystemExit as e:
             self.assertEqual(1, e.code)
 
         self.assertEqual('[ERROR] occur an error\n\n', sys.stdout.getvalue())
@@ -237,7 +237,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
     def test_it_should_print_labels_on_database_and_exit(self, labels_mock):
         try:
             simple_db_migrate.run_from_argv(["--info", "labels", "-c", os.path.abspath('sample.conf')])
-        except SystemExit, e:
+        except SystemExit as e:
             self.assertEqual(0, e.code)
 
         self.assertEqual('v1\nfoo\nv3\n\n', sys.stdout.getvalue())
@@ -246,7 +246,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
     def test_it_should_print_none_when_there_are_no_labels_on_database_and_exit(self, labels_mock):
         try:
             simple_db_migrate.run_from_argv(["--info", "labels", "-c", os.path.abspath('sample.conf')])
-        except SystemExit, e:
+        except SystemExit as e:
             self.assertEqual(0, e.code)
 
         self.assertEqual('NONE\n\n', sys.stdout.getvalue())
@@ -255,7 +255,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
     def test_it_should_print_last_label_on_database_and_exit(self, last_label_mock):
         try:
             simple_db_migrate.run_from_argv(["--info", "last_label", "-c", os.path.abspath('sample.conf')])
-        except SystemExit, e:
+        except SystemExit as e:
             self.assertEqual(0, e.code)
 
         self.assertEqual('v3\n\n', sys.stdout.getvalue())
@@ -264,7 +264,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
     def test_it_should_print_none_as_last_label_when_there_are_no_labels_on_database_and_exit(self, last_label_mock):
         try:
             simple_db_migrate.run_from_argv(["--info", "last_label", "-c", os.path.abspath('sample.conf')])
-        except SystemExit, e:
+        except SystemExit as e:
             self.assertEqual(0, e.code)
 
         self.assertEqual('NONE\n\n', sys.stdout.getvalue())
@@ -272,7 +272,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
     def test_it_should_print_error_message_and_exit_when_required_info_is_not_valid(self):
         try:
             simple_db_migrate.run_from_argv(["--info", "not_valid", "-c", os.path.abspath('sample.conf')])
-        except SystemExit, e:
+        except SystemExit as e:
             self.assertEqual(1, e.code)
 
         self.assertEqual("[ERROR] The 'not_valid' is a wrong parameter for info\n\n", sys.stdout.getvalue())

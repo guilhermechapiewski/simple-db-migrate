@@ -73,7 +73,7 @@ class ConfigTest(unittest.TestCase):
         _dict = {"some_key": "some_value"}
         try:
             Config._get(_dict, "ANOTHER_KEY")
-        except Exception, e:
+        except Exception as e:
             self.assertEqual("invalid key ('ANOTHER_KEY')", str(e))
 
     def test_it_should_accept_non_empty_string_and_false_as_default_value(self):
@@ -93,7 +93,7 @@ class ConfigTest(unittest.TestCase):
         config.put("some_key", "some_value")
         try:
             config.put("some_key", "another_value")
-        except Exception, e:
+        except Exception as e:
             self.assertEqual("the configuration key 'some_key' already exists and you cannot override any configuration", str(e))
 
     def test_it_should_remove_saved_config_values(self):
@@ -108,7 +108,7 @@ class ConfigTest(unittest.TestCase):
         config.put("some_key", "some_value")
         try:
             config.remove("ANOTHER_KEY")
-        except Exception, e:
+        except Exception as e:
             self.assertEqual("invalid configuration key ('another_key')", str(e))
 
     def test_it_should_return_previous_saved_config_values(self):
@@ -130,7 +130,7 @@ class ConfigTest(unittest.TestCase):
         config.put("some_key", "some_value")
         try:
             config.get("ANOTHER_KEY")
-        except Exception, e:
+        except Exception as e:
             self.assertEqual("invalid key ('another_key')", str(e))
 
     def test_it_should_accept_non_empty_string_and_false_as_default_value(self):
@@ -238,7 +238,7 @@ DATABASE_OTHER_CUSTOM_VARIABLE = 'Value'
         try:
             config.get('invalid_config')
             self.fail('it should not pass here')
-        except Exception, e:
+        except Exception as e:
             self.assertEqual("invalid key ('invalid_config')", str(e))
 
     def test_it_should_get_any_database_custom_variable(self):
