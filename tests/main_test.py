@@ -188,7 +188,7 @@ class MainTest(BaseTest):
     def test_it_should_get_current_and_destination_versions_and_execute_migrations(self, cli_mock, log_mock, simpledbmigrate_mock, _get_destination_version_mock, execute_migrations_mock):
         main = Main(sgdb=Mock(**{'get_current_schema_version.return_value':'current_schema_version'}), config=Config(self.initial_config))
         main.execute()
-        execute_migrations_mock.assert_called_with('current_schema_version', 'destination_version')
+        execute_migrations_mock.assert_called_with('current_schema_version', 'destination_version', fake_execution=False)
 
     def test_it_should_get_destination_version_when_user_informs_a_specific_version(self):
         self.initial_config.update({"schema_version":"20090214115300", "database_migrations_dir":['migrations', '.']})
@@ -448,8 +448,8 @@ class MainTest(BaseTest):
         self.assertEqual(expected_calls, _execution_log_mock.mock_calls)
         files_to_be_executed_mock.assert_called_with('20090214115400', '20090214115600', True)
         expected_calls = [
-            call('sql up 05', '20090214115500', '20090214115500_05_test_migration.migration', 'sql up 05', 'sql down 05', True, _execution_log_mock, None),
-            call('sql up 06', '20090214115600', '20090214115600_06_test_migration.migration', 'sql up 06', 'sql down 06', True, _execution_log_mock, None)
+            call('sql up 05', '20090214115500', '20090214115500_05_test_migration.migration', 'sql up 05', 'sql down 05', True, _execution_log_mock, None, fake_execution=False),
+            call('sql up 06', '20090214115600', '20090214115600_06_test_migration.migration', 'sql up 06', 'sql down 06', True, _execution_log_mock, None, fake_execution=False)
         ]
         self.assertEqual(expected_calls, main.sgdb.change.mock_calls)
 
@@ -474,8 +474,8 @@ class MainTest(BaseTest):
         self.assertEqual(expected_calls, _execution_log_mock.mock_calls)
         files_to_be_executed_mock.assert_called_with('20090214115600', '20090214115400', False)
         expected_calls = [
-            call('sql down 06', '20090214115600', '20090214115600_06_test_migration.migration', 'sql up 06', 'sql down 06', False, _execution_log_mock, None),
-            call('sql down 05', '20090214115500', '20090214115500_05_test_migration.migration', 'sql up 05', 'sql down 05', False, _execution_log_mock, None)
+            call('sql down 06', '20090214115600', '20090214115600_06_test_migration.migration', 'sql up 06', 'sql down 06', False, _execution_log_mock, None, fake_execution=False),
+            call('sql down 05', '20090214115500', '20090214115500_05_test_migration.migration', 'sql up 05', 'sql down 05', False, _execution_log_mock, None, fake_execution=False)
         ]
         self.assertEqual(expected_calls, main.sgdb.change.mock_calls)
 
@@ -504,8 +504,8 @@ class MainTest(BaseTest):
         self.assertEqual(expected_calls, _execution_log_mock.mock_calls)
         files_to_be_executed_mock.assert_called_with('20090214115400', '20090214115600', True)
         expected_calls = [
-            call('sql up 05', '20090214115500', '20090214115500_05_test_migration.migration', 'sql up 05', 'sql down 05', True, _execution_log_mock, None),
-            call('sql up 06', '20090214115600', '20090214115600_06_test_migration.migration', 'sql up 06', 'sql down 06', True, _execution_log_mock, None)
+            call('sql up 05', '20090214115500', '20090214115500_05_test_migration.migration', 'sql up 05', 'sql down 05', True, _execution_log_mock, None, fake_execution=False),
+            call('sql up 06', '20090214115600', '20090214115600_06_test_migration.migration', 'sql up 06', 'sql down 06', True, _execution_log_mock, None, fake_execution=False)
         ]
         self.assertEqual(expected_calls, main.sgdb.change.mock_calls)
 
@@ -534,8 +534,112 @@ class MainTest(BaseTest):
         self.assertEqual(expected_calls, _execution_log_mock.mock_calls)
         files_to_be_executed_mock.assert_called_with('20090214115600', '20090214115400', False)
         expected_calls = [
-            call('sql down 06', '20090214115600', '20090214115600_06_test_migration.migration', 'sql up 06', 'sql down 06', False, _execution_log_mock, None),
-            call('sql down 05', '20090214115500', '20090214115500_05_test_migration.migration', 'sql up 05', 'sql down 05', False, _execution_log_mock, None)
+            call('sql down 06', '20090214115600', '20090214115600_06_test_migration.migration', 'sql up 06', 'sql down 06', False, _execution_log_mock, None, fake_execution=False),
+            call('sql down 05', '20090214115500', '20090214115500_05_test_migration.migration', 'sql up 05', 'sql down 05', False, _execution_log_mock, None, fake_execution=False)
+        ]
+        self.assertEqual(expected_calls, main.sgdb.change.mock_calls)
+
+    @patch('simple_db_migrate.main.Main._get_migration_files_to_be_executed', return_value=[Migration(file_name="20090214115500_05_test_migration.migration", version="20090214115500", sql_up="sql up 05", sql_down="sql down 05"), Migration(file_name="20090214115600_06_test_migration.migration", version="20090214115600", sql_up="sql up 06", sql_down="sql down 06")])
+    @patch('simple_db_migrate.main.Main._execution_log')
+    def test_it_should_not_run_sql_commands_when_fake_execution_is_set_and_is_up(self, _execution_log_mock, files_to_be_executed_mock):
+        self.initial_config.update({"schema_version":'20090214115600', "label_version":None, "database_migrations_dir":['migrations', '.'], 'fake_execution':True})
+        config=Config(self.initial_config)
+        main = Main(sgdb=Mock(**{'change.return_value':None, 'get_current_schema_version.return_value':'20090214115400', 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
+        main.execute()
+
+        expected_calls = [
+            call('\nStarting DB migration on host/database "localhost/test" with user "user"...', 'PINK', log_level_limit=1),
+            call('- Current version is: 20090214115400', 'GREEN', log_level_limit=1),
+            call('- Destination version is: 20090214115600', 'GREEN', log_level_limit=1),
+            call("\nWARNING: database migrations are not being executed ('--fake-execution' activated)", 'YELLOW', log_level_limit=1),
+            call("*** versions: ['20090214115500', '20090214115600']\n", 'CYAN', log_level_limit=1),
+            call('===== executing 20090214115500_05_test_migration.migration (up) =====', log_level_limit=1),
+            call('===== executing 20090214115600_06_test_migration.migration (up) =====', log_level_limit=1),
+            call('\nDone.\n', 'PINK', log_level_limit=1)
+        ]
+        self.assertEqual(expected_calls, _execution_log_mock.mock_calls)
+        files_to_be_executed_mock.assert_called_with('20090214115400', '20090214115600', True)
+        expected_calls = [
+            call('sql up 05', '20090214115500', '20090214115500_05_test_migration.migration', 'sql up 05', 'sql down 05', True, _execution_log_mock, None, fake_execution=True),
+            call('sql up 06', '20090214115600', '20090214115600_06_test_migration.migration', 'sql up 06', 'sql down 06', True, _execution_log_mock, None, fake_execution=True)
+        ]
+        self.assertEqual(expected_calls, main.sgdb.change.mock_calls)
+
+    @patch('simple_db_migrate.main.Main._get_migration_files_to_be_executed', return_value=[Migration(file_name="20090214115600_06_test_migration.migration", version="20090214115600", sql_up="sql up 06", sql_down="sql down 06"), Migration(file_name="20090214115500_05_test_migration.migration", version="20090214115500", sql_up="sql up 05", sql_down="sql down 05")])
+    @patch('simple_db_migrate.main.Main._execution_log')
+    def test_it_should_not_run_sql_commands_when_fake_execution_is_set_and_is_down(self, _execution_log_mock, files_to_be_executed_mock):
+        self.initial_config.update({"schema_version":'20090214115400', "label_version":None, "database_migrations_dir":['migrations', '.'], 'fake_execution':True})
+        config=Config(self.initial_config)
+        main = Main(sgdb=Mock(**{'change.return_value':None, 'get_current_schema_version.return_value':'20090214115600', 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
+        main.execute()
+
+        expected_calls = [
+            call('\nStarting DB migration on host/database "localhost/test" with user "user"...', 'PINK', log_level_limit=1),
+            call('- Current version is: 20090214115600', 'GREEN', log_level_limit=1),
+            call('- Destination version is: 20090214115400', 'GREEN', log_level_limit=1),
+            call("\nWARNING: database migrations are not being executed ('--fake-execution' activated)", 'YELLOW', log_level_limit=1),
+            call("*** versions: ['20090214115600', '20090214115500']\n", 'CYAN', log_level_limit=1),
+            call('===== executing 20090214115600_06_test_migration.migration (down) =====', log_level_limit=1),
+            call('===== executing 20090214115500_05_test_migration.migration (down) =====', log_level_limit=1),
+            call('\nDone.\n', 'PINK', log_level_limit=1)
+        ]
+        self.assertEqual(expected_calls, _execution_log_mock.mock_calls)
+        files_to_be_executed_mock.assert_called_with('20090214115600', '20090214115400', False)
+        expected_calls = [
+            call('sql down 06', '20090214115600', '20090214115600_06_test_migration.migration', 'sql up 06', 'sql down 06', False, _execution_log_mock, None, fake_execution=True),
+            call('sql down 05', '20090214115500', '20090214115500_05_test_migration.migration', 'sql up 05', 'sql down 05', False, _execution_log_mock, None, fake_execution=True)
+        ]
+        self.assertEqual(expected_calls, main.sgdb.change.mock_calls)
+
+    @patch('simple_db_migrate.main.Main._get_migration_files_to_be_executed', return_value=[Migration(file_name="20090214115500_05_test_migration.migration", version="20090214115500", sql_up="sql up 05", sql_down="sql down 05"), Migration(file_name="20090214115600_06_test_migration.migration", version="20090214115600", sql_up="sql up 06", sql_down="sql down 06")])
+    @patch('simple_db_migrate.main.Main._execution_log')
+    def test_it_should_execute_sql_commands_when_fake_execution_is_not_set_and_is_up(self, _execution_log_mock, files_to_be_executed_mock):
+        self.initial_config.update({"schema_version":'20090214115600', "label_version":None, "database_migrations_dir":['migrations', '.']})
+        config=Config(self.initial_config)
+        main = Main(sgdb=Mock(**{'change.return_value':None, 'get_current_schema_version.return_value':'20090214115400', 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
+        main.execute()
+
+        expected_calls = [
+            call('\nStarting DB migration on host/database "localhost/test" with user "user"...', 'PINK', log_level_limit=1),
+            call('- Current version is: 20090214115400', 'GREEN', log_level_limit=1),
+            call('- Destination version is: 20090214115600', 'GREEN', log_level_limit=1),
+            call('\nStarting migration up!', log_level_limit=1),
+            call("*** versions: ['20090214115500', '20090214115600']\n", 'CYAN', log_level_limit=1),
+            call('===== executing 20090214115500_05_test_migration.migration (up) =====', log_level_limit=1),
+            call('===== executing 20090214115600_06_test_migration.migration (up) =====', log_level_limit=1),
+            call('\nDone.\n', 'PINK', log_level_limit=1)
+        ]
+        self.assertEqual(expected_calls, _execution_log_mock.mock_calls)
+        files_to_be_executed_mock.assert_called_with('20090214115400', '20090214115600', True)
+        expected_calls = [
+            call('sql up 05', '20090214115500', '20090214115500_05_test_migration.migration', 'sql up 05', 'sql down 05', True, _execution_log_mock, None, fake_execution=False),
+            call('sql up 06', '20090214115600', '20090214115600_06_test_migration.migration', 'sql up 06', 'sql down 06', True, _execution_log_mock, None, fake_execution=False)
+        ]
+        self.assertEqual(expected_calls, main.sgdb.change.mock_calls)
+
+    @patch('simple_db_migrate.main.Main._get_migration_files_to_be_executed', return_value=[Migration(file_name="20090214115600_06_test_migration.migration", version="20090214115600", sql_up="sql up 06", sql_down="sql down 06"), Migration(file_name="20090214115500_05_test_migration.migration", version="20090214115500", sql_up="sql up 05", sql_down="sql down 05")])
+    @patch('simple_db_migrate.main.Main._execution_log')
+    def test_it_should_execute_sql_commands_when_fake_execution_is_not_set_and_is_down(self, _execution_log_mock, files_to_be_executed_mock):
+        self.initial_config.update({"schema_version":'20090214115400', "label_version":None, "database_migrations_dir":['migrations', '.']})
+        config=Config(self.initial_config)
+        main = Main(sgdb=Mock(**{'change.return_value':None, 'get_current_schema_version.return_value':'20090214115600', 'get_version_id_from_version_number.side_effect':get_version_id_from_version_number_side_effect}), config=config)
+        main.execute()
+
+        expected_calls = [
+            call('\nStarting DB migration on host/database "localhost/test" with user "user"...', 'PINK', log_level_limit=1),
+            call('- Current version is: 20090214115600', 'GREEN', log_level_limit=1),
+            call('- Destination version is: 20090214115400', 'GREEN', log_level_limit=1),
+            call('\nStarting migration down!', log_level_limit=1),
+            call("*** versions: ['20090214115600', '20090214115500']\n", 'CYAN', log_level_limit=1),
+            call('===== executing 20090214115600_06_test_migration.migration (down) =====', log_level_limit=1),
+            call('===== executing 20090214115500_05_test_migration.migration (down) =====', log_level_limit=1),
+            call('\nDone.\n', 'PINK', log_level_limit=1)
+        ]
+        self.assertEqual(expected_calls, _execution_log_mock.mock_calls)
+        files_to_be_executed_mock.assert_called_with('20090214115600', '20090214115400', False)
+        expected_calls = [
+            call('sql down 06', '20090214115600', '20090214115600_06_test_migration.migration', 'sql up 06', 'sql down 06', False, _execution_log_mock, None, fake_execution=False),
+            call('sql down 05', '20090214115500', '20090214115500_05_test_migration.migration', 'sql up 05', 'sql down 05', False, _execution_log_mock, None, fake_execution=False)
         ]
         self.assertEqual(expected_calls, main.sgdb.change.mock_calls)
 
@@ -547,8 +651,8 @@ class MainTest(BaseTest):
         main.execute()
 
         expected_calls = [
-            call('sql up 05', '20090214115500', '20090214115500_05_test_migration.migration', 'sql up 05', 'sql down 05', True, main._execution_log, 'new_label'),
-            call('sql up 06', '20090214115600', '20090214115600_06_test_migration.migration', 'sql up 06', 'sql down 06', True, main._execution_log, 'new_label')
+            call('sql up 05', '20090214115500', '20090214115500_05_test_migration.migration', 'sql up 05', 'sql down 05', True, main._execution_log, 'new_label', fake_execution=False),
+            call('sql up 06', '20090214115600', '20090214115600_06_test_migration.migration', 'sql up 06', 'sql down 06', True, main._execution_log, 'new_label', fake_execution=False)
         ]
         self.assertEqual(expected_calls, main.sgdb.change.mock_calls)
 
@@ -572,7 +676,7 @@ class MainTest(BaseTest):
         self.assertEqual(expected_calls, _execution_log_mock.mock_calls)
         files_to_be_executed_mock.assert_called_with('20090214115400', '20090214115600', True)
         expected_calls = [
-            call('sql up 05', '20090214115500', '20090214115500_05_test_migration.migration', 'sql up 05', 'sql down 05', True, _execution_log_mock, None)
+            call('sql up 05', '20090214115500', '20090214115500_05_test_migration.migration', 'sql up 05', 'sql down 05', True, _execution_log_mock, None, fake_execution=False)
         ]
         self.assertEqual(expected_calls, main.sgdb.change.mock_calls)
 
@@ -596,7 +700,7 @@ class MainTest(BaseTest):
         self.assertEqual(expected_calls, _execution_log_mock.mock_calls)
         files_to_be_executed_mock.assert_called_with('20090214115600', '20090214115400', False)
         expected_calls = [
-            call('sql down 06', '20090214115600', '20090214115600_06_test_migration.migration', 'sql up 06', 'sql down 06', False, _execution_log_mock, None)
+            call('sql down 06', '20090214115600', '20090214115600_06_test_migration.migration', 'sql up 06', 'sql down 06', False, _execution_log_mock, None, fake_execution=False)
         ]
         self.assertEqual(expected_calls, main.sgdb.change.mock_calls)
 
@@ -646,8 +750,8 @@ class MainTest(BaseTest):
         self.assertEqual(2, stdout_mock.getvalue().count("* press <enter> to continue..."))
 
         expected_calls = [
-            call('sql up 05', '20090214115500', '20090214115500_05_test_migration.migration', 'sql up 05', 'sql down 05', True, main._execution_log, None),
-            call('sql up 06', '20090214115600', '20090214115600_06_test_migration.migration', 'sql up 06', 'sql down 06', True, main._execution_log, None)
+            call('sql up 05', '20090214115500', '20090214115500_05_test_migration.migration', 'sql up 05', 'sql down 05', True, main._execution_log, None, fake_execution=False),
+            call('sql up 06', '20090214115600', '20090214115600_06_test_migration.migration', 'sql up 06', 'sql down 06', True, main._execution_log, None, fake_execution=False)
         ]
         self.assertEqual(expected_calls, main.sgdb.change.mock_calls)
 
@@ -663,8 +767,8 @@ class MainTest(BaseTest):
         self.assertEqual(2, stdout_mock.getvalue().count("* press <enter> to continue..."))
 
         expected_calls = [
-            call('sql down 06', '20090214115600', '20090214115600_06_test_migration.migration', 'sql up 06', 'sql down 06', False, main._execution_log, None),
-            call('sql down 05', '20090214115500', '20090214115500_05_test_migration.migration', 'sql up 05', 'sql down 05', False, main._execution_log, None)
+            call('sql down 06', '20090214115600', '20090214115600_06_test_migration.migration', 'sql up 06', 'sql down 06', False, main._execution_log, None, fake_execution=False),
+            call('sql down 05', '20090214115500', '20090214115500_05_test_migration.migration', 'sql up 05', 'sql down 05', False, main._execution_log, None, fake_execution=False)
         ]
         self.assertEqual(expected_calls, main.sgdb.change.mock_calls)
 

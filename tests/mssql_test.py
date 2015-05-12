@@ -456,6 +456,19 @@ class MSSQLTest(BaseTest):
         ]
         self.assertEqual(expected_execute_calls, self.db_mock.execute_row.mock_calls)
 
+    def test_it_should_not_execute_migration_if_fake_execution_is_set(self):
+        mssql = MSSQL(self.config_mock, self.db_driver_mock)
+        mssql.change("create table spam();", "20090212112104", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam();", "drop table spam;", fake_execution=True)
+
+        expected_execute_calls = [
+            call("if not exists ( select 1 from sysdatabases where name = 'migration_test' ) create database migration_test;"),
+            call("if not exists ( select 1 from sysobjects where name = '__db_version__' and type = 'u' ) create table __db_version__ ( id INT IDENTITY(1,1) NOT NULL PRIMARY KEY, version varchar(20) NOT NULL default '0', label varchar(255), name varchar(255), sql_up NTEXT, sql_down NTEXT)"),
+            call("insert into __db_version__ (version) values ('0')"),
+            call('insert into __db_version__ (version, label, name, sql_up, sql_down) values (%s, %s, %s, %s, %s);', ('20090212112104', None, '20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration', 'create table spam();', 'drop table spam;'))
+        ]
+        self.assertEqual(expected_execute_calls, self.db_mock.execute_non_query.mock_calls)
+        self.assertEqual(5, self.db_mock.close.call_count)
+
     def side_effect(self, returns, default_value):
         result = returns.get(self.last_execute_command, default_value)
         if isinstance(result, Exception):

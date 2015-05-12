@@ -157,8 +157,9 @@ class MySQL(object):
             sql = "insert into %s (version) values (\"0\");" % self.__version_table
             self.__execute(sql)
 
-    def change(self, sql, new_db_version, migration_file_name, sql_up, sql_down, up=True, execution_log=None, label_version=None):
-        self.__execute(sql, execution_log)
+    def change(self, sql, new_db_version, migration_file_name, sql_up, sql_down, up=True, execution_log=None, label_version=None, fake_execution=False):
+        if not fake_execution:
+            self.__execute(sql, execution_log)
         self.__change_db_version(new_db_version, migration_file_name, sql_up, sql_down, up, execution_log, label_version)
 
     def get_current_schema_version(self):

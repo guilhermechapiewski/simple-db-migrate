@@ -48,6 +48,7 @@ def run(options):
         config.update('database_host', options.get('database_host'))
         config.update('database_port', options.get('database_port'))
         config.update('database_name', options.get('database_name'))
+        config.update('fake_execution', options.get('fake_execution'))
 
         if config.get('database_port', None):
             config.update('database_port', int(config.get('database_port')))

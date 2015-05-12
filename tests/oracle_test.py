@@ -844,6 +844,19 @@ class OracleTest(BaseTest):
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
         self.assertEqual(4, self.cursor_mock.close.call_count)
 
+    def test_it_should_not_execute_migration_if_fake_execution_is_set(self):
+        oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
+        oracle.change("create table spam();", "20090212112104", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam();", "drop table spam;", fake_execution=True)
+
+        expected_execute_calls = [
+            call('select version from db_version'),
+            call('select count(*) from db_version'),
+            call("insert into db_version (id, version) values (db_version_seq.nextval, '0')"),
+            call('insert into db_version (id, version, label, name, sql_up, sql_down) values (db_version_seq.nextval, :version, :label, :migration_file_name, :sql_up, :sql_down)', {'label': None, 'sql_up': 'create table spam();', 'version': '20090212112104', 'sql_down': 'drop table spam;', 'migration_file_name': '20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration'})
+        ]
+        self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
+        self.assertEqual(4, self.cursor_mock.close.call_count)
+
     def side_effect(self, returns, default_value):
         commands = len(self.last_execute_commands)
         if commands > 0:
