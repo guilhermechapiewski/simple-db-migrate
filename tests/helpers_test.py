@@ -10,9 +10,9 @@ class ListsTest(unittest.TestCase):
         b = ["a", "b", "c", "e"]
         result = Lists.subtract(a, b)
 
-        self.assertEquals(len(result), 2)
-        self.assertEquals(result[0], "d")
-        self.assertEquals(result[1], "f")
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0], "d")
+        self.assertEqual(result[1], "f")
 
     def test_it_should_subtract_lists2(self):
         a = ["a", "b", "c", "e"]
@@ -20,7 +20,7 @@ class ListsTest(unittest.TestCase):
 
         result = Lists.subtract(a, b)
 
-        self.assertEquals(len(result), 0)
+        self.assertEqual(len(result), 0)
 
 class UtilsTest(unittest.TestCase):
 
@@ -113,7 +113,10 @@ SOME_CONSTANT = some_function("5")
             Utils.get_variables_from_file(os.path.abspath('sample.py'))
             self.fail("it should not get here")
         except Exception as e:
-            self.assertEqual("error interpreting config file 'sample.py': No module named some_not_imported_module", str(e))
+            if (sys.version_info > (3, 0)):
+                self.assertEqual("error interpreting config file 'sample.py': No module named 'some_not_imported_module'", str(e))
+            else:
+                self.assertEqual("error interpreting config file 'sample.py': No module named some_not_imported_module", str(e))
 
     def test_it_should_raise_exception_config_file_not_exists(self):
         try:

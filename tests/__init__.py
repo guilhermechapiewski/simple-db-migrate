@@ -1,15 +1,22 @@
 import glob
 import os
+import sys
 import unittest
 import codecs
 from simple_db_migrate.config import *
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 from mock import patch
 
 def create_file(file_name, content=None, encoding='utf-8'):
-    f = codecs.open(file_name, 'w', encoding)
+    f = codecs.open(file_name, 'wb', encoding)
     if content:
-        f.write(content)
+        if (sys.version_info > (3, 0)):
+            f.write(content)
+        else:
+            f.write(content.decode(encoding))
     f.close()
     return file_name
 

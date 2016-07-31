@@ -1,6 +1,6 @@
-from core import Migration
-from core.exceptions import MigrationException
-from helpers import Utils
+from .core import Migration
+from .core.exceptions import MigrationException
+from .helpers import Utils
 
 class MSSQL(object):
 
@@ -40,7 +40,7 @@ class MSSQL(object):
         try:
             statments = MSSQL._parse_sql_statements(sql)
             if len(sql.strip(' \t\n\r')) != 0 and len(statments) == 0:
-                raise Exception("invalid sql syntax '%s'" % sql.encode("utf-8"))
+                raise Exception("invalid sql syntax '%s'" % Utils.encode(sql, "utf-8"))
 
             for statement in statments:
                 curr_statement = statement
@@ -117,15 +117,15 @@ class MSSQL(object):
             sql = "insert into %s (version, label, name, sql_up, sql_down) values (%%s, %%s, %%s, %%s, %%s);" % (self.__version_table)
             params.append(label_version)
             params.append(migration_file_name)
-            params.append(sql_up and sql_up.encode(self.__mssql_script_encoding) or "")
-            params.append(sql_down and sql_down.encode(self.__mssql_script_encoding) or "")
+            params.append(sql_up and Utils.encode(sql_up, self.__mssql_script_encoding) or "")
+            params.append(sql_down and Utils.encode(sql_down, self.__mssql_script_encoding) or "")
         else:
             # moving down and deleting from history
             sql = "delete from %s where version = %%s;" % (self.__version_table)
 
         db = self.__mssql_connect()
         try:
-            db.execute_non_query(sql.encode(self.__mssql_script_encoding), tuple(params))
+            db.execute_non_query(Utils.encode(sql, self.__mssql_script_encoding), tuple(params))
             if execution_log:
                 execution_log("migration %s registered\n" % (migration_file_name))
         except Exception as e:

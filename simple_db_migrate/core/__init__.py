@@ -69,17 +69,27 @@ class Migration(object):
 
     @staticmethod
     def sort_migrations_list(migrations, reverse=False):
-        return sorted(migrations, cmp=lambda x,y: x.compare_to(y), reverse=reverse)
+        if (sys.version_info > (3, 0)):
+            return sorted(migrations, key=lambda x: [x.version, x.file_name], reverse=reverse)
+        else:
+            return sorted(migrations, cmp=lambda x,y: x.compare_to(y), reverse=reverse)
 
     @staticmethod
     def ensure_sql_unicode(sql, script_encoding):
         if not sql or not script_encoding:
             return ""
 
-        try:
-            sql = unicode(sql.decode(script_encoding))
-        except UnicodeEncodeError:
-            sql = unicode(sql)
+        if (sys.version_info > (3, 0)):
+            if isinstance(sql, bytes):
+                sql = str(sql, script_encoding)
+            else:
+                sql
+        else:
+            try:
+                sql = unicode(sql.decode(script_encoding))
+            except UnicodeEncodeError:
+                sql = unicode(sql)
+
         return sql
 
     @staticmethod

@@ -2,11 +2,11 @@ import os
 import re
 import sys
 
-from core import Migration
-from core.exceptions import MigrationException
-from helpers import Utils
+from .core import Migration
+from .core.exceptions import MigrationException
+from .helpers import Utils
 from getpass import getpass
-from cli import CLI
+from .cli import CLI
 
 class Oracle(object):
     __re_objects = re.compile("(?ims)(?P<pre>.*?)(?P<main>create[ \n\t\r]*(or[ \n\t\r]+replace[ \n\t\r]*)?(trigger|function|procedure|package|package body).*?)\n[ \n\t\r]*/([ \n\t\r]+(?P<pos>.*)|$)")
@@ -55,10 +55,10 @@ class Oracle(object):
         try:
             statments = Oracle._parse_sql_statements(sql)
             if len(sql.strip(' \t\n\r')) != 0 and len(statments) == 0:
-                raise Exception("invalid sql syntax '%s'" % sql.encode("utf-8"))
+                raise Exception("invalid sql syntax '%s'" % Utils.encode(sql, "utf-8"))
 
             for statement in statments:
-                curr_statement = statement.encode(self.__script_encoding)
+                curr_statement = Utils.encode(statement, self.__script_encoding)
                 cursor.execute(curr_statement)
                 affected_rows = max(cursor.rowcount, 0)
                 if execution_log:
@@ -82,8 +82,9 @@ class Oracle(object):
         if up:
             # moving up and storing history
             sql = "insert into %s (id, version, label, name, sql_up, sql_down) values (%s_seq.nextval, :version, :label, :migration_file_name, :sql_up, :sql_down)" % (self.__version_table, self.__version_table)
-            params['sql_up'] = sql_up and sql_up.encode(self.__script_encoding) or ""
-            params['sql_down'] = sql_down and sql_down.encode(self.__script_encoding) or ""
+            params['sql_up'] = sql_up and Utils.encode(sql_up, self.__script_encoding) or ""
+            params['sql_down'] = sql_down and Utils.encode(sql_down, self.__script_encoding) or ""
+
             params['migration_file_name'] = migration_file_name
             params['label'] = label_version
 
@@ -93,7 +94,7 @@ class Oracle(object):
             sql = "delete from %s where version = :version" % (self.__version_table)
 
         try:
-            cursor.execute(sql.encode(self.__script_encoding), params)
+            cursor.execute(Utils.encode(sql, self.__script_encoding), params)
             cursor.close()
             conn.commit()
             if execution_log:

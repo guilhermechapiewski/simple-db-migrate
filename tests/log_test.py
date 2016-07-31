@@ -1,5 +1,6 @@
 import unittest
 import os
+import sys
 import logging
 from datetime import datetime
 from mock import patch, call, Mock
@@ -30,11 +31,18 @@ class LogTest(BaseTest):
     @patch('os.makedirs', side_effect=os.makedirs)
     def test_it_should_create_log_dir_if_does_not_exists(self, makedirs_mock):
         LOG('log_dir_test/path/subpath')
-        expected_calls = [
-            call('log_dir_test/path/subpath'),
-            call('log_dir_test/path', 511),
-            call('log_dir_test', 511)
-        ]
+        if (sys.version_info > (3, 0)):
+            expected_calls = [
+                call('log_dir_test/path/subpath'),
+                call('log_dir_test/path', 511, False),
+                call('log_dir_test', 511, False)
+            ]
+        else:
+            expected_calls = [
+                call('log_dir_test/path/subpath'),
+                call('log_dir_test/path', 511),
+                call('log_dir_test', 511)
+            ]
         self.assertEqual(expected_calls, makedirs_mock.mock_calls)
 
     def test_it_should_create_a_logger(self):

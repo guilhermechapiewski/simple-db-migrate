@@ -1,3 +1,4 @@
+import sys
 from .cli import CLI
 from .log import LOG
 from .core import Migration, SimpleDBMigrate
@@ -32,13 +33,13 @@ class Main(object):
         self.sgdb = sgdb
         if self.sgdb is None and not self.config.get("new_migration", None):
             if self.config.get("database_engine") == 'mysql':
-                from mysql import MySQL
+                from .mysql import MySQL
                 self.sgdb = MySQL(config)
             elif self.config.get("database_engine") == 'oracle':
-                from oracle import Oracle
+                from .oracle import Oracle
                 self.sgdb = Oracle(config)
             elif self.config.get("database_engine") == 'mssql':
-                from mssql import MSSQL
+                from .mssql import MSSQL
                 self.sgdb = MSSQL(config)
             else:
                 raise Exception("engine not supported '%s'" % self.config.get("database_engine"))
@@ -234,7 +235,10 @@ class Main(object):
 
                 # paused mode
                 if self.config.get("paused_mode", False):
-                    raw_input("* press <enter> to continue... ")
+                    if (sys.version_info > (3, 0)):
+                        input("* press <enter> to continue... ")
+                    else:
+                        raw_input("* press <enter> to continue... ")
 
             # recording the last statement executed
             sql_statements_executed.append(sql)

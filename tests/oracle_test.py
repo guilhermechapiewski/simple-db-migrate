@@ -38,17 +38,20 @@ class OracleTest(BaseTest):
 
     @patch.dict('sys.modules', cx_Oracle=MagicMock())
     def test_it_should_use_cx_Oracle_as_driver(self):
+        sys.modules['cx_Oracle'].connect.return_value = self.db_mock
         Oracle(self.config_mock)
         self.assertNotEqual(0, sys.modules['cx_Oracle'].connect.call_count)
 
     @patch.dict('sys.modules', cx_Oracle=MagicMock())
     def test_it_should_use_default_port(self):
+        sys.modules['cx_Oracle'].connect.return_value = self.db_mock
         sys.modules['cx_Oracle'].makedsn.side_effect = self.makedsn_side_effect
         Oracle(self.config_mock)
         self.assertEqual(call(dsn="(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=somehost)(PORT=1521)))(CONNECT_DATA=(SID=SID)))", password='migration_test', user='root'), sys.modules['cx_Oracle'].connect.call_args)
 
     @patch.dict('sys.modules', cx_Oracle=MagicMock())
     def test_it_should_use_given_configuration(self):
+        sys.modules['cx_Oracle'].connect.return_value = self.db_mock
         sys.modules['cx_Oracle'].makedsn.side_effect = self.makedsn_side_effect
         self.config_dict['database_port'] = 9876
         Oracle(self.config_mock)
@@ -56,6 +59,7 @@ class OracleTest(BaseTest):
 
     @patch.dict('sys.modules', cx_Oracle=MagicMock())
     def test_it_should_use_database_name_as_dsn_when_database_host_is_not_set(self):
+        sys.modules['cx_Oracle'].connect.return_value = self.db_mock
         self.config_dict['database_host'] = None
         Oracle(self.config_mock)
         self.assertEqual(call(dsn='SID', password='migration_test', user='root'), sys.modules['cx_Oracle'].connect.call_args)
@@ -463,7 +467,9 @@ class OracleTest(BaseTest):
 
     def test_it_should_raise_whem_migration_sql_has_a_syntax_error_sql_with_codec_error(self):
         oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
-        expected_raised_message = u"error executing migration: invalid sql syntax 'create table foo(); create table spam()); -- ônibus'".encode("utf-8")
+        expected_raised_message = u"error executing migration: invalid sql syntax 'create table foo(); create table spam()); -- ônibus'"
+        if (sys.version_info < (3, 0)):
+            expected_raised_message = expected_raised_message.encode("utf-8")
         self.assertRaisesWithMessage(Exception, expected_raised_message, oracle.change,
                                      u"create table foo(); create table spam()); -- ônibus", "20090212112104", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table foo(); create table spam());", "drop table spam;", label_version="label")
 
@@ -534,7 +540,7 @@ class OracleTest(BaseTest):
         self.fetchone_returns = {'select count(*) from db_version': [0], 'select version from db_version order by id desc': ["0"]}
 
         oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
-        self.assertEquals("0", oracle.get_current_schema_version())
+        self.assertEqual("0", oracle.get_current_schema_version())
 
 
         self.assertEqual(5, self.db_driver_mock.connect.call_count)
@@ -562,7 +568,7 @@ class OracleTest(BaseTest):
         oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
         schema_versions = oracle.get_all_schema_versions()
 
-        self.assertEquals(len(expected_versions), len(schema_versions))
+        self.assertEqual(len(expected_versions), len(schema_versions))
         for version in schema_versions:
             self.assertTrue(version in expected_versions)
 
@@ -589,7 +595,7 @@ class OracleTest(BaseTest):
         oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
         schema_migrations = oracle.get_all_schema_migrations()
 
-        self.assertEquals(len(expected_versions), len(schema_migrations))
+        self.assertEqual(len(expected_versions), len(schema_migrations))
         for index, migration in enumerate(schema_migrations):
             self.assertEqual(migration.id, expected_versions[index][0])
             self.assertEqual(migration.version, expected_versions[index][1])

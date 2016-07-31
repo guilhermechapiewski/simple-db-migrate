@@ -2,8 +2,15 @@ import unittest
 import simple_db_migrate
 import os
 import sys
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 from mock import patch, Mock, MagicMock
+
+try:
+    from importlib import reload
+except ImportError: pass
 
 class RunTest(unittest.TestCase):
 

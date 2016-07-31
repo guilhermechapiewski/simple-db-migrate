@@ -1,7 +1,10 @@
 import unittest
 import os
 import re
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 from mock import patch, call, Mock
 from simple_db_migrate.core import Migration
 from simple_db_migrate.main import Main

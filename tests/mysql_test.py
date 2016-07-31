@@ -198,7 +198,9 @@ class MySQLTest(BaseTest):
 
     def test_it_should_raise_whem_migration_sql_has_a_syntax_error_sql_with_codec_error(self):
         mysql = MySQL(self.config_mock, self.db_driver_mock)
-        expected_raised_message = u"error executing migration: invalid sql syntax 'create table foo(); create table spam()); -- ônibus'".encode("utf-8")
+        expected_raised_message = u"error executing migration: invalid sql syntax 'create table foo(); create table spam()); -- ônibus'"
+        if (sys.version_info < (3, 0)):
+            expected_raised_message = expected_raised_message.encode("utf-8")
         self.assertRaisesWithMessage(Exception, expected_raised_message, mysql.change,
                                      u"create table foo(); create table spam()); -- ônibus", "20090212112104", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table foo(); create table spam());", "drop table spam;", label_version="label")
 
@@ -306,7 +308,7 @@ class MySQLTest(BaseTest):
         mysql = MySQL(self.config_mock, self.db_driver_mock)
         schema_versions = mysql.get_all_schema_versions()
 
-        self.assertEquals(len(expected_versions), len(schema_versions))
+        self.assertEqual(len(expected_versions), len(schema_versions))
         for version in schema_versions:
             self.assertTrue(version in expected_versions)
 
@@ -337,7 +339,7 @@ class MySQLTest(BaseTest):
         mysql = MySQL(self.config_mock, self.db_driver_mock)
         schema_migrations = mysql.get_all_schema_migrations()
 
-        self.assertEquals(len(expected_versions), len(schema_migrations))
+        self.assertEqual(len(expected_versions), len(schema_migrations))
         for index, migration in enumerate(schema_migrations):
             self.assertEqual(migration.id, expected_versions[index][0])
             self.assertEqual(migration.version, expected_versions[index][1])

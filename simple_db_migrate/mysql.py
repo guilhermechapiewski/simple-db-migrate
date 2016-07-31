@@ -1,7 +1,7 @@
 import re
-from core import Migration
-from core.exceptions import MigrationException
-from helpers import Utils
+from .core import Migration
+from .core.exceptions import MigrationException
+from .helpers import Utils
 
 class MySQL(object):
     __re_objects = re.compile("(?ims)(?P<pre>.*?)(?P<main>create[ \n\t\r]*(definer[ \n\t\r]*=[ \n\t\r]*[^ \n\t\r]*[ \n\t\r]*)?(trigger|function|procedure).*?)\n[ \n\t\r]*/([ \n\t\r]+(?P<pos>.*)|$)")
@@ -47,11 +47,11 @@ class MySQL(object):
         try:
             statments = MySQL._parse_sql_statements(sql)
             if len(sql.strip(' \t\n\r')) != 0 and len(statments) == 0:
-                raise Exception("invalid sql syntax '%s'" % sql.encode("utf-8"))
+                raise Exception("invalid sql syntax '%s'" % Utils.encode(sql, "utf-8"))
 
             for statement in statments:
                 curr_statement = statement
-                affected_rows = cursor.execute(statement.encode(self.__mysql_script_encoding))
+                affected_rows = cursor.execute(Utils.encode(statement, self.__mysql_script_encoding))
                 if execution_log:
                     execution_log("%s\n-- %d row(s) affected\n" % (statement, affected_rows and int(affected_rows) or 0))
             cursor.close()
@@ -78,7 +78,7 @@ class MySQL(object):
         cursor = db.cursor()
         cursor._defer_warnings = True
         try:
-            cursor.execute(sql.encode(self.__mysql_script_encoding))
+            cursor.execute(Utils.encode(sql, self.__mysql_script_encoding))
             cursor.close()
             db.commit()
             if execution_log:

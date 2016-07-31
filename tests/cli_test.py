@@ -1,6 +1,9 @@
 import unittest
 from mock import patch
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 from simple_db_migrate.cli import CLI
 
 class CLITest(unittest.TestCase):

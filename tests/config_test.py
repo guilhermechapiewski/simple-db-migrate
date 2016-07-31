@@ -172,7 +172,7 @@ class ConfigTest(unittest.TestCase):
 
     def test_it_should_transform_keys_to_lower_case_on_init(self):
         config = Config({"sOmE_kEy": "original_value"})
-        self.assertEqual(["some_key"] ,config._config.keys())
+        self.assertEqual(["some_key"] ,list(config._config.keys()))
 
 class FileConfigTest(unittest.TestCase):
 

@@ -11,6 +11,12 @@ class Lists(object):
 class Utils(object):
 
     @staticmethod
+    def encode(string, codec):
+        if (sys.version_info > (3, 0)):
+            return string
+        return string.encode(codec)
+
+    @staticmethod
     def count_occurrences(string):
         count = {}
         for char in string:
@@ -28,7 +34,7 @@ class Utils(object):
             # add settings dir from path
             sys.path.insert(0, path)
 
-            execfile(full_filename, global_dict, global_dict)
+            Utils._execfile(full_filename, global_dict, global_dict, file_encoding)
         except IOError:
             raise Exception("%s: file not found" % full_filename)
         except Exception as e:
@@ -42,7 +48,7 @@ class Utils(object):
                 f.write('#-*- coding:%s -*-\n%s' % (file_encoding, content))
                 f.close()
 
-                execfile(temp_abspath, global_dict, global_dict)
+                Utils._execfile(temp_abspath, global_dict, global_dict, file_encoding)
             except Exception as e:
                 raise Exception("error interpreting config file '%s': %s" % (filename, str(e)))
         finally:
@@ -62,3 +68,12 @@ class Utils(object):
                 local_dict[key] = global_dict[key]
 
         return local_dict
+
+    @staticmethod
+    def _execfile(filename, global_vars, local_vars, file_encoding):
+        if (sys.version_info > (3, 0)):
+            with open(filename, encoding=file_encoding) as f:
+                code = compile(f.read(), filename, 'exec')
+                exec(code, global_vars, local_vars)
+        else:
+            execfile(filename, global_vars, local_vars)
