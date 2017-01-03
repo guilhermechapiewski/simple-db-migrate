@@ -12,5 +12,8 @@ simple_db_migrate.egg-info
 .project
 .pydevproject
 .settings
-
+simple-db-migrate.iml
 .tox
+.eggs
+.idea
+

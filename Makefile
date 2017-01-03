@@ -28,7 +28,7 @@ compile: clean
 test: compile
 	@make clean
 	@echo "Starting tests..."
-	@nosetests -s --verbose --with-coverage --cover-erase --cover-package=simple_db_migrate tests
+	@nosetests -s --verbose --with-coverage --cover-erase --cover-package=simple_db_migrate --cover-inclusive --cover-html tests
 	@make clean
 
 install:
