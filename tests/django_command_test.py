@@ -21,7 +21,7 @@ class DBMigrateTest(BaseTest):
         call_command('dbmigrate')
         options_keys = run_mock.call_args[1]['options'].keys()
         for option in simple_db_migrate.cli.CLI.options_to_parser():
-            self.assertTrue(option.dest in options_keys, "'%s' not present in the options list" % option.dest)
+            self.assertTrue(option['dest'] in options_keys, "'%s' not present in the options list" % option['dest'])
 
     @patch('simple_db_migrate.run')
     def test_it_should_include_the_database_option(self, run_mock):

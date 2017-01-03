@@ -16,12 +16,33 @@ class Command(BaseCommand):
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
 
-        self.option_list = BaseCommand.option_list + simple_db_migrate.cli.CLI.options_to_parser() + (
-            make_option(
-                '--database', action='store', dest='database',
-                default=getattr(db, 'DEFAULT_DB_ALIAS', 'default'),
-                help='Nominates a database to synchronize. Defaults to the "default" database.'
-            ),
+        if hasattr(self, 'option_list'):
+            db_migrate_option_list = []
+            for option in simple_db_migrate.cli.CLI.options_to_parser():
+              names=option["opt_str"]
+              del option["opt_str"]
+              db_migrate_option_list.append(make_option(*names, **option))
+
+            from django import db
+            self.option_list = self.option_list + tuple(db_migrate_option_list) + (
+                make_option(
+                    '--database', action='store', dest='database',
+                    default=getattr(db, 'DEFAULT_DB_ALIAS', 'default'),
+                    help='Nominates a database to synchronize. Defaults to the "default" database.'
+                ),
+            )
+
+    def add_arguments(self, parser):
+        for option in simple_db_migrate.cli.CLI.options_to_parser():
+          names=option["opt_str"]
+          del option["opt_str"]
+          parser.add_argument(*names, **option)
+
+        from django import db
+        parser.add_argument(
+            '--database', action='store', dest='database',
+            default=getattr(db, 'DEFAULT_DB_ALIAS', 'default'),
+            help='Nominates a database to synchronize. Defaults to the "default" database.'
         )
 
     def handle(self, *args, **options):
