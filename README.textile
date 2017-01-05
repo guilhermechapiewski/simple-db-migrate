@@ -129,6 +129,7 @@ You can set default values for internal configurations in your configuration fil
 | schema_version | the desired version of the database, will do a upgrade or a downgrade to be sure that this will be the current version of database | - | - |
 | show_sql | if True show executed SQL commands | False | True,False |
 | show_sql_only | if True only show the SQL, but do not execute them | False | True,False |
+| fake_execution | if True store migrations into version history, but do not execute them | False | True,False |
 
 h2. Supported databases engines
 

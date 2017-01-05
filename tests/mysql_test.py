@@ -518,6 +518,19 @@ class MySQLTest(BaseTest):
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
         self.assertEqual(4, self.cursor_mock.close.call_count)
 
+    def test_it_should_not_execute_migration_if_fake_execution_is_set(self):
+        mysql = MySQL(self.config_mock, self.db_driver_mock)
+        mysql.change("create table spam();", "20090212112104", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam();", "drop table spam;", fake_execution=True)
+
+        expected_execute_calls = [
+            call('create table if not exists __db_version__ ( id int(11) NOT NULL AUTO_INCREMENT, version varchar(20) NOT NULL default "0", label varchar(255), name varchar(255), sql_up LONGTEXT, sql_down LONGTEXT, PRIMARY KEY (id))'),
+            call('select count(*) from __db_version__;'),
+            call('insert into __db_version__ (version) values ("0")'),
+            call('insert into __db_version__ (version, label, name, sql_up, sql_down) values ("20090212112104", NULL, "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam();", "drop table spam;");')
+        ]
+        self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
+        self.assertEqual(4, self.cursor_mock.close.call_count)
+
     def side_effect(self, returns, default_value):
         result = returns.get(self.last_execute_command, default_value)
         if isinstance(result, Exception):

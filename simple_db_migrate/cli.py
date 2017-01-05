@@ -171,6 +171,12 @@ class CLI(object):
                 dest="info_database",
                 default=None,
                 help="Show info of applied migrations (options: labels, last_label)"),
+
+        make_option("--fake-execution",
+                action="store_true",
+                dest="fake_execution",
+                default=False,
+                help="Modify migrations history without actually executing migrations. Use with care!"),
         )
 
     @classmethod

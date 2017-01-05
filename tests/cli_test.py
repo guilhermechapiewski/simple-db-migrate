@@ -132,6 +132,12 @@ class CLITest(unittest.TestCase):
     def test_it_should_accept_show_sql_only_options(self):
         self.assertEqual(True, CLI.parse(["--show-sql-only"])[0].show_sql_only)
 
+    def test_it_should_has_a_default_value_for_fake_execution(self):
+        self.assertEqual(False, CLI.parse([])[0].fake_execution)
+
+    def test_it_should_accept_fake_execution_options(self):
+        self.assertEqual(True, CLI.parse(["--fake-execution"])[0].fake_execution)
+
     def test_it_should_not_has_a_default_value_for_label_version(self):
         self.assertEqual(None, CLI.parse([])[0].label_version)
 

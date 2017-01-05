@@ -88,9 +88,10 @@ class Main(object):
     def _migrate(self):
         destination_version = self._get_destination_version()
         current_version = self.sgdb.get_current_schema_version()
+        fake_execution = self.config.get("fake_execution", False)
 
         # do it!
-        self._execute_migrations(current_version, destination_version)
+        self._execute_migrations(current_version, destination_version, fake_execution=fake_execution)
 
     def _get_destination_version(self):
         label_version = self.config.get("label_version", None)
@@ -170,7 +171,7 @@ class Main(object):
         down_migrations_to_execute.reverse()
         return down_migrations_to_execute
 
-    def _execute_migrations(self, current_version, destination_version):
+    def _execute_migrations(self, current_version, destination_version, fake_execution=False):
         """
         passed a version:
             this version don't exists in the database and is younger than the last version -> do migrations up until this version
@@ -210,6 +211,8 @@ class Main(object):
         up_down_label = is_migration_up and "up" or "down"
         if self.config.get("show_sql_only", False):
             self._execution_log("\nWARNING: database migrations are not being executed ('--showsqlonly' activated)", "YELLOW", log_level_limit=1)
+        elif self.config.get("fake_execution", False):
+            self._execution_log("\nWARNING: database migrations are not being executed ('--fake-execution' activated)", "YELLOW", log_level_limit=1)
         else:
             self._execution_log("\nStarting migration %s!" % up_down_label, log_level_limit=1)
 
@@ -227,7 +230,7 @@ class Main(object):
                     label = self.config.get("label_version", None)
 
                 try:
-                    self.sgdb.change(sql, migration.version, migration.file_name, migration.sql_up, migration.sql_down, is_migration_up, self._execution_log, label)
+                    self.sgdb.change(sql, migration.version, migration.file_name, migration.sql_up, migration.sql_down, is_migration_up, self._execution_log, label, fake_execution=fake_execution)
                 except Exception as e:
                     self._execution_log("===== ERROR executing %s (%s) =====" % (migration.abspath, up_down_label), log_level_limit=1)
                     raise e
