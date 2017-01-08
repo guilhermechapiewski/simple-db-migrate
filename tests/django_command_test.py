@@ -12,7 +12,7 @@ class DBMigrateTest(BaseTest):
     def setUp(self):
         super(DBMigrateTest, self).setUp()
         settings.INSTALLED_APPS = ['simple_db_migrate.db_migrate']
-        for key in ['OTHER_MIGRATION_DIRS', 'DATABASES', 'DATABASE_HOST', 'DATABASE_NAME', 'DATABASE_USER', 'DATABASE_PASSWORD']:
+        for key in ['OTHER_MIGRATION_DIRS', 'DATABASES', 'DATABASE_HOST', 'DATABASE_NAME', 'DATABASE_USER', 'DATABASE_PASSWORD', 'DATABASE_PORT', 'DATABASE_ENGINE']:
             if hasattr(settings, key) and getattr(settings, key) is not None:
                 delattr(settings, key)
 
@@ -89,18 +89,22 @@ class DBMigrateTest(BaseTest):
         settings.DATABASE_NAME = 'name1'
         settings.DATABASE_USER = 'user1'
         settings.DATABASE_PASSWORD = 'password1'
+        settings.DATABASE_PORT = 1
+        settings.DATABASE_ENGINE = 'engine1'
         call_command('dbmigrate')
         options = run_mock.call_args[1]['options']
         self.assertEquals(options['database_host'], 'hostname1')
         self.assertEquals(options['database_name'], 'name1')
         self.assertEquals(options['database_user'], 'user1')
         self.assertEquals(options['database_password'], 'password1')
+        self.assertEquals(options['database_port'], 1)
+        self.assertEquals(options['database_engine'], 'engine1')
 
     @patch('simple_db_migrate.run')
     def test_it_should_get_database_properties_from_settings_on_new_format(self, run_mock):
         settings.DATABASES = {
-            'mydatabase' : { 'HOST' : 'hostname2', 'NAME': 'name2', 'USER': 'user2', 'PASSWORD': 'password2' },
-            'default' : { 'HOST' : 'hostname3', 'NAME': 'name3', 'USER': 'user3', 'PASSWORD': 'password3' }
+            'mydatabase' : { 'HOST' : 'hostname2', 'NAME': 'name2', 'USER': 'user2', 'PASSWORD': 'password2', 'PORT': 12, 'ENGINE': 'engine2' },
+            'default' : { 'HOST' : 'hostname3', 'NAME': 'name3', 'USER': 'user3', 'PASSWORD': 'password3', 'PORT': 123, 'ENGINE': 'engine3' }
         }
         call_command('dbmigrate', database='mydatabase')
         options = run_mock.call_args[1]['options']
@@ -108,6 +112,8 @@ class DBMigrateTest(BaseTest):
         self.assertEquals(options['database_name'], 'name2')
         self.assertEquals(options['database_user'], 'user2')
         self.assertEquals(options['database_password'], 'password2')
+        self.assertEquals(options['database_port'], 12)
+        self.assertEquals(options['database_engine'], 'engine2')
 
         call_command('dbmigrate')
         options = run_mock.call_args[1]['options']
@@ -115,6 +121,8 @@ class DBMigrateTest(BaseTest):
         self.assertEquals(options['database_name'], 'name3')
         self.assertEquals(options['database_user'], 'user3')
         self.assertEquals(options['database_password'], 'password3')
+        self.assertEquals(options['database_port'], 123)
+        self.assertEquals(options['database_engine'], 'engine3')
 
 if __name__ == "__main__":
     unittest.main()

@@ -28,7 +28,7 @@ class Command(BaseCommand):
         if not options.get('database_migrations_dir'):
             options['database_migrations_dir'] = Command._locate_migrations()
 
-        for key in ['host', 'name', 'user', 'password']:
+        for key in ['host', 'name', 'user', 'password', 'port', 'engine']:
             options_key = 'database_' + key
             if options.get(options_key) == None:
                 options[options_key] = Command._get_database_option(options, key)
