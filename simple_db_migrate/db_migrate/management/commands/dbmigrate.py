@@ -38,7 +38,6 @@ class Command(BaseCommand):
           del option["opt_str"]
           parser.add_argument(*names, **option)
 
-        from django import db
         parser.add_argument(
             '--database', action='store', dest='database',
             default=getattr(db, 'DEFAULT_DB_ALIAS', 'default'),
@@ -84,10 +83,10 @@ class Command(BaseCommand):
 
             app_parts = app.split(".")
             if len(app_parts) > 1:
-                fromlist = ".".join(app_parts[1:])
+                fromlist = ".".join(app_parts[-1:])
 
             module = __import__(app, fromlist=fromlist)
-            app_dir = os.path.abspath("/" + "/".join(module.__file__.split("/")[1:-1]))
+            app_dir = os.path.abspath(os.path.dirname(module.__file__))
 
             resource_dir = os.path.join(app_dir, complement)
 
