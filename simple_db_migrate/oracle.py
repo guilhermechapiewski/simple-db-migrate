@@ -94,6 +94,7 @@ class Oracle(object):
 
             params['migration_file_name'] = migration_file_name
             params['label'] = label_version
+            cursor.setinputsizes(sql_up = self.__driver.CLOB, sql_down = self.__driver.CLOB)
         else:
             # moving down and deleting from history
             sql = "delete from %s where version = :version" % (self.__version_table)
