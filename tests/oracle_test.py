@@ -29,9 +29,10 @@ class OracleTest(BaseTest):
         self.cursor_mock = Mock(**{"execute": Mock(side_effect=self.execute_side_effect),
                                    "close": Mock(side_effect=self.close_side_effect),
                                    "fetchone": Mock(side_effect=self.fetchone_side_effect),
+                                   "setinputsizes": Mock(return_value = None),
                                    "rowcount": 0})
         self.db_mock = Mock(**{"cursor.return_value": self.cursor_mock})
-        self.db_driver_mock = Mock(**{"connect.return_value": self.db_mock})
+        self.db_driver_mock = Mock(**{"connect.return_value": self.db_mock, "CLOB": "CLOB"})
         self.stdin_mock = Mock(**{"readline.return_value":"dba_user"})
         self.getpass_mock = Mock(return_value = "dba_password")
 
@@ -393,8 +394,6 @@ class OracleTest(BaseTest):
         self.assertEqual(6, self.cursor_mock.close.call_count)
 
     def test_it_should_execute_migration_up_and_update_schema_version(self):
-        self.db_driver_mock.CLOB = 'X'
-
         oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
         oracle.change("create table spam();", "20090212112104", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam();", "drop table spam;")
 
@@ -412,14 +411,6 @@ class OracleTest(BaseTest):
 
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
         self.assertEqual(5, self.cursor_mock.close.call_count)
-
-        expected_var_calls = [
-            call('X', 20),
-            call().setvalue(0, 'create table spam();'),
-            call('X', 16),
-            call().setvalue(0, 'drop table spam;')
-        ]
-        self.assertEqual(expected_var_calls, self.cursor_mock.var.mock_calls)
 
     def test_it_should_execute_migration_down_and_update_schema_version(self):
         oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
@@ -440,7 +431,6 @@ class OracleTest(BaseTest):
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
         self.assertEqual(5, self.cursor_mock.close.call_count)
 
-
     def test_it_should_use_label_version_when_updating_schema_version(self):
         oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
         oracle.change("create table spam();", "20090212112104", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam();", "drop table spam;", label_version="label")
@@ -459,6 +449,12 @@ class OracleTest(BaseTest):
 
         self.assertEqual(expected_execute_calls, self.cursor_mock.execute.mock_calls)
         self.assertEqual(5, self.cursor_mock.close.call_count)
+
+    def test_it_should_enforce_sql_up_and_sql_down_type_size_when_updating_schema_version(self):
+        oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)
+        oracle.change("create table spam();", "20090212112104", "20090212112104_test_it_should_execute_migration_down_and_update_schema_version.migration", "create table spam();", "drop table spam;", label_version="label")
+
+        self.assertEqual([call(sql_down='CLOB', sql_up='CLOB')], self.cursor_mock.setinputsizes.mock_calls)
 
     def test_it_should_raise_whem_migration_sql_has_a_syntax_error(self):
         oracle = Oracle(self.config_mock, self.db_driver_mock, self.getpass_mock, self.stdin_mock)

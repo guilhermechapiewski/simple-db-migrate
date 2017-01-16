@@ -82,18 +82,12 @@ class Oracle(object):
         if up:
             # moving up and storing history
             sql = "insert into %s (id, version, label, name, sql_up, sql_down) values (%s_seq.nextval, :version, :label, :migration_file_name, :sql_up, :sql_down)" % (self.__version_table, self.__version_table)
-            sql_up = sql_up and sql_up.encode(self.__script_encoding) or ""
-            v_sql_up = cursor.var( self.__driver.CLOB, len(sql_up))
-            v_sql_up.setvalue( 0, sql_up )
-            params['sql_up'] = sql_up
-
-            sql_down = sql_down and sql_down.encode(self.__script_encoding) or ""
-            v_sql_down = cursor.var( self.__driver.CLOB, len(sql_down))
-            v_sql_down.setvalue( 0, sql_down )
-            params['sql_down'] = sql_down
-
+            params['sql_up'] = sql_up and sql_up.encode(self.__script_encoding) or ""
+            params['sql_down'] = sql_down and sql_down.encode(self.__script_encoding) or ""
             params['migration_file_name'] = migration_file_name
             params['label'] = label_version
+
+            cursor.setinputsizes(sql_up=self.__driver.CLOB, sql_down=self.__driver.CLOB)
         else:
             # moving down and deleting from history
             sql = "delete from %s where version = :version" % (self.__version_table)
