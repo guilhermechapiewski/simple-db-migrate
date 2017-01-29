@@ -1,3 +1,10 @@
+### 2.3.0 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Wed, 14 Jan 2015 21:00:00 -0300
+- Added: support to Django 1.10.0+
+- Added: support to get database port and engine from Django settings
+- Fix: accepting a dash on migration filename
+- Fix: Oracle sql_up and sql_down type sizes
+- Improvements on test suite
+
 ### 2.2.0 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Wed, 14 Jan 2015 21:00:00 -0300
 - Added: support procedure, trigger and function on mysql
 - Added: parameter to show info about database
