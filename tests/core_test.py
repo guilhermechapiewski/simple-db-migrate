@@ -7,6 +7,7 @@ from simple_db_migrate.core import Migration
 from simple_db_migrate.core import SimpleDBMigrate
 from tests import BaseTest, create_file, create_migration_file, delete_files, create_config
 
+
 class SimpleDBMigrateTest(BaseTest):
 
     def setUp(self):
@@ -166,9 +167,23 @@ class MigrationTest(BaseTest):
         create_file('20090727114700_empty_file_test_migration.migration')
         create_file('20090727114700_without_sql_down_test_migration.migration', 'SQL_UP=""')
         create_file('20090727114700_without_sql_up_test_migration.migration', 'SQL_DOWN=""')
+        self.migration = Migration(label="generate_test_migration", version="20120101010100", sql_up="some_sql", sql_down="some_sql_down")
 
     def tearDown(self):
         delete_files('*test_migration.migration')
+
+    def test_it_should_have_generate_file_method(self):
+        assert self.migration.generate_file, "Should have generate file method"
+
+    def test_it_should_generate_migration_file(self):
+        self.migration.generate_file()
+        assert os.path.exists("20120101010100_generate_test_migration.migration"), "File should exists"
+
+    def test_it_should_generate_migration_with_rigth_content(self):
+        self.migration.generate_file()
+        migration_expected = Migration("20120101010100_generate_test_migration.migration")
+        assert self.migration.sql_up in migration_expected.sql_up
+        assert self.migration.sql_down in  migration_expected.sql_down
 
     def test_it_should_get_migration_version_from_file(self):
         migration = Migration('20090214120600_example_file_name_test_migration.migration')
