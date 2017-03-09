@@ -93,6 +93,8 @@ class MySQL(object):
     def _parse_sql_statements(cls, migration_sql):
         all_statements = []
         last_statement = ''
+        if migration_sql.find("-- EXECUTE_TOGETHER --") != -1:
+            return [migration_sql]
 
         match_stmt = MySQL.__re_objects.match(migration_sql)
 
