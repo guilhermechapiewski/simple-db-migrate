@@ -59,7 +59,17 @@ class Command(BaseCommand):
     def _get_database_option(options, key):
         # Handles Django 1.2+ database settings
         if hasattr(settings, 'DATABASES'):
-            return settings.DATABASES[options.get('database')].get(key.upper(), '')
+            # Django 1.2+ database settings allow to specify more than 1 database setting,
+            # this allow to have 2 settings: one to run simple db migrate and another
+            # to run the application, having each user different database permissions.
+            #
+            # Simple-db-migrate should try to use a specific simple db migrate settings and if
+            # not found fallback to the supplied key
+            db_config = settings.DATABASES[options.get('database')].get('dbmigrate', '')
+            if db_config:
+                return db_config
+            else:
+                return settings.DATABASES[options.get('database')].get(key.upper(), '')
         # Fallback for Django 1.1 or lower
         return getattr(settings, 'DATABASE_' + key.upper(), None)
 
