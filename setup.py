@@ -20,5 +20,4 @@ setup(
             'db-migrate = simple_db_migrate:run_from_argv',
         ],
     },
-
 )
