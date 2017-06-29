@@ -1,0 +1,11 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+ALTER TABLE ontime ADD COLUMN custom_data String;
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE ontime DROP COLUMN custom_data;
+"""
