@@ -2,12 +2,11 @@ import re
 from .core import Migration
 from .core.exceptions import MigrationException
 from .helpers import Utils
-from clickhouse_driver.client import Client
 
 class ClickHouse(object):
     __re_objects = re.compile("(?ims)(?P<pre>.*?)(?P<main>create[ \n\t\r]*(definer[ \n\t\r]*=[ \n\t\r]*[^ \n\t\r]*[ \n\t\r]*)?(trigger|function|procedure).*?)\n[ \n\t\r]*/([ \n\t\r]+(?P<pos>.*)|$)")
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, driver=None):
         self.__clickhouse_script_encoding = config.get("database_script_encoding", "utf8")
         self.__clickhouse_encoding = config.get("database_encoding", "utf8")
         self.__clickhouse_host = config.get("database_host")
@@ -19,7 +18,11 @@ class ClickHouse(object):
 
         if config.get("drop_db_first"):
             self._drop_database()
-        self.__conn = Client(
+        self.__driver = driver
+        if not driver:
+            import clickhouse_driver
+            self.__clickhouse_driver = clickhouse_driver
+        self.__conn = self.__clickhouse_driver.Client(
                 self.__clickhouse_host,
                 self.__clickhouse_port,
                 self.__clickhouse_db,
