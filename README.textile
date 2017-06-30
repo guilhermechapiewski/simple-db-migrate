@@ -159,6 +159,10 @@ END
 /
 ```
 
+h3. Support ClickHouse
+
+Thanks Konstantin Lebedev for clickhouse-driver python library.
+
 h2. Roadmap, bug reporting and feature requests
 
 For detailed info about future versions, bug reporting and feature requests, go to "issues":https://github.com/guilhermechapiewski/simple-db-migrate/issues page.

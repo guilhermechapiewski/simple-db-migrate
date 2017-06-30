@@ -1,3 +1,6 @@
+### 3.1.0 - Evgeniy Skomorokhov <evgeniy.skomorokhov@gmail.com>  Wed, 28 Jun 2017 11:12:33 +0700
+- Added: support clickhouse db using clickhouse-driver
+
 ### 3.0.0 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Sun, 29 Jan 2017 17:00:00 -0300
 - Added: support to python 3.6 (test can be executed with python 2.7 and 3.6)
 
