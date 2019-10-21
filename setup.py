@@ -12,7 +12,7 @@ setup(
     keywords = "database migration tool mysql",
     url = "http://guilhermechapiewski.github.com/simple-db-migrate/",
     long_description = "simple-db-migrate is a database versioning and migration tool inspired on Rails Migrations. This tool helps you easily refactor, manage and track your database schema. The main difference is that Rails migrations are intended to be used only on Ruby projects while simple-db-migrate makes it possible to have migrations in any language (Java, Python, Ruby, PHP, whatever). This is possible because simple-db-migrate uses database's DDL (Data Definition Language) to do the database operations, while Rails Migrations are written in a Ruby internal DSL.",
-    tests_require=['coverage==4.2', 'mock==2.0', 'nose==1.3.7', 'django==1.10.5'],
+    tests_require=['coverage==4.2', 'mock==2.0', 'nose==1.3.7', 'django==1.11.23'],
 
     # generate script automatically
     entry_points = {
