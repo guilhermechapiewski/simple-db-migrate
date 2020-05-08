@@ -1,3 +1,6 @@
+### 3.0.1 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Sat, 9 May 2020 19:27:00 -0300
+- Added: support to python 3.8
+
 ### 3.0.0 - Wandenberg Vieira Peixoto <wandenberg@gmail.com>  Sun, 29 Jan 2017 17:00:00 -0300
 - Added: support to python 3.6 (test can be executed with python 2.7 and 3.6)
 
