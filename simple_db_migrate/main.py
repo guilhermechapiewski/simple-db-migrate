@@ -133,7 +133,7 @@ class Main(object):
         if (schema_version is not None and label_version is not None) and ((destination_version_by_schema is not None and destination_version_by_label is None) or (destination_version_by_schema is None and destination_version_by_label is not None)):
             raise Exception("label (%s) or schema_version (%s), only one of them exists in the database" % (label_version, schema_version))
 
-        if destination_version is not '0' and not (self.db_migrate.check_if_version_exists(destination_version) or self.sgdb.get_version_id_from_version_number(destination_version)):
+        if destination_version != '0' and not (self.db_migrate.check_if_version_exists(destination_version) or self.sgdb.get_version_id_from_version_number(destination_version)):
             raise Exception("version not found (%s)" % destination_version)
 
         return destination_version
