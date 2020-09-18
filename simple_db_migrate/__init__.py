@@ -10,8 +10,10 @@ from .main import Main
 SIMPLE_DB_MIGRATE_VERSION = '3.0.1'
 
 # fixing print in non-utf8 terminals
+# #42: fix for python3 encoding
 if hasattr(sys.stdout, 'encoding') and sys.stdout.encoding is not None and sys.stdout.encoding.upper() != 'UTF-8':
-    sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
+    stdout = (sys.version_info >= (3, 1)) and sys.stdout.detach() or sys.stdout
+    sys.stdout = codecs.getwriter('utf-8')(stdout)
 
 def run_from_argv(args=None):
     (options, _) = CLI.parse(args)
