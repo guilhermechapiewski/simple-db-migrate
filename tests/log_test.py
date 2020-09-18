@@ -31,7 +31,8 @@ class LogTest(BaseTest):
     @patch('os.makedirs', side_effect=os.makedirs)
     def test_it_should_create_log_dir_if_does_not_exists(self, makedirs_mock):
         LOG('log_dir_test/path/subpath')
-        if (sys.version_info > (3, 8)):
+        if (sys.version_info >= (3, 2)):
+            # https://docs.python.org/3/library/os.html#os.makedirs
             expected_calls = [
                 call('log_dir_test/path/subpath'),
                 call('log_dir_test/path', exist_ok=False),
