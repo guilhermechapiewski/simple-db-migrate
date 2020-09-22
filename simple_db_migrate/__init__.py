@@ -7,7 +7,7 @@ from .cli import CLI
 from .config import FileConfig, Config
 from .main import Main
 
-SIMPLE_DB_MIGRATE_VERSION = '3.0.1'
+SIMPLE_DB_MIGRATE_VERSION = '3.0.2'
 
 # fixing print in non-utf8 terminals
 # #42: fix for python3 encoding
